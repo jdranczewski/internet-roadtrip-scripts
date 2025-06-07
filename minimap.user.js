@@ -23,6 +23,7 @@
 (async function() {
     // Get map methods and various objects
     const map = await IRF.vdom.map;
+    const odometer = await IRF.vdom.odometer;
     const ml_map = map.data.map;
     const mapMethods = map.methods;
     const mapContainerEl = await IRF.dom.map;
@@ -107,6 +108,16 @@
     .mmt-menu-Marker .mmt-hide-Marker {display: none !important;}
     .mmt-menu-Car .mmt-hide-Car {display: none !important;}
 
+    /* Decimal points */
+    .mmt-miles-decimal {
+        text-align: center;
+        line-height: 10px;
+        & span {
+            display: inline !important;
+            font-size: 10px;
+        }
+    }
+
     /* For debugging */
     .mmt-menu-Map .mmt-hide-Map {opacity: 0.5 !important;}
     .mmt-menu-Marker .mmt-hide-Marker {opacity: 0.5 !important;}
@@ -127,6 +138,7 @@
         "reset_zoom": false,
         "show_scale": true,
         "km_units": false,
+        "decimal_units": false,
         "map_size": {
             width: undefined,
             height: undefined,
@@ -396,6 +408,7 @@
     // Define map controls to add buttons for
     let control = new TricksControl();
 
+    // Go to coordinates
     control.addButton(
         "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%22-6%20-6%2036%2036%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22size-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M6%2012%203.269%203.125A59.8%2059.8%200%200%201%2021.485%2012%2059.8%2059.8%200%200%201%203.27%2020.875L5.999%2012Zm0%200h7.5%22%2F%3E%3C%2Fsvg%3E",
         "Go to coordinates",
@@ -416,6 +429,7 @@
         ["Side", "Map"]
     );
 
+    // Copy coordinates
     control.addButton(
         "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%22-6%20-6%2036%2036%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22size-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M15.75%2017.25v3.375c0%20.621-.504%201.125-1.125%201.125h-9.75a1.125%201.125%200%200%201-1.125-1.125V7.875c0-.621.504-1.125%201.125-1.125H6.75a9%209%200%200%201%201.5.124m7.5%2010.376h3.375c.621%200%201.125-.504%201.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9%209%200%200%200-1.5-.124H9.375c-.621%200-1.125.504-1.125%201.125v3.5m7.5%2010.375H9.375a1.125%201.125%200%200%201-1.125-1.125v-9.25m12%206.625v-1.875a3.375%203.375%200%200%200-3.375-3.375h-1.5a1.125%201.125%200%200%201-1.125-1.125v-1.5a3.375%203.375%200%200%200-3.375-3.375H9.75%22%2F%3E%3C%2Fsvg%3E",
         "Copy coordinates",
@@ -425,6 +439,7 @@
         }
     );
 
+    // Open Street View
     control.addButton(
         "https://storage.googleapis.com/support-kms-prod/SNP_E2308F5561BE1525D2C88838252137BC5634_4353424_en_v0",
         "Open Street View",
@@ -442,6 +457,7 @@
         }
     );
 
+    // Open SV coverage map
     control.addButton(
         "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xml%3Aspace%3D%22preserve%22%20width%3D%22122.9%22%20height%3D%22122.9%22%3E%3Cpath%20d%3D%22M24.7%2062.4c1.8%201.6%203.6%203.2%205.4%204.6%202.4-3.6%205-7%208-10a7.2%207.2%200%200%201-.7-5.2c-3-1.9-6-4-9.2-6.4a38%2038%200%200%200-3.7%2017.3zm5.2-20.3c3.2%202.4%206.3%204.6%209.2%206.5a7.2%207.2%200%200%201%209.7-.8%2058.2%2058.2%200%200%201%2014.8-7%208%208%200%200%201%20.6-4c-4.4-3.8-9.6-7-15.6-10A37%2037%200%200%200%2029.9%2042zm23.7-16.8a75%2075%200%200%201%2012.7%208.5%208%208%200%200%201%204.6-2L72%2026a37%2037%200%200%200-18.4-.7zm21.9%202-1%205c2.4%201%204.3%203%205%205.5%203.3-.3%206.7-.3%2010.2-.1a37.7%2037.7%200%200%200-14.2-10.5zm17%2014.2c-4.5-.4-8.8-.4-12.9%200a8%208%200%200%201-2.5%204.4%2049%2049%200%200%201%206%2013.3h.8c3.3%200%206%202%207%205l7.4.2.1-3c0-7.3-2.1-14.2-5.9-20zM97.8%2068l-6.8-.1c-.6%202.8-2.8%205-5.6%205.6.1%203.3%200%206.9-.4%2010.6%202-.2%204.2-.5%206.3-1%203.3-4.3%205.5-9.5%206.5-15.1zm-4.4%2018.4a40.5%2040.5%200%200%201-32%2015.6A40.5%2040.5%200%200%201%2021%2061.4%2040.5%2040.5%200%200%201%2061.4%2021%2040.5%2040.5%200%200%201%20102%2061.4a40%2040%200%200%201-8.6%2025zm-5.7%201-3.1.4-.5%202.8%203.5-3zm-7.8%206%201-5.4c-6.6.4-13%200-19.1-1.4a6.5%206.5%200%200%201-5.4%202.3L53%2097.5c2.7.6%205.5%201%208.3%201v-.1c6.8%200%2013-1.8%2018.5-5zm-30.3%203%203.4-8.7a6.5%206.5%200%200%201-2.7-4.5%2086%2086%200%200%201-19.2-10.9l-3%205.3a37.1%2037.1%200%200%200%2021.5%2018.9zM26.4%2073.3l1.8-3.1-3.2-2.6c.3%202%20.8%203.9%201.4%205.7zM51%2050.7a7.2%207.2%200%200%201%20.4%204.9c4%201.9%207.9%203.4%2011.8%204.6a261%20261%200%200%200%204.1-13.5c-1-.6-1.8-1.5-2.5-2.5A55.5%2055.5%200%200%200%2051%2050.7zm-1.5%208a7.2%207.2%200%200%201-9%201c-2.7%202.8-5.2%206-7.5%209.5a83.2%2083.2%200%200%200%2018%2010.3%206.5%206.5%200%200%201%206.5-3.6c1.6-4%203-8%204.5-12.3a85.6%2085.6%200%200%201-12.5-4.9zm24.4-11a8.1%208.1%200%200%201-3.1.2l-4%2013.3c3.4.8%207%201.5%2010.6%202%20.6-1.1%201.4-2%202.4-2.7a46.8%2046.8%200%200%200-5.9-12.8zm7.8%2025.6a7.2%207.2%200%200%201-5-6.6c-3.8-.5-7.5-1.2-11.1-2a419%20419%200%200%201-4.7%2012.6%206.5%206.5%200%200%201%202.4%206%2070.3%2070.3%200%200%200%2018%201c.4-3.8.6-7.5.4-11z%22%20style%3D%22fill%3A%235fbdff%3Bfill-opacity%3A1%3Bstroke-width%3A.660746%22%2F%3E%3C%2Fsvg%3E",
         "Open SV coverage map",
@@ -477,6 +493,7 @@
         };
     }
 
+    // Add marker
     control.addButton(
         marker_icon_base + "%3Cpath%20d%3D%22M19%2021h8m-4-4v8%22%2F%3E%3C%2Fsvg%3E",
         "Add marker",
@@ -486,6 +503,7 @@
         ["Side", "Car", "Map"]
     );
 
+    // Centre
     control.addButton(
         "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23333' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3C/svg%3E",
         "Centre",
@@ -498,6 +516,7 @@
         ["Side", "Car", "Marker"]
     );
 
+    // Remove marker
     control.addButton(
         marker_icon_base + "%3Cpath%20d%3D%22M20%2018l6%206m-6%200l6%20-6%22%2F%3E%3C%2Fsvg%3E",
         "Remove marker",
@@ -535,7 +554,7 @@
 
     // Add a scale bar
     const scale_control = new (await IRF.modules.maplibre).ScaleControl({
-        unit: (await IRF.vdom.odometer).data.isKilometers ? "metric": "imperial"
+        unit: odometer.data.isKilometers ? "metric": "imperial"
     })
     ml_map.addControl(scale_control, "bottom-right");
     scale_control._container.style.margin = "0px 36px 5px 0px";
@@ -543,9 +562,9 @@
 
     // Sync the scale bar units to the odometer
     // Get the original setter
-    const { set: isKilometersSetter } = Object.getOwnPropertyDescriptor((await IRF.vdom.odometer).state, 'isKilometers');
+    const { set: isKilometersSetter } = Object.getOwnPropertyDescriptor(odometer.state, 'isKilometers');
     // Override the setter
-    Object.defineProperty((await IRF.vdom.odometer).state, 'isKilometers', {
+    Object.defineProperty(odometer.state, 'isKilometers', {
         set(isKilometers) {
             // Set the units on the scale bar
             scale_control.setUnit(isKilometers ? "metric": "imperial");
@@ -557,15 +576,42 @@
 
     add_checkbox("Show map scale", "show_scale", (show) => {
         scale_control._container.style.display = show ? "block" : "none";
-    })
+    });
 
     // Default to kilometres if desired
     if (settings.km_units) {
-        (await IRF.vdom.odometer).state.isKilometers = true;
+        odometer.state.isKilometers = true;
     }
     add_checkbox("Use metric units", "km_units", async (value) => {
-        (await IRF.vdom.odometer).state.isKilometers = value;
-    })
+        odometer.state.isKilometers = value;
+    });
+
+    // Display decimal points if desired
+    const decimal_el = document.createElement("span");
+    const units_el = (await IRF.dom.odometer).getElementsByClassName("miles-text")[0];
+    decimal_el.style.display = "none";
+    units_el.appendChild(decimal_el);
+    (await IRF.vdom.container).state.updateData = new Proxy(
+        (await IRF.vdom.container).methods.updateData, {
+        apply: (target, thisArg, args) => {
+            // debugger;
+            let distance = args[0]["distance"]
+            if (odometer.data.isKilometers) {distance *= odometer.data.conversionFactor}
+            const decimals = (distance % 1).toFixed(2);
+            decimal_el.innerHTML = `<br>${decimals.substring(1)}`;
+            return Reflect.apply(target, thisArg, args);
+        },
+    });
+    if (settings.decimal_units) {
+        units_el.classList.add("mmt-miles-decimal");
+    }
+    add_checkbox("Show decimals in distance", "decimal_units", async (value) => {
+        if (value) {
+            units_el.classList.add("mmt-miles-decimal");
+        } else {
+            units_el.classList.remove("mmt-miles-decimal");
+        }
+    });
 
     // Opacities
     // Map opacity
@@ -709,18 +755,6 @@
     marker_el.style.width = `${settings.car_marker_size}px`;
     marker_el.style.height = `${settings.car_marker_size}px`;
 
-    // Original style for testing
-    // GM.addStyle(`
-    // .maplibregl-marker {
-    //     opacity: 0.75 !important;
-
-    //     &:hover {
-    //         background-image: url("/internet-roadtrip/direction.svg") !important;
-    //         height: 36px !important;
-    //     }
-    // }
-    // `);
-
     // Custom car marker
     const custom_car = document.createElement("img");
     custom_car.src = settings.car_marker_url;
@@ -757,6 +791,7 @@
         marker_el.style.backgroundImage = default_marker_svg();
     })
 
+    // URL for car marker
     {
         let label = document.createElement("label");
 
