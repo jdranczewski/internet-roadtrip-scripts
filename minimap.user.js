@@ -2,14 +2,15 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.2.3
+// @version     0.2.4
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
-// @icon         https://neal.fun/favicons/internet-roadtrip.png
+// @icon         https://files.catbox.moe/e7jmeg.png
 // @grant        GM.setValues
 // @grant        GM.getValues
 // @grant        GM.addStyle
+// @grant        unsafeWindow
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
 // @require      https://cdn.jsdelivr.net/gh/ianengelbrecht/geo-coordinates-parser@b06d051f2a70bc95c2fa1a063ceef85f19823fee/bundle/geocoordsparser.js
 // ==/UserScript==
@@ -508,6 +509,9 @@
 
     // Set up markers
     const markers = {};
+    unsafeWindow._MMT_getMarkers = () => {
+        return markers;
+    }
     const marker_icon_base = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%22-5%20-6%2037%2036%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22size-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M15%2010.5a3%203%200%201%201-6%200%203%203%200%200%201%206%200%22%2F%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M19.5%2010.5c0%207.142-7.5%2011.25-7.5%2011.25S4.5%2017.642%204.5%2010.5a7.5%207.5%200%201%201%2015%200%22%2F%3E";
     async function add_marker(lat, lng, marker_id=undefined) {
         const marker = new maplibre.Marker({
@@ -529,6 +533,7 @@
 
         marker._mmt_remove = () => {
             delete settings.markers[marker_id];
+            delete markers[marker_id];
             GM.setValues(settings);
             marker.remove();
         }
