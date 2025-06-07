@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.2.2
+// @version     0.2.3
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -163,6 +163,7 @@
         "marker_opacity": 1,
         "route_opacity": 1,
         "marker_color": "#f7a000",
+        "markers": {},
 
         "car_marker_custom": false,
         "car_marker_size": 54,
@@ -194,18 +195,32 @@
     const irf_settings = IRF.ui.panel.createTabFor(
         gm_info, {
             tabName: "Minimap",
-            style: "a {color: #aaa}"
+            style: "a {color: #aaa};"
         }
     );
 
     // Add UI button to reset map scale
     {
         let button = document.createElement("button");
+        button.style.marginRight = "10px";
         button.innerText = "Reset map size";
         button.onclick = () => {
             settings.map_size = {};
             GM.setValues(settings);
             setMiniMapSize(settings.map_size);
+        }
+        irf_settings.container.appendChild(button);
+    }
+
+    // Add UI button to remove all markers
+    {
+        let button = document.createElement("button");
+        button.innerText = "Remove all markers";
+        button.className = "mmt-button";
+        button.onclick = () => {
+            for (const [marker_id, marker] of Object.entries(markers)) {
+                marker._mmt_remove();
+            }
         }
         irf_settings.container.appendChild(button);
     }
@@ -491,8 +506,10 @@
         }
     );
 
+    // Set up markers
+    const markers = {};
     const marker_icon_base = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%22-5%20-6%2037%2036%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22size-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M15%2010.5a3%203%200%201%201-6%200%203%203%200%200%201%206%200%22%2F%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M19.5%2010.5c0%207.142-7.5%2011.25-7.5%2011.25S4.5%2017.642%204.5%2010.5a7.5%207.5%200%201%201%2015%200%22%2F%3E";
-    async function add_marker(lat, lng) {
+    async function add_marker(lat, lng, marker_id=undefined) {
         const marker = new maplibre.Marker({
             draggable: true,
             opacity: 0.7,
@@ -501,6 +518,27 @@
         })
           .setLngLat([lng, lat])
           .addTo(ml_map);
+
+        if (!marker_id) {
+            marker_id = crypto.randomUUID();
+            settings.markers[marker_id] = [lat, lng];
+            GM.setValues(settings);
+        }
+        marker._mmt_id = marker_id;
+        markers[marker_id] = marker;
+
+        marker._mmt_remove = () => {
+            delete settings.markers[marker_id];
+            GM.setValues(settings);
+            marker.remove();
+        }
+
+        marker.on("dragend", (e) => {
+            const lngLat = marker.getLngLat();
+            settings.markers[marker_id] = [lngLat.lat, lngLat.lng];
+            GM.setValues(settings);
+        });
+
         marker.getElement().addEventListener("contextmenu", (f) => {
             f.stopPropagation();
             f.preventDefault();
@@ -513,6 +551,9 @@
             control._m_cont.style.left = `${f.clientX}px`;
             control._show_menu();
         });
+    }
+    for (const [marker_id, value] of Object.entries(settings.markers)) {
+        add_marker(value[0], value[1], marker_id);
     }
 
     // Add marker
@@ -543,7 +584,7 @@
         marker_icon_base + "%3Cpath%20d%3D%22M20%2018l6%206m-6%200l6%20-6%22%2F%3E%3C%2Fsvg%3E",
         "Remove marker",
         async (c) => {
-            control.marker.remove();
+            control.marker._mmt_remove();
         },
         ["Marker"]
     );
