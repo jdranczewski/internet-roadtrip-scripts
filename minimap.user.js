@@ -76,37 +76,47 @@
     .mmt-map-menu-opened {
         opacity: 1 !important;
     }
-    #mmt-menu {
-        position: fixed;
-        z-index: 1000;
-        transform: translate(0, -100%);
-        & button {
-            width: 100%;
-            text-align: left;
-            display: flex;
-            align-items: center;
-        }
-        & .maplibregl-ctrl-icon {
-            width: 29px;
-        }
-        & .maplibregl-ctrl-icon + span {
-            margin: 0 9px 0 5px;
-        }
-        & #mmt-menu-label {
-            margin: 5px 0 0 0;
-            font-size: 14px;
-            padding: 6px;
-            background: #f1f1f1;
-            & #mmt-menu-close {
-                float: right;
-                margin-right: 2px;
-                cursor: pointer;
+
+    /* Putting this in #mini-map so Netux's PIP script
+       can copy the styles correctly */
+    #mini-map {
+        #mmt-menu {
+            position: fixed;
+            z-index: 1000;
+            transform: translate(0, -100%);
+            & button {
+                width: 100%;
+                text-align: left;
+                display: flex;
+                align-items: center;
+            }
+            & .maplibregl-ctrl-icon {
+                width: 29px;
+            }
+            & .maplibregl-ctrl-icon + span {
+                margin: 0 9px 0 5px;
+            }
+            & #mmt-menu-label {
+                margin: 5px 0 0 0;
+                font-size: 14px;
+                padding: 6px;
+                background: #f1f1f1;
+                & #mmt-menu-close {
+                    float: right;
+                    margin-right: 2px;
+                    cursor: pointer;
+                }
             }
         }
+        .mmt-menu-Map .mmt-hide-Map {display: none !important;}
+        .mmt-menu-Marker .mmt-hide-Marker {display: none !important;}
+        .mmt-menu-Car .mmt-hide-Car {display: none !important;}
+
+        /* For debugging */
+        .mmt-menu-Map .mmt-hide-Map {opacity: 0.5 !important;}
+        .mmt-menu-Marker .mmt-hide-Marker {opacity: 0.5 !important;}
+        .mmt-menu-Car .mmt-hide-Car {opacity: 0.5 !important;}
     }
-    .mmt-menu-Map .mmt-hide-Map {display: none !important;}
-    .mmt-menu-Marker .mmt-hide-Marker {display: none !important;}
-    .mmt-menu-Car .mmt-hide-Car {display: none !important;}
 
     /* Decimal points */
     .mmt-miles-decimal {
@@ -118,15 +128,18 @@
         }
     }
 
-    /* For debugging */
-    .mmt-menu-Map .mmt-hide-Map {opacity: 0.5 !important;}
-    .mmt-menu-Marker .mmt-hide-Marker {opacity: 0.5 !important;}
-    .mmt-menu-Car .mmt-hide-Car {opacity: 0.5 !important;}
-
     /* For Netux's PIP script */
     @media (display-mode: picture-in-picture) {
         .maplibregl-ctrl-scale {
             margin: 0px 5px 5px 0px !important;
+        }
+        #mini-map {
+            #mmt-menu {
+                transform: translate(0, 0px) !important;
+                top: 10px !important;
+                right: 10px !important;
+                left: auto !important;
+            }
         }
     }
     `);
@@ -302,11 +315,10 @@
             this._m_cont = document.createElement('div'); // Menu container
             this._m_cont.id = "mmt-menu";
             this._m_cont.style.display = "none";
-            document.body.appendChild(this._m_cont);
-            document.onclick = (e) => {
-                this._m_cont.style.display = "none";
-                mapContainerEl.classList.remove("mmt-map-menu-opened");
-            }
+            miniMapEl.appendChild(this._m_cont);
+            document.addEventListener("click", (e) => {
+                this._hide_menu();
+            });
 
             this._m_options = document.createElement('div');
             this._m_options.className = 'maplibregl-ctrl maplibregl-ctrl-group';
@@ -331,6 +343,15 @@
             label_box.appendChild(close);
 
             this._s_cont = document.createElement('div') // Settings container
+        }
+
+        _show_menu() {
+            control._m_cont.style.display = "block";
+            mapContainerEl.classList.add("mmt-map-menu-opened");
+        }
+        _hide_menu() {
+            this._m_cont.style.display = "none";
+            mapContainerEl.classList.remove("mmt-map-menu-opened");
         }
 
         _context = undefined;
@@ -480,7 +501,9 @@
         })
           .setLngLat([lng, lat])
           .addTo(ml_map);
-        marker.getElement().oncontextmenu = (f) => {
+        marker.getElement().addEventListener("contextmenu", (f) => {
+            f.stopPropagation();
+            f.preventDefault();
             control.context = "Marker";
             control.lat = lat;
             control.lng = lng;
@@ -488,9 +511,8 @@
 
             control._m_cont.style.top = `${f.clientY}px`;
             control._m_cont.style.left = `${f.clientX}px`;
-            control._m_cont.style.display = "block";
-            mapContainerEl.classList.add("mmt-map-menu-opened");
-        };
+            control._show_menu();
+        });
     }
 
     // Add marker
@@ -535,8 +557,7 @@
 
         control._m_cont.style.top = `${e.originalEvent.clientY}px`;
         control._m_cont.style.left = `${e.originalEvent.clientX}px`;
-        control._m_cont.style.display = "block";
-        mapContainerEl.classList.add("mmt-map-menu-opened");
+        control._show_menu();
     })
     marker_el.oncontextmenu = (e) => {
         e.stopPropagation();
@@ -548,8 +569,15 @@
 
         control._m_cont.style.top = `${e.clientY}px`;
         control._m_cont.style.left = `${e.clientX}px`;
-        control._m_cont.style.display = "block";
-        mapContainerEl.classList.add("mmt-map-menu-opened");
+        control._show_menu();
+    }
+    // Hide the menu when PIP exits
+    if (window.documentPictureInPicture) {
+        documentPictureInPicture.addEventListener("enter", (e) => {
+            e.window.addEventListener("pagehide", (f) => {
+                control._hide_menu();
+            });
+        })
     }
 
     // Add a scale bar
