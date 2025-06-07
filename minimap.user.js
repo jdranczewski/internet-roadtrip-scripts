@@ -14,7 +14,11 @@
 // @require      https://cdn.jsdelivr.net/gh/ianengelbrecht/geo-coordinates-parser@b06d051f2a70bc95c2fa1a063ceef85f19823fee/bundle/geocoordsparser.js
 // ==/UserScript==
 
-// import * as IRF from 'internet-roadtrip-framework';
+// This works together with irf.d.ts to give us type hints
+/**
+ * Internet Roadtrip Framework
+ * @typedef {typeof import('internet-roadtrip-framework')} IRF
+ */
 
 (async function() {
     // Get map methods and various objects
