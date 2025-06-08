@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Turn Alert
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.2.0
+// @version     0.2.1
 // @author      jdranczewski
 // @description Play sound when turn options appear after a long stretch of straight road.
 // @license     MIT
@@ -248,7 +248,7 @@
                 this.settings
             )
             add_checkbox(
-                `${settings_text} destkop notification`,
+                `${settings_text} desktop notification`,
                 `${kind}_alert_notif`, undefined,
                 this.settings
             )

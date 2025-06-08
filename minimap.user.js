@@ -35,10 +35,8 @@
     const maplibre = await IRF.modules.maplibre;
 
     // Custom styles
-    const DESKTOP_UI_MEDIA = `(min-width: 900px)`;
-
     GM.addStyle(`
-    @media ${DESKTOP_UI_MEDIA} {
+    @media (min-width: 900px) {
         .map-container {
             & .expand-button {
                 cursor: nesw-resize;
@@ -313,7 +311,6 @@
         }
         map.flyTo(args)
     }
-
 	// Proxy the map resetting
 	(await IRF.vdom.map).state.flyTo = new Proxy(mapMethods.flyTo, {
 		apply: (target, thisArg, args) => {
@@ -441,10 +438,10 @@
             this._m_options.appendChild(button);
         }
     }
-
     // Define map controls to add buttons for
     let control = new TricksControl();
 
+    // Add all the buttons!
     // Go to coordinates
     control.addButton(
         "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%22-6%20-6%2036%2036%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22size-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M6%2012%203.269%203.125A59.8%2059.8%200%200%201%2021.485%2012%2059.8%2059.8%200%200%201%203.27%2020.875L5.999%2012Zm0%200h7.5%22%2F%3E%3C%2Fsvg%3E",
@@ -594,6 +591,7 @@
         ["Marker"]
     );
 
+    // Add the Control to the map and set up triggers for contex menus
     ml_map.addControl(control, "bottom-left");
     ml_map.on("contextmenu", (e) => {
         control.context = "Map";
@@ -703,7 +701,6 @@
     }, [0, 1, 0.05]);
 
     // Set the variables for map resizing if not undefined
-
     function setMiniMapSize({ width, height, expanded_width, expanded_height }) {
         miniMapEl.style.setProperty('--map-width', width ? `${Math.min(Math.max(0, width), 100)}vw` : "");
         miniMapEl.style.setProperty('--map-height', height ? `${Math.min(Math.max(0, height), 100)}vh` : "");
@@ -712,7 +709,6 @@
     }
 
     // Handle the dragging logic for resizing
-
     let isClicked = false; // Clicked determines if we should be listening to mousemove
     let isResizing = false; // Resizing determines if the expanded state should be switched
     let lastX, lastY;
@@ -779,6 +775,7 @@
     if (window.innerWidth > 900 && settings.expand_map) {
         map.state.isExpanded = true;
     }
+    // Perform some actions once the map loads
     ml_map.on('load', () => {
         // Redraw when loaded, as map.state.isExpanded is not immediate
         ml_map.resize();
@@ -788,6 +785,7 @@
             units_el.classList.add("mmt-miles-decimal");
         }
     });
+    // Set the old route opacity once it's added
     const old_route_subscription = ml_map.on('data', "old-route-layer", (e) => {
         if (e.sourceID = "old-route-layer") {
             ml_map.setPaintProperty("old-route-layer", "line-opacity", parseFloat(settings.route_opacity));
@@ -795,7 +793,7 @@
         }
     })
 
-    // Marker colour
+    // Marker colour GUI setting
     {
         let label = document.createElement("label");
 
@@ -818,7 +816,7 @@
         irf_settings.container.appendChild(document.createElement("br"));
     }
 
-    // Correct marker offset
+    // Correct car marker offset
     function default_marker_svg() {
         return (
             'url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20101%20245%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xml%3Aspace%3D%22preserve%22%20style%3D%22fill-rule%3Aevenodd%3Bclip-rule%3Aevenodd%3Bstroke-linecap%3Around%3Bstroke-linejoin%3Around%3Bstroke-miterlimit%3A1.5%22%3E%3Cg%20transform%3D%22translate(-118.117%20-1517)%22%3E%3Cpath%20d%3D%22M219%201598h-88.922l22.231-94h44.461z%22%20style%3D%22fill%3Aurl(%23a)%22%20transform%3D%22matrix(-1.13495%200%200%20-1.05851%20366.671%203208.5)%22%2F%3E'
@@ -839,6 +837,7 @@
     custom_car.style.display = settings.car_marker_custom ? "block" : "none";
     marker_el.appendChild(custom_car);
 
+    // Correct the marker rotation when the car moves
     const changeStop = (await IRF.vdom.container).methods.changeStop;
     (await IRF.vdom.container).state.changeStop = new Proxy(changeStop, {
 		apply: (target, thisArg, args) => {
@@ -944,7 +943,7 @@
         compass._container.style.display = show ? "block" : "none";
     })
 
-    // All the other buttons
+    // Then all the other buttons
     irf_settings.container.appendChild(control._s_cont);
 
 })();
