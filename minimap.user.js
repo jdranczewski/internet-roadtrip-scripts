@@ -2,11 +2,11 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.2.4
+// @version     0.2.5
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
-// @icon         https://files.catbox.moe/e7jmeg.png
+// @icon         https://files.catbox.moe/v4yu3f.png
 // @grant        GM.setValues
 // @grant        GM.getValues
 // @grant        GM.addStyle
@@ -676,9 +676,6 @@
             return Reflect.apply(target, thisArg, args);
         },
     });
-    if (settings.decimal_units) {
-        units_el.classList.add("mmt-miles-decimal");
-    }
     add_checkbox("Show decimals in distance", "decimal_units", async (value) => {
         if (value) {
             units_el.classList.add("mmt-miles-decimal");
@@ -786,6 +783,10 @@
         // Redraw when loaded, as map.state.isExpanded is not immediate
         ml_map.resize();
         ml_map.setPaintProperty("route", "line-opacity", parseFloat(settings.route_opacity));
+        // Add decimals to odometer here, otherwise style not applied when imperial units used
+        if (settings.decimal_units) {
+            units_el.classList.add("mmt-miles-decimal");
+        }
     });
     const old_route_subscription = ml_map.on('data', "old-route-layer", (e) => {
         if (e.sourceID = "old-route-layer") {
