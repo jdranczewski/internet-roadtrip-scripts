@@ -488,12 +488,15 @@
         }
     );
 
+    // Measure disctance
+    const ruler_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-200 -1160 1360 1360"><path d="M200-160v-340q0-142 99-241t241-99q142 0 241 99t99 241q0 142-99 241t-241 99H200Zm80-80h260q108 0 184-76t76-184q0-108-76-184t-184-76q-108 0-184 76t-76 184v260Zm260-120q58 0 99-41t41-99q0-58-41-99t-99-41q-58 0-99 41t-41 99q0 58 41 99t99 41Zm0-80q-25 0-42.5-17.5T480-500q0-25 17.5-42.5T540-560q25 0 42.5 17.5T600-500q0 25-17.5 42.5T540-440ZM80-160v-200h80v200H80Zm460-340Z"/></svg>'
     control.addButton(
-        "",
+        `data:image/svg+xml,${encodeURIComponent(ruler_icon)}`,
         "Measure distance",
         async (c) => {
             distance_control.startMeasure();
-            if (c.context != "Side") measure.addPoint(c.lat, c.lng);
+            if (c.context == "Car") measure.toggleCar();
+            else if (c.context != "Side") measure.addPoint(c.lat, c.lng);
         }
     )
 
@@ -873,6 +876,7 @@
             } else {
                 custom_car.style.transform = `scale(${x_flip}, 1)`;
             }
+            if (measure) measure.updateCar();
             return returnValue;
 		},
 	});
@@ -988,6 +992,8 @@
             this.check = check;
 
             const dist_cont = document.createElement("div");
+            dist_cont.style.cursor = "pointer";
+            dist_cont.onclick = () => {measure.flyTo()}
             dist_cont.innerText = "0 km";
             this._c_cont.appendChild(dist_cont);
             this.dist_cont = dist_cont;
@@ -1055,12 +1061,45 @@
             }
         };
 
+        car = undefined;
+        toggleCar() {
+            console.log("Toggling car", this.car)
+            if (this.car) {
+                this.removePoint(this.car);
+                this.car = undefined;
+            } else {
+                this.addPoint(
+                    vcontainer.data.currentCoords.lat,
+                    vcontainer.data.currentCoords.lng
+                );
+                this.car = this.geojson_points.features[this.geojson_points.features.length-1].properties.id;
+            }
+        }
+        updateCar() {
+            if (!this.car) return;
+            const coords = [
+                vcontainer.data.currentCoords.lng,
+                vcontainer.data.currentCoords.lat
+            ]
+            this.geojson_points.features.forEach((point) => {
+                if (point.properties.id == this.car) point.geometry.coordinates = coords;
+                else if (turf.distance(point.geometry.coordinates, coords) < 0.05) {
+                    this.removePoint(point.properties.id);
+                }
+            });
+            this._updatePoints();
+        }
+
         // Compute and display the distance determined by the line
         setDistance() {
             const unit = odometer.data.isKilometers ? "km" : "mi";
             const conversion = odometer.data.isKilometers ? odometer.data.conversionFactor : 1;
-            const distance = turf.length(this.linestring) / conversion;
+            let distance = turf.length(this.linestring);
+            // Assuming 10km/h
+            const time_est = distance / 6.21371;
+            distance = distance / conversion;
             distance_control.dist_cont.innerText = `${distance.toFixed(3)} ${unit}`;
+            distance_control.dist_cont.title = `~${time_est.toFixed(2)} hours`;
         }
 
         // Update the line based on the points
@@ -1085,6 +1124,7 @@
         clearPoints() {
             this.geojson_points.features = [];
             this._updatePoints();
+            this.car = undefined;
         }
 
         // Add a point at lat, lng
@@ -1110,6 +1150,15 @@
             });
             this._updatePoints();
         }
+
+        async flyTo() {
+            ml_map.fitBounds(
+                (await ml_map.getSource('geojson_points').getBounds()),
+                {
+                    padding: 30
+                }
+            )
+        }
     }
     measure = new Measure();
 
@@ -1134,7 +1183,7 @@
                 'line-join': 'round'
             },
             paint: {
-                'line-color': '#0006',
+                'line-color': '#0009',
                 'line-width': 2.5
             },
         });
@@ -1144,9 +1193,11 @@
             source: 'geojson_points',
             paint: {
                 'circle-radius': 5,
-                'circle-color': '#0009'
+                'circle-color': '#000b'
             },
         });
+        ml_map.moveLayer("measure-lines");
+        ml_map.moveLayer("measure-points");
 
         // Handle clicking
         ml_map.on('click', (e) => {
@@ -1165,6 +1216,12 @@
                 measure.addPoint(e.lngLat.lat, e.lngLat.lng);
             }
         });
+
+        marker_el.addEventListener("click", (e) => {
+            if (!distance_control.check.checked) return;
+            measure.toggleCar();
+            e.stopPropagation();
+        })
 
         // Update the cursor as it moves over our new features
         ml_map.on('mousemove', (e) => {
