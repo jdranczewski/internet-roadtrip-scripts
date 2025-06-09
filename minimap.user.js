@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.2.5
+// @version     0.3.0
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -1093,13 +1093,13 @@
         // Compute and display the distance determined by the line
         setDistance() {
             const unit = odometer.data.isKilometers ? "km" : "mi";
-            const conversion = odometer.data.isKilometers ? odometer.data.conversionFactor : 1;
+            const conversion = odometer.data.isKilometers ? 1 : odometer.data.conversionFactor;
             let distance = turf.length(this.linestring);
             // Assuming 10km/h
-            const time_est = distance / 6.21371;
+            const time_est = distance / 10;
             distance = distance / conversion;
             distance_control.dist_cont.innerText = `${distance.toFixed(3)} ${unit}`;
-            distance_control.dist_cont.title = `~${time_est.toFixed(2)} hours`;
+            distance_control.dist_cont.title = `~ ${Math.floor(time_est)}h ${Math.round((time_est % 1) * 60)}min (10km/h)`;
         }
 
         // Update the line based on the points
@@ -1155,7 +1155,7 @@
             ml_map.fitBounds(
                 (await ml_map.getSource('geojson_points').getBounds()),
                 {
-                    padding: 30
+                    padding: 50
                 }
             )
         }
