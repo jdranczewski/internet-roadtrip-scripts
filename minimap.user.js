@@ -26,6 +26,7 @@
     // Get map methods and various objects
     const map = await IRF.vdom.map;
     const odometer = await IRF.vdom.odometer;
+    const odometer_el = await IRF.dom.odometer;
     const ml_map = map.data.map;
     const mapMethods = map.methods;
     const mapContainerEl = await IRF.dom.map;
@@ -130,7 +131,7 @@
     }
 
     /* Decimal points */
-    .mmt-miles-decimal {
+    .mmt-miles-decimal .miles-text {
         text-align: center;
         line-height: 10px;
         & span {
@@ -567,9 +568,10 @@
         marker.getElement().addEventListener("contextmenu", (f) => {
             f.stopPropagation();
             f.preventDefault();
+            const lngLat = marker.getLngLat();
             control.context = "Marker";
-            control.lat = lat;
-            control.lng = lng;
+            control.lat = lngLat.lat;
+            control.lng = lngLat.lng;
             control.marker = marker;
 
             control._m_cont.style.top = `${f.clientY}px`;
@@ -686,7 +688,7 @@
 
     // Display decimal points if desired
     const decimal_el = document.createElement("span");
-    const units_el = (await IRF.dom.odometer).getElementsByClassName("miles-text")[0];
+    const units_el = odometer_el.getElementsByClassName("miles-text")[0];
     decimal_el.style.display = "none";
     units_el.appendChild(decimal_el);
     (await IRF.vdom.container).state.updateData = new Proxy(
@@ -702,11 +704,12 @@
     });
     add_checkbox("Show decimals in distance", "decimal_units", async (value) => {
         if (value) {
-            units_el.classList.add("mmt-miles-decimal");
+            odometer_el.classList.toggle("mmt-miles-decimal", true);
         } else {
-            units_el.classList.remove("mmt-miles-decimal");
+            odometer_el.classList.toggle("mmt-miles-decimal", false);
         }
     });
+    odometer_el.classList.toggle("mmt-miles-decimal", settings.decimal_units);
 
     // Opacities
     // Map opacity
@@ -806,10 +809,6 @@
         // Redraw when loaded, as map.state.isExpanded is not immediate
         ml_map.resize();
         ml_map.setPaintProperty("route", "line-opacity", parseFloat(settings.route_opacity));
-        // Add decimals to odometer here, otherwise style not applied when imperial units used
-        if (settings.decimal_units) {
-            units_el.classList.add("mmt-miles-decimal");
-        }
     });
     // Set the old route opacity once it's added
     const old_route_subscription = ml_map.on('data', "old-route-layer", (e) => {
