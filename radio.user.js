@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name        Internet Roadtrip - Radio remembers
+// @name        Internet Roadtrip - Remember radio volume
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
 // @version     0.0.1
 // @author      jdranczewski
-// @description Preserve volume and on state of the Internet Roadtrip radio
+// @description Preserve the volume of the Internet Roadtrip radio
 // @license     MIT
 // @icon         https://neal.fun/favicons/internet-roadtrip.png
 // @grant        GM.setValue
@@ -22,29 +22,17 @@
     // Get the radio object and stored options
     const radio = await IRF.vdom.radio;
     const volume = await GM.getValue("radio_volume_angle");
-    const on = await GM.getValue("radio_on");
 
-
-    // Set the parameters to the stored values
+    // Set the volume to the stored value
     if (volume) {
         radio.methods.updateVolumeFromAngle(volume);
     }
-    if (on) {
-        if (radio.data.isPoweredOn !== on) radio.methods.togglePower(true);
-    }
 
-    // Override some methods to keep track of the volume and whether the radio is on
+    // Override the volume setting method to store the angle
     radio.state.updateVolumeFromAngle = new Proxy(radio.methods.updateVolumeFromAngle, {
         apply(og_method, thisArg, args) {
             GM.setValue("radio_volume_angle", args[0])
             return og_method.apply(thisArg, args);
-        }
-    });
-    radio.state.togglePower = new Proxy(radio.methods.togglePower, {
-        apply(og_method, thisArg, args) {
-            let value = og_method.apply(thisArg, args);
-            GM.setValue("radio_on", radio.data.isPoweredOn)
-            return value;
         }
     });
 
