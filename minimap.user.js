@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.3.0
+// @version     0.3.1
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -164,6 +164,7 @@
         "show_scale": true,
         "km_units": false,
         "decimal_units": false,
+        "coordinates_fancy": false,
         "map_size": {
             width: undefined,
             height: undefined,
@@ -483,8 +484,14 @@
         "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%22-6%20-6%2036%2036%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22size-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M15.75%2017.25v3.375c0%20.621-.504%201.125-1.125%201.125h-9.75a1.125%201.125%200%200%201-1.125-1.125V7.875c0-.621.504-1.125%201.125-1.125H6.75a9%209%200%200%201%201.5.124m7.5%2010.376h3.375c.621%200%201.125-.504%201.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9%209%200%200%200-1.5-.124H9.375c-.621%200-1.125.504-1.125%201.125v3.5m7.5%2010.375H9.375a1.125%201.125%200%200%201-1.125-1.125v-9.25m12%206.625v-1.875a3.375%203.375%200%200%200-3.375-3.375h-1.5a1.125%201.125%200%200%201-1.125-1.125v-1.5a3.375%203.375%200%200%200-3.375-3.375H9.75%22%2F%3E%3C%2Fsvg%3E",
         "Copy coordinates",
         async (c) => {
-            const converted = convert(`${c.lat},${c.lng}`);
-            navigator.clipboard.writeText(converted.toCoordinateFormat("DMS").replaceAll(" ", "").replace(",", ", "));
+            let coords;
+            if (settings.coordinates_fancy) {
+                coords = convert(`${c.lat},${c.lng}`).toCoordinateFormat("DMS").replaceAll(" ", "").replace(",", ", ");
+            } else {
+                coords = `${c.lat}, ${c.lng}`;
+            }
+            console.log(settings.coordinates_fancy, coords);
+            navigator.clipboard.writeText(coords);
         }
     );
 
@@ -713,6 +720,8 @@
         }
     });
     odometer_el.classList.toggle("mmt-miles-decimal", settings.decimal_units);
+
+    add_checkbox("Use minutes and seconds for coordinates", "coordinates_fancy");
 
     // Opacities
     // Map opacity
