@@ -62,19 +62,35 @@ glob("logs/*.log")
 
 # %%
 datas = []
-for fname in tqdm(glob("logs/*.log")):
-    data = pd.read_csv(fname, names=["time", "lat", "lng", "zoom"], on_bad_lines="skip")
+datas_e = []
+for fname in tqdm(glob("logs/*.log")[:-4]):
+    # print(fname)
+    with open(fname, "r") as f:
+        data = pd.read_csv(f, names=["time", "lat", "lng", "zoom"], on_bad_lines="skip")
+        f.seek(0)
+        contents = np.asarray(f.readlines())
     if data["time"].dtype != np.float64:
+        e_mask = np.asarray([i for i, x in enumerate(data["time"]) if x[0] == "T"], int)
+        errors = data.iloc[e_mask-1].astype(float)
+        errors.insert(4, "error", np.asarray(contents[e_mask]))
         data = data.iloc[[i for i, x in enumerate(data["time"]) if x[0] != "T"]]
+        datas_e.append(errors)
     datas.append(data.astype(float))
 data = pd.concat(datas)
+errors = pd.concat(datas_e).infer_objects()
 data.sort_values("time", inplace=True)
+errors.sort_values("time", inplace=True)
+
+# %%
+errors
 
 # %%
 per_min = []
+per_min_e = []
 ref_times = np.arange(int(np.min(data["time"])), int(np.max(data["time"]))+60, 60)
 for t in ref_times:
     per_min.append(np.sum(np.logical_and(data["time"]>t, data["time"]<t+60)))
+    per_min_e.append(np.sum(np.logical_and(errors["time"]>t, errors["time"]<t+60)))
 
 # %%
 gdata = geopandas.GeoDataFrame(
@@ -86,28 +102,29 @@ fig = plt.figure(
     constrained_layout=True,
     figsize=(8, 3)
 )
-spec = GridSpec(
-    nrows=1, ncols=2,
-    figure=fig,
-    width_ratios=(1.5, 2)
-)
 ax = fig.add_subplot(
-    spec[:, 0],
+    1,1,1,
     title="Requests per minute",
     xlabel="Hour (UTC)"
 )
 ax.plot(ref_times, per_min)
+ax.plot(ref_times, np.asarray(per_min_e)*10, alpha=0.7)
 hours = np.arange((ref_times[0]//3600 + 1) * 3600, (ref_times[-1]//3600) * 3600 + 1, 3600)
 ax.set_xticks(hours[1::2], ((hours/3600) % 24).astype(int)[1::2])
+
+# %%
+fig = plt.figure(
+    constrained_layout=True,
+    figsize=(8, 3)
+)
 ax = fig.add_subplot(
-    spec[:, 1],
+    1,1,1,
     title="Request location",
     xlabel="Longitude",
     ylabel="Latitude"
 )
 world.plot(ax=ax, color="white", edgecolor="black", alpha=.1)
 gdata.plot(ax=ax, color="tab:blue", alpha=.1, markersize=3)
-fig.suptitle("Pano lookup requests")
 
 # %%
 fig = plt.figure()
