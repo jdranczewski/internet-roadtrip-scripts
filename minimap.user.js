@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.3.1
+// @version     0.4.0
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -204,6 +204,8 @@
         "side_Add marker": false,
         "side_Centre": true,
 
+        "coverage": false,
+        "coverage_opacity": 1.0,
     }
     const storedSettings = await GM.getValues(Object.keys(settings))
     Object.assign(
@@ -879,6 +881,7 @@
     ml_map.on('load', () => {
         // Redraw when loaded, as map.state.isExpanded is not immediate
         ml_map.resize();
+
         // Messing with styles should only happen once map is ready
         ml_map.setPaintProperty("route", "line-opacity", parseFloat(settings.route_opacity));
         setLayerOpacity();
@@ -892,11 +895,58 @@
             console.log("Leaving");
             setLayerOpacity();
         });
+
+        // Add coverage
+        ml_map.addSource('sv', {
+            type: 'raster',
+            tiles: [
+                'https://mts.googleapis.com/vt?pb=%211m4%211m3%211i{z}%212i{x}%213i{y}%212m8%211e2%212ssvv%214m2%211scc%212s*211m3*211e2*212b1*213e2*212b1*214b1%214m2%211ssvl%212s*212b1%213m11%212sen%213sUS%2112m4%211e68%212m2%211sset%212sRoadmap%2112m3%211e37%212m1%211ssmartmaps%215m1%215f2'],
+            tileSize: 256
+        });
+        ml_map.addSource('ugc_sv', {
+            type: 'raster',
+            tiles: [
+                'https://mts.googleapis.com/vt?pb=%211m4%211m3%211i{z}%212i{x}%213i{y}%212m8%211e2%212ssvv%214m2%211scc%212s%2A211m3%2A211e3%2A212b1%2A213e2%2A211m3%2A211e10%2A212b1%2A213e2%2A212b1%2A214b1%214m2%211ssvl%212s%2A212b1%213m16%212sen%213sUS%2112m4%211e68%212m2%211sset%212sRoadmap%2112m3%211e37%212m1%211ssmartmaps%2112m4%211e26%212m2%211sstyles%212ss.e%7Cp.c%3A%23ff0000%2Cs.e%3Ag.f%7Cp.c%3A%23bd5f1b%2Cs.e%3Ag.s%7Cp.c%3A%23f7ca9e%2C%215m1%215f2%0A'
+            ],
+            tileSize: 256
+        });
+        ml_map.addLayer(
+            {
+                id: 'sv-tiles',
+                type: 'raster',
+                source: 'sv',
+                minzoom: 0,
+                maxzoom: 22,
+                layout: {
+                    visibility: settings.coverage ? "visible" : "none",
+                }
+            }, "route"
+        );
+        ml_map.addLayer(
+            {
+                id: 'svugc-tiles',
+                type: 'raster',
+                source: 'ugc_sv',
+                minzoom: 0,
+                maxzoom: 22,
+                layout: {
+                    visibility: settings.coverage ? "visible" : "none",
+                }
+            }, "route"
+        );
+        ml_map.moveLayer("route", "highway-name-path");
+        ml_map.moveLayer("svugc-tiles", "route");
+        ml_map.moveLayer("sv-tiles", "svugc-tiles");
+        ml_map.setPaintProperty("svugc-tiles", "raster-opacity", parseFloat(settings.coverage_opacity));
+        ml_map.setPaintProperty("sv-tiles", "raster-opacity", parseFloat(settings.coverage_opacity));
     });
     // Set the old route opacity once it's added
     const old_route_subscription = ml_map.on('data', "old-route-layer", (e) => {
         if (e.sourceID = "old-route-layer") {
             ml_map.setPaintProperty("old-route-layer", "line-opacity", parseFloat(settings.route_opacity));
+            ml_map.moveLayer("old-route-layer", "route");
+            ml_map.moveLayer("svugc-tiles", "old-route-layer");
+            ml_map.moveLayer("sv-tiles", "svugc-tiles");
             old_route_subscription.unsubscribe();
         }
     })
@@ -1054,6 +1104,23 @@
 
     // Then all the other buttons
     irf_settings.container.appendChild(control._s_cont);
+
+    // Coverage settings
+    irf_settings.container.appendChild(document.createElement("hr"));
+    irf_settings.container.appendChild(document.createElement("br"));
+    add_checkbox("Show coverage", "coverage", (value) => {
+        ["svugc-tiles", "sv-tiles"].forEach((kind) => {
+            ml_map.setLayoutProperty(
+                kind, "visibility",
+                settings.coverage ? "visible" : "none"
+            )
+        });
+    })
+    add_slider("Coverage opacity", "coverage_opacity", (value) => {
+        ["svugc-tiles", "sv-tiles"].forEach((kind) => {
+            ml_map.setPaintProperty(kind, "raster-opacity", parseFloat(settings.coverage_opacity));
+        });
+    }, [0, 1, 0.05])
 
     // Measure distances
     const trash_svg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6" viewBox="-6 -6 36 36"><path stroke-linecap="round" stroke-linejoin="round" d="m14.7 9-.3 9m-4.8 0-.3-9m10-3.2 1 .2m-1-.2-1.1 13.9a2.3 2.3 0 0 1-2.3 2H8.1a2.3 2.3 0 0 1-2.3-2l-1-14m14.4 0a48.1 48.1 0 0 0-3.4-.3M3.8 6l1-.2m0 0a48.1 48.1 0 0 1 3.5-.4m7.5 0v-1c0-1.1-1-2-2.1-2.1a52 52 0 0 0-3.4 0c-1.1 0-2 1-2 2.2v.9m7.5 0a48.7 48.7 0 0 0-7.5 0"/></svg>';
