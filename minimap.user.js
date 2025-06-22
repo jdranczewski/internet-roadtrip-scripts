@@ -179,7 +179,9 @@
             expanded_height: undefined
         },
         "map_opacity": 1,
+        "background_opacity": 1,
         "map_opacity_expanded": 1,
+        "background_opacity_expanded": 1,
         "marker_opacity": 1,
         "route_opacity": 1,
         "marker_color": "#f7a000",
@@ -687,10 +689,15 @@
         control._show_menu();
     }
     // Hide the menu when PIP exits
+    let inPIP = false;
     if (window.documentPictureInPicture) {
         documentPictureInPicture.addEventListener("enter", (e) => {
+            setLayerOpacity(1);
+            inPIP = true;
             e.window.addEventListener("pagehide", (f) => {
                 control._hide_menu();
+                setLayerOpacity();
+                inPIP = false;
             });
         })
     }
@@ -760,15 +767,30 @@
     add_checkbox("Use minutes and seconds for coordinates", "coordinates_fancy");
 
     // Opacities
+    function setLayerOpacity(value=undefined) {
+        if (!value) {
+            value = map.data.isExpanded ? settings.background_opacity_expanded : settings.background_opacity;
+        }
+        value = parseFloat(value);
+        ml_map.setPaintProperty("background", "background-opacity", value);
+        ml_map.setPaintProperty("water", "fill-opacity", value);
+    }
     // Map opacity
     mapContainerEl.style.opacity = settings.map_opacity;
     add_slider("Collapsed map opacity", "map_opacity", (value) => {
         mapContainerEl.style.opacity = value;
     }, [0, 1, 0.05]);
+    add_slider("Collapsed map background opacity", "background_opacity", (value) => {
+        if (!map.data.isExpanded) setLayerOpacity(value);
+    }, [0, 1, 0.05]);
     mapContainerEl.style.setProperty('--map-opacity-expanded', settings.map_opacity_expanded);
     add_slider("Expanded map opacity", "map_opacity_expanded", (value) => {
         mapContainerEl.style.setProperty('--map-opacity-expanded', value);
     }, [0, 1, 0.05]);
+    add_slider("Expanded map background opacity", "background_opacity_expanded", (value) => {
+        if (map.data.isExpanded) setLayerOpacity(value);
+    }, [0, 1, 0.05]);
+
     //Marker opacity
     marker_el.style.setProperty('--marker-opacity', settings.marker_opacity);
     // Route opacity
@@ -840,8 +862,9 @@
                 return;
             }
             isClicked = false;
-
-            return ogToggleExpand.apply(thisArg, args);
+            const value = ogToggleExpand.apply(thisArg, args);
+            setLayerOpacity();
+            return value;
         }
     });
 
@@ -856,7 +879,19 @@
     ml_map.on('load', () => {
         // Redraw when loaded, as map.state.isExpanded is not immediate
         ml_map.resize();
+        // Messing with styles should only happen once map is ready
         ml_map.setPaintProperty("route", "line-opacity", parseFloat(settings.route_opacity));
+        setLayerOpacity();
+        mapContainerEl.addEventListener("mouseenter", (e) => {
+            if (inPIP) return;
+            console.log("Entering");
+            setLayerOpacity(1);
+        });
+        mapContainerEl.addEventListener("mouseleave", (e) => {
+            if (inPIP) return;
+            console.log("Leaving");
+            setLayerOpacity();
+        });
     });
     // Set the old route opacity once it's added
     const old_route_subscription = ml_map.on('data', "old-route-layer", (e) => {
