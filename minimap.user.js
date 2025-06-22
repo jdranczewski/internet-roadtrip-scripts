@@ -97,6 +97,8 @@
             }
             & .maplibregl-ctrl-icon + span {
                 margin: 0 9px 0 5px;
+                display: flex;
+                align-items: center;
             }
             & #mmt-menu-label {
                 margin: 5px 0 0 0;
@@ -108,6 +110,11 @@
                     margin-right: 2px;
                     cursor: pointer;
                 }
+            }
+
+            & #mmt-menu-color {
+                border: none;
+                background: none;
             }
         }
         .mmt-menu-Map .mmt-hide-Map {display: none !important;}
@@ -452,6 +459,8 @@
                 callback(this)
             };
             this._m_options.appendChild(button);
+
+            return button_label;
         }
     }
     // Define map controls to add buttons for
@@ -544,12 +553,12 @@
         return markers;
     }
     const marker_icon_base = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%22-5%20-6%2037%2036%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22size-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M15%2010.5a3%203%200%201%201-6%200%203%203%200%200%201%206%200%22%2F%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M19.5%2010.5c0%207.142-7.5%2011.25-7.5%2011.25S4.5%2017.642%204.5%2010.5a7.5%207.5%200%201%201%2015%200%22%2F%3E";
-    async function add_marker(lat, lng, marker_id=undefined) {
+    async function add_marker(lat, lng, marker_id=undefined, color=undefined) {
         const marker = new maplibre.Marker({
             draggable: true,
             opacity: 0.7,
             scale: 0.8,
-            color: settings.marker_color
+            color: color ? color : settings.marker_color
         })
           .setLngLat([lng, lat])
           .addTo(ml_map);
@@ -571,7 +580,8 @@
 
         marker.on("dragend", (e) => {
             const lngLat = marker.getLngLat();
-            settings.markers[marker_id] = [lngLat.lat, lngLat.lng];
+            settings.markers[marker_id][0] = lngLat.lat;
+            settings.markers[marker_id][1] = lngLat.lng;
             GM.setValues(settings);
         });
 
@@ -584,13 +594,16 @@
             control.lng = lngLat.lng;
             control.marker = marker;
 
+            mcol_input.value = marker.getElement().children[0].children[0].children[1].getAttribute("fill");
+            console.log(marker);
+
             control._m_cont.style.top = `${f.clientY}px`;
             control._m_cont.style.left = `${f.clientX}px`;
             control._show_menu();
         });
     }
     for (const [marker_id, value] of Object.entries(settings.markers)) {
-        add_marker(value[0], value[1], marker_id);
+        add_marker(value[0], value[1], marker_id, value[2]);
     }
 
     // Add marker
@@ -615,6 +628,29 @@
         },
         ["Side", "Car", "Marker"]
     );
+
+    // Marker colour
+    const dropper_svg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-6 -6 36 36" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="m15 11.25 1.5 1.5.75-.75V8.758l2.276-.61a3 3 0 1 0-3.675-3.675l-.61 2.277H12l-.75.75 1.5 1.5M15 11.25l-8.47 8.47c-.34.34-.8.53-1.28.53s-.94.19-1.28.53l-.97.97-.75-.75.97-.97c.34-.34.53-.8.53-1.28s.19-.94.53-1.28L12.75 9M15 11.25 12.75 9"/></svg>';
+    const mcol_label = control.addButton(
+        `data:image/svg+xml,${encodeURIComponent(dropper_svg)}`,
+        "Color",
+        undefined,
+        ["Marker"]
+    )
+    mcol_label.innerHTML = "<label for='mmt-menu-color'>Color: </label>"
+    const mcol_input = document.createElement("input");
+    mcol_input.type = "color";
+    mcol_input.id = "mmt-menu-color";
+    mcol_label.appendChild(mcol_input);
+    mcol_input.addEventListener("input", (e) => {
+        if (control.marker) {
+            control.marker.getElement().children[0].children[0].children[1].setAttribute(
+                "fill", mcol_input.value
+            );
+            settings.markers[control.marker._mmt_id][2] = mcol_input.value;
+            GM.setValues(settings);
+        }
+    })
 
     // Remove marker
     control.addButton(
