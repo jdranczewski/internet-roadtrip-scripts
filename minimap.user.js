@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.4.0
+// @version     0.4.2
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -113,8 +113,7 @@
             }
 
             & #mmt-menu-color {
-                border: none;
-                background: none;
+                display: none;
             }
         }
         .mmt-menu-Map .mmt-hide-Map {display: none !important;}
@@ -204,8 +203,8 @@
         "side_Add marker": false,
         "side_Centre": true,
 
-        "coverage": false,
-        "coverage_opacity": 1.0,
+        "coverage": true,
+        "coverage_opacity": 0.75,
     }
     const storedSettings = await GM.getValues(Object.keys(settings))
     Object.assign(
@@ -503,7 +502,6 @@
             } else {
                 coords = `${c.lat}, ${c.lng}`;
             }
-            console.log(settings.coordinates_fancy, coords);
             navigator.clipboard.writeText(coords);
         }
     );
@@ -533,7 +531,6 @@
                 ((c.context == "Car" || c.context == "Side") ? `&pano=${data.currentPano}&heading=${data.currentHeading}` : "") +
                 "&fov=90"
             )
-            console.log(c.context, url);
 		    window.open(url, "_blank");
         }
     );
@@ -598,8 +595,8 @@
             control.lng = lngLat.lng;
             control.marker = marker;
 
-            mcol_input.value = marker.getElement().children[0].children[0].children[1].getAttribute("fill");
-            console.log(marker);
+            const colour = marker.getElement().children[0].children[0].children[1].getAttribute("fill");
+            mcol_input.value = colour;
 
             control._m_cont.style.top = `${f.clientY}px`;
             control._m_cont.style.left = `${f.clientX}px`;
@@ -635,17 +632,15 @@
 
     // Marker colour
     const dropper_svg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-6 -6 36 36" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="m15 11.25 1.5 1.5.75-.75V8.758l2.276-.61a3 3 0 1 0-3.675-3.675l-.61 2.277H12l-.75.75 1.5 1.5M15 11.25l-8.47 8.47c-.34.34-.8.53-1.28.53s-.94.19-1.28.53l-.97.97-.75-.75.97-.97c.34-.34.53-.8.53-1.28s.19-.94.53-1.28L12.75 9M15 11.25 12.75 9"/></svg>';
-    const mcol_label = control.addButton(
+    control.addButton(
         `data:image/svg+xml,${encodeURIComponent(dropper_svg)}`,
-        "Color",
-        undefined,
+        "Set color",
+        (c) => {mcol_input.click()},
         ["Marker"]
     )
-    mcol_label.innerHTML = "<label for='mmt-menu-color'>Color: </label>"
     const mcol_input = document.createElement("input");
     mcol_input.type = "color";
     mcol_input.id = "mmt-menu-color";
-    mcol_label.appendChild(mcol_input);
     mcol_input.addEventListener("input", (e) => {
         if (control.marker) {
             control.marker.getElement().children[0].children[0].children[1].setAttribute(
@@ -887,12 +882,10 @@
         setLayerOpacity();
         mapContainerEl.addEventListener("mouseenter", (e) => {
             if (inPIP) return;
-            console.log("Entering");
             setLayerOpacity(1);
         });
         mapContainerEl.addEventListener("mouseleave", (e) => {
             if (inPIP) return;
-            console.log("Leaving");
             setLayerOpacity();
         });
 
@@ -1210,7 +1203,6 @@
 
         car = undefined;
         toggleCar() {
-            console.log("Toggling car", this.car)
             if (this.car) {
                 this.removePoint(this.car);
                 this.car = undefined;
