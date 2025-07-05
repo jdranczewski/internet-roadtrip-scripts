@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.4.2
+// @version     0.4.3
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -468,6 +468,21 @@
     }
     // Define map controls to add buttons for
     let control = new TricksControl();
+
+    // Expose some APIs
+    unsafeWindow._MMT_control = control;
+    unsafeWindow._MMT_addContext = (name, available) => {
+        contexts.push(name);
+        Array.from(control._m_options.children).forEach((child) => {
+            if (!available.includes(child.children[1].innerText)) {
+                child.classList.add(`mmt-hide-${name}`);
+            }
+        })
+        GM.addStyle(`
+        #mini-map {
+            .mmt-menu-${name} .mmt-hide-${name} {display: none !important;}
+        }`);
+    }
 
     // Add all the buttons!
     // Go to coordinates
