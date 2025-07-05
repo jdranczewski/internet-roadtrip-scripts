@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Turn Alert
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.2.1
+// @version     0.2.2
 // @author      jdranczewski
 // @description Play sound when turn options appear after a long stretch of straight road.
 // @license     MIT
@@ -124,6 +124,9 @@
         status_el.appendChild(status_ul)
         // Stop numbers
         let li = document.createElement("li");
+        li.innerText = "A 'turn' is defined as more than one direction being available for voting.";
+        status_ul.appendChild(li);
+        li = document.createElement("li");
         status.straight_n = document.createElement("span");
         status.straight_n.style.fontWeight = "bold";
         li.appendChild(status.straight_n);
@@ -131,14 +134,14 @@
         status.straight_lim = document.createElement("span");
         status.straight_lim.style.color = "#aaa";
         li.appendChild(status.straight_lim);
-        li.append(" stops going straight.")
+        li.append(" stops without a turn.")
         status_ul.appendChild(li);
         // Next stop status
         li = document.createElement("li");
         status.alert_next = document.createElement("span");
         status.alert_next.classList.add("ta-bad");
         li.appendChild(status.alert_next);
-        li.append(" next turn - ");
+        li.append(" next time we can turn - ");
         const force_button = document.createElement("button");
         force_button.innerText = "Force alert next turn";
         force_button.onclick = (e) => {
