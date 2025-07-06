@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.5.0
+// @version     0.5.1
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -105,8 +105,10 @@
                 font-size: 14px;
                 padding: 6px;
                 background: #f1f1f1;
+                display: flex;
+                justify-content: space-between;
                 & #mmt-menu-close {
-                    float: right;
+                    margin-left: 10px;
                     margin-right: 2px;
                     cursor: pointer;
                 }
@@ -369,10 +371,10 @@
 
             this._m_label = document.createElement('span');
             this._m_label.innerText = "Map";
-            label_box.appendChild(this._m_label)
 
             let label =  document.createElement('span');
             label.innerText = " menu";
+            label.prepend(this._m_label);
             label_box.appendChild(label);
 
             let close =  document.createElement('span');
@@ -405,7 +407,7 @@
         _context = undefined;
         set context(value) {
             this._m_label.innerText = value;
-            this._m_cont.className = `mmt-menu-${value}`
+            this._m_cont.className = `mmt-menu-${value.replaceAll(' ', '-')}`
             this._context = value;
         }
         get context() {
@@ -483,14 +485,15 @@
     unsafeWindow._MMT_control = control;
     unsafeWindow._MMT_addContext = (name, available) => {
         contexts.push(name);
+        const css_name = name.replaceAll(' ', '-');
         Array.from(control._m_options.children).forEach((child) => {
             if (!available.includes(child.children[1].innerText)) {
-                child.classList.add(`mmt-hide-${name}`);
+                child.classList.add(`mmt-hide-${css_name}`);
             }
         })
         GM.addStyle(`
         #mini-map {
-            .mmt-menu-${name} .mmt-hide-${name} {display: none !important;}
+            .mmt-menu-${css_name} .mmt-hide-${css_name} {display: none !important;}
         }`);
     }
 
