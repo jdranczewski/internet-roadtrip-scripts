@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.4.3
+// @version     0.5.0
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -391,6 +391,16 @@
             this._m_cont.style.display = "none";
             mapContainerEl.classList.remove("mmt-map-menu-opened");
         }
+        openMenu(context, lat, lng, left, top, data=undefined) {
+            this.context = context;
+            this.lat = lat;
+            this.lng = lng;
+            this.data = data;
+
+            this._m_cont.style.top = `${top}px`;
+            this._m_cont.style.left = `${left}px`;
+            this._show_menu();
+        }
 
         _context = undefined;
         set context(value) {
@@ -403,7 +413,7 @@
         }
         lat = 0;
         lng = 0;
-        marker = undefined;
+        data = undefined;
 
         onAdd(map) {
             this._map = map;
@@ -604,18 +614,15 @@
         marker.getElement().addEventListener("contextmenu", (f) => {
             f.stopPropagation();
             f.preventDefault();
-            const lngLat = marker.getLngLat();
-            control.context = "Marker";
-            control.lat = lngLat.lat;
-            control.lng = lngLat.lng;
-            control.marker = marker;
 
             const colour = marker.getElement().children[0].children[0].children[1].getAttribute("fill");
             mcol_input.value = colour;
 
-            control._m_cont.style.top = `${f.clientY}px`;
-            control._m_cont.style.left = `${f.clientX}px`;
-            control._show_menu();
+            const lngLat = marker.getLngLat();
+            control.openMenu(
+                "Marker", lngLat.lat, lngLat.lng,
+                f.clientX, f.clientY, marker
+            );
         });
     }
     for (const [marker_id, value] of Object.entries(settings.markers)) {
@@ -657,11 +664,11 @@
     mcol_input.type = "color";
     mcol_input.id = "mmt-menu-color";
     mcol_input.addEventListener("input", (e) => {
-        if (control.marker) {
-            control.marker.getElement().children[0].children[0].children[1].setAttribute(
+        if (control.data) {
+            control.data.getElement().children[0].children[0].children[1].setAttribute(
                 "fill", mcol_input.value
             );
-            settings.markers[control.marker._mmt_id][2] = mcol_input.value;
+            settings.markers[control.data._mmt_id][2] = mcol_input.value;
             GM.setValues(settings);
         }
     })
@@ -671,7 +678,7 @@
         marker_icon_base + "%3Cpath%20d%3D%22M20%2018l6%206m-6%200l6%20-6%22%2F%3E%3C%2Fsvg%3E",
         "Remove marker",
         async (c) => {
-            control.marker._mmt_remove();
+            control.data._mmt_remove();
         },
         ["Marker"]
     );
@@ -679,26 +686,21 @@
     // Add the Control to the map and set up triggers for contex menus
     ml_map.addControl(control, "bottom-left");
     ml_map.on("contextmenu", (e) => {
-        control.context = "Map";
-        control.lat = e.lngLat.lat;
-        control.lng = e.lngLat.lng;
-        control.marker = undefined;
-
-        control._m_cont.style.top = `${e.originalEvent.clientY}px`;
-        control._m_cont.style.left = `${e.originalEvent.clientX}px`;
-        control._show_menu();
+        control.openMenu(
+            "Map", e.lngLat.lat, e.lngLat.lng,
+            e.originalEvent.clientX, e.originalEvent.clientY
+        )
     })
     marker_el.oncontextmenu = (e) => {
         e.stopPropagation();
         e.preventDefault();
-        control.context = "Car";
-        control.lat = vcontainer.data.currentCoords.lat;
-        control.lng = vcontainer.data.currentCoords.lng;
-        control.marker = undefined;
 
-        control._m_cont.style.top = `${e.clientY}px`;
-        control._m_cont.style.left = `${e.clientX}px`;
-        control._show_menu();
+        control.openMenu(
+            "Car",
+            vcontainer.data.currentCoords.lat,
+            vcontainer.data.currentCoords.lng,
+            e.clientX, e.clientY
+        )
     }
     // Hide the menu when PIP exits
     let inPIP = false;
