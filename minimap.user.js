@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.5.1
+// @version     0.5.2
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -336,15 +336,29 @@
         if (first_fly || settings.reset_zoom) {
             args["zoom"] = settings.default_zoom;
         }
-        map.flyTo(args)
+        map.flyTo(args, {flying: true});
     }
 	// Proxy the map resetting
-	(await IRF.vdom.map).state.flyTo = new Proxy(mapMethods.flyTo, {
+	map.state.flyTo = new Proxy(mapMethods.flyTo, {
 		apply: (target, thisArg, args) => {
+            console.log("fly", Date.now() - thisArg.lastUserInteraction > 30000, thisArg.lastUserInteraction);
 			Date.now() - thisArg.lastUserInteraction > 30000 &&
             flyTo(thisArg.map, args)
 		},
 	});
+    // Proxy the user interaction handling to not include flying calls
+    ml_map.off("dragstart", mapMethods.handleUserInteraction);
+    ml_map.off("zoomstart", mapMethods.handleUserInteraction);
+    map.state.handleUserInteraction = new Proxy(mapMethods.handleUserInteraction, {
+		apply: (target, thisArg, args) => {
+            console.log(args);
+            if (!args[0]?.flying) {
+                return Reflect.apply(target, thisArg, args);
+            }
+		},
+	});
+    ml_map.on("dragstart", mapMethods.handleUserInteraction);
+    ml_map.on("zoomstart", mapMethods.handleUserInteraction);
 
     // Add buttons to the map - define the Control object that holds them
     const contexts = ["Side", "Map", "Car", "Marker"];
@@ -456,7 +470,7 @@
             let button = document.createElement("button");
             if (context !== undefined) {
                 contexts.forEach((v, i) => {
-                    if (!context.includes(v)) button.classList.add(`mmt-hide-${v}`);
+                    if (!context.includes(v)) button.classList.add(`mmt-hide-${v.replaceAll(' ', '-')}`);
                 })
             }
 
@@ -651,6 +665,9 @@
                 ml_map,
                 [c.lat, c.lng]
             )
+            if (c.context == "Side" || c.context == "Car") {
+                map.state.lastUserInteraction = 0;
+            }
         },
         ["Side", "Car", "Marker"]
     );
