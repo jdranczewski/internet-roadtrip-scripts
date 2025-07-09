@@ -279,7 +279,7 @@
         settings_container.appendChild(document.createElement("br"));
     }
     add_checkbox("Auto-expand map", "expand_map");
-    add_checkbox("Re-centre map after a timeour", "timeout_centre");
+    add_checkbox("Re-centre map after a timeout", "timeout_centre");
     add_checkbox("Reset zoom with map re-centre", "reset_zoom");
 
     function add_slider(
@@ -1048,10 +1048,10 @@
 
     // Correct the marker rotation when the car moves
     const changeStop = (await IRF.vdom.container).methods.changeStop;
-    (await IRF.vdom.container).state.changeStop = new Proxy(changeStop, {
+    vcontainer.state.changeStop = new Proxy(changeStop, {
 		apply: (target, thisArg, args) => {
 			const returnValue = Reflect.apply(target, thisArg, args);
-            thisArg.currentHeading = args[3];
+            map.data.marker.setRotation(args[3]);
             let x_flip = settings.car_marker_flip ? "-1" : "1";
             if (settings.car_marker_flip_x && args[3] > 180) {
                 custom_car.style.transform = `scale(${x_flip}, -1)`;
@@ -1062,6 +1062,10 @@
             return returnValue;
 		},
 	});
+    // Override the normal marker rotation settings, we do it above!
+    map.state.setMarkerRotation = new Proxy(mapMethods.setMarkerRotation, {
+        apply: (target, thisArg, args) => {}
+    });
 
     // Custom car marker settings
     irf_settings.container.appendChild(document.createElement("hr"));
