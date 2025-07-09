@@ -339,19 +339,20 @@
         map.flyTo(args, {flying: true});
     }
 	// Proxy the map resetting
+    function checkInteraction() {
+        return Date.now() - map.data.lastUserInteraction > 30000;
+    }
 	map.state.flyTo = new Proxy(mapMethods.flyTo, {
 		apply: (target, thisArg, args) => {
-            console.log("fly", Date.now() - thisArg.lastUserInteraction > 30000, thisArg.lastUserInteraction);
-			Date.now() - thisArg.lastUserInteraction > 30000 &&
-            flyTo(thisArg.map, args)
+            // We're handling this ourselves below
+            return;
 		},
 	});
-    // Proxy the user interaction handling to not include flying calls
+    // Proxy the user interaction handling to not include flyTo calls
     ml_map.off("dragstart", mapMethods.handleUserInteraction);
     ml_map.off("zoomstart", mapMethods.handleUserInteraction);
     map.state.handleUserInteraction = new Proxy(mapMethods.handleUserInteraction, {
 		apply: (target, thisArg, args) => {
-            console.log(args);
             if (!args[0]?.flying) {
                 return Reflect.apply(target, thisArg, args);
             }
@@ -359,6 +360,23 @@
 	});
     ml_map.on("dragstart", mapMethods.handleUserInteraction);
     ml_map.on("zoomstart", mapMethods.handleUserInteraction);
+    // Sync map to the coordinates when the marker is updated
+    // but only if the marker moved a significant distance (compared to the tile size)
+    map.data.marker.setLngLat = new Proxy(map.data.marker.setLngLat, {
+        apply: (target, thisArg, args) => {
+            const map_lnglat = ml_map.getCenter();
+            diff = [
+                Math.abs(args[0][0] - map_lnglat.lng),
+                Math.abs(args[0][1] - map_lnglat.lat)
+            ]
+            const tile_width = 360/(2**ml_map.getZoom());
+            const factor = 0.01;
+            if ((diff[0] > tile_width*factor || diff[1] > tile_width*factor) && checkInteraction()) {
+                flyTo(ml_map, [args[0][1], args[0][0]])
+            }
+            return Reflect.apply(target, thisArg, args);
+        }
+    })
 
     // Add buttons to the map - define the Control object that holds them
     const contexts = ["Side", "Map", "Car", "Marker"];
@@ -1030,6 +1048,7 @@
     (await IRF.vdom.container).state.changeStop = new Proxy(changeStop, {
 		apply: (target, thisArg, args) => {
 			const returnValue = Reflect.apply(target, thisArg, args);
+            thisArg.currentHeading = args[3];
             let x_flip = settings.car_marker_flip ? "-1" : "1";
             if (settings.car_marker_flip_x && args[3] > 180) {
                 custom_car.style.transform = `scale(${x_flip}, -1)`;
