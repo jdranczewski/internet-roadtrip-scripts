@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.5.2
+// @version     0.5.3
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -168,6 +168,7 @@
     const settings = {
         "expand_map": false,
         "default_zoom": 12.5,
+        "timeout_centre": true,
         "reset_zoom": false,
         "show_scale": true,
         "km_units": false,
@@ -278,6 +279,7 @@
         settings_container.appendChild(document.createElement("br"));
     }
     add_checkbox("Auto-expand map", "expand_map");
+    add_checkbox("Re-centre map after a timeour", "timeout_centre");
     add_checkbox("Reset zoom with map re-centre", "reset_zoom");
 
     function add_slider(
@@ -339,9 +341,6 @@
         map.flyTo(args, {flying: true});
     }
 	// Proxy the map resetting
-    function checkInteraction() {
-        return Date.now() - map.data.lastUserInteraction > 30000;
-    }
 	map.state.flyTo = new Proxy(mapMethods.flyTo, {
 		apply: (target, thisArg, args) => {
             // We're handling this ourselves below
@@ -371,7 +370,11 @@
             ]
             const tile_width = 360/(2**ml_map.getZoom());
             const factor = 0.01;
-            if ((diff[0] > tile_width*factor || diff[1] > tile_width*factor) && checkInteraction()) {
+            if (
+                (diff[0] > tile_width*factor || diff[1] > tile_width*factor)
+                && (Date.now() - map.data.lastUserInteraction > 30000)
+                && (settings.timeout_centre || map.data.lastUserInteraction == 0)
+            ) {
                 flyTo(ml_map, [args[0][1], args[0][0]])
             }
             return Reflect.apply(target, thisArg, args);
