@@ -466,7 +466,7 @@
             this._map = undefined;
         }
 
-        addButton(icon, name, callback, context=undefined, side_visible_default=true, before=undefined) {
+        addButton(icon, name, callback, context=undefined, { side_visible_default = true, before = undefined } = {}) {
             // Add side button
             const returnValue = {
                 icon,
@@ -496,12 +496,12 @@
                     callback(this)
                 };
                 if (before) {
-                    const sibling = Array.from(this._c_cont.children).filter((el) => {return el.title == before})[0]
+                    const sibling = Array.from(this._c_cont.children).filter((el) => {return el.title === before})[0]
                     sibling.insertAdjacentElement("beforebegin", button)
                 } else this._c_cont.appendChild(button);
-                returnValue["side_button"] = button;
-                returnValue["side_icon"] = button_icon;
-                returnValue["side_checkbox"] = checkbox;
+                returnValue.side_button = button;
+                returnValue.side_icon = button_icon;
+                returnValue.side_checkbox = checkbox;
             }
             
             let button = document.createElement("button");
@@ -525,12 +525,12 @@
                 callback(this)
             };
             if (before) {
-                const sibling = Array.from(this._m_options.children).filter((el) => {return el.innerText == before})[0]
+                const sibling = Array.from(this._m_options.children).filter((el) => {return el.innerText === before})[0]
                     sibling.insertAdjacentElement("beforebegin", button)
                 } else this._m_options.appendChild(button);;
-            returnValue["context_button"] = button;
-            returnValue["context_icon"] = button_icon;
-            returnValue["context_label"] = button_label;
+            returnValue.context_button = button;
+            returnValue.context_icon = button_icon;
+            returnValue.context_label = button_label;
 
             return returnValue;
         }
@@ -598,8 +598,8 @@
         "Measure distance",
         async (c) => {
             distance_control.startMeasure();
-            if (c.context == "Car") measure.toggleCar();
-            else if (c.context != "Side") measure.addPoint(c.lat, c.lng);
+            if (c.context === "Car") measure.toggleCar();
+            else if (c.context !== "Side") measure.addPoint(c.lat, c.lng);
         }
     )
 
@@ -613,7 +613,7 @@
             const url = (
                 "https://www.google.com/maps/@?api=1&map_action=pano" +
                 `&viewpoint=${c.lat},${c.lng}` +
-                ((c.context == "Car" || c.context == "Side") ? `&pano=${data.currentPano}&heading=${data.currentHeading}` : "") +
+                ((c.context === "Car" || c.context === "Side") ? `&pano=${data.currentPano}&heading=${data.currentHeading}` : "") +
                 "&fov=90"
             )
 		    window.open(url, "_blank");
@@ -708,7 +708,7 @@
                 ml_map,
                 [c.lat, c.lng]
             )
-            if (c.context == "Side" || c.context == "Car") {
+            if (c.context === "Side" || c.context === "Car") {
                 map.state.lastUserInteraction = 0;
             }
         },
