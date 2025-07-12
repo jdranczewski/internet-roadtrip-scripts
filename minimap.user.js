@@ -2,13 +2,14 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.5.3
+// @version     0.5.4
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
 // @icon         https://files.catbox.moe/v4yu3f.png
 // @grant        GM.setValues
 // @grant        GM.getValues
+// @grant        GM_getValue
 // @grant        GM.addStyle
 // @grant        unsafeWindow
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
@@ -268,15 +269,17 @@
         text.innerText = " " + name;
         label.appendChild(text);
 
-        checkbox.onchange = () => {
+        checkbox.addEventListener("change", () => {
             settings[identifier] = checkbox.checked;
             GM.setValues(settings);
             if (callback) callback(checkbox.checked);
-        }
+        });
 
         settings_container.appendChild(label);
         settings_container.appendChild(document.createElement("br"));
         settings_container.appendChild(document.createElement("br"));
+
+        return checkbox
     }
     add_checkbox("Auto-expand map", "expand_map");
     add_checkbox("Re-centre map after a timeout", "timeout_centre");
@@ -386,6 +389,7 @@
     class TricksControl {
         constructor() {
             this._c_cont = document.createElement('div'); // Control container
+            this._c_cont.className = 'maplibregl-ctrl maplibregl-ctrl-group mmt-side-control';
 
             this._m_cont = document.createElement('div'); // Menu container
             this._m_cont.id = "mmt-menu";
@@ -454,7 +458,6 @@
 
         onAdd(map) {
             this._map = map;
-            this._c_cont.className = 'maplibregl-ctrl maplibregl-ctrl-group';
             return this._c_cont;
         }
 
@@ -463,13 +466,19 @@
             this._map = undefined;
         }
 
-        addButton(icon, name, callback, context=undefined) {
+        addButton(icon, name, callback, context=undefined, side_visible_default=true, before=undefined) {
             // Add side button
+            const returnValue = {
+                name: name,
+                callback: callback,
+                contexts: context
+            }
             if (context == undefined || context.includes("Side")) {
                 let button = document.createElement("button");
+                settings[`side_${name}`] = GM_getValue(`side_${name}`, side_visible_default)
                 button.style.display = settings[`side_${name}`] ? "block" : "none";
                 button.title = name;
-                add_checkbox(`Show ${name}`, `side_${name}`, (value) => {
+                const checkbox = add_checkbox(`Show ${name}`, `side_${name}`, (value) => {
                     button.style.display = value ? "block" : "none";
                 }, this._s_cont);
 
@@ -485,7 +494,13 @@
                     this.marker = undefined;
                     callback(this)
                 };
-                this._c_cont.appendChild(button);
+                if (before) {
+                    const sibling = Array.from(this._c_cont.children).filter((el) => {return el.title == before})[0]
+                    sibling.insertAdjacentElement("beforebegin", button)
+                } else this._c_cont.appendChild(button);
+                returnValue["side_button"] = button;
+                returnValue["side_icon"] = button_icon;
+                returnValue["side_checkbox"] = checkbox;
             }
             
             let button = document.createElement("button");
@@ -508,9 +523,15 @@
             button.onclick = () => {
                 callback(this)
             };
-            this._m_options.appendChild(button);
+            if (before) {
+                const sibling = Array.from(this._m_options.children).filter((el) => {return el.innerText == before})[0]
+                    sibling.insertAdjacentElement("beforebegin", button)
+                } else this._m_options.appendChild(button);;
+            returnValue["context_button"] = button;
+            returnValue["context_icon"] = button_icon;
+            returnValue["context_label"] = button_label;
 
-            return button_label;
+            return returnValue;
         }
     }
     // Define map controls to add buttons for
