@@ -469,9 +469,10 @@
         addButton(icon, name, callback, context=undefined, side_visible_default=true, before=undefined) {
             // Add side button
             const returnValue = {
-                name: name,
-                callback: callback,
-                contexts: context
+                icon,
+                name,
+                callback,
+                contexts
             }
             if (context == undefined || context.includes("Side")) {
                 let button = document.createElement("button");
