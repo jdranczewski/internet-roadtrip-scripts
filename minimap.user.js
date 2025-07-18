@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.5.5
+// @version     0.5.6
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -189,6 +189,7 @@
         "route_opacity": 1,
         "marker_color": "#f7a000",
         "markers": {},
+        "draggable_markers": true,
 
         "car_marker_custom": false,
         "car_marker_size": 54,
@@ -649,7 +650,7 @@
     const marker_icon_base = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%22-5%20-6%2037%2036%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22size-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M15%2010.5a3%203%200%201%201-6%200%203%203%200%200%201%206%200%22%2F%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M19.5%2010.5c0%207.142-7.5%2011.25-7.5%2011.25S4.5%2017.642%204.5%2010.5a7.5%207.5%200%201%201%2015%200%22%2F%3E";
     async function add_marker(lat, lng, marker_id=undefined, color=undefined) {
         const marker = new maplibre.Marker({
-            draggable: true,
+            draggable: settings.draggable_markers,
             opacity: 0.7,
             scale: 0.8,
             color: color ? color : settings.marker_color
@@ -722,6 +723,31 @@
         },
         ["Side", "Car", "Marker"]
     );
+
+    // Draggable markers
+    const draggable_meta = control.addButton(
+        "",
+        "Draggable markers",
+        (c) => {
+            settings.draggable_markers = !settings.draggable_markers;
+            GM.setValues(settings);
+            draggable_checkbox.checked = settings.draggable_markers;
+            for (const [marker_id, marker] of Object.entries(markers)) {
+                marker.setDraggable(settings.draggable_markers);
+            }
+        },
+        ["Marker"]
+    )
+    const draggable_checkbox = document.createElement("input");
+    draggable_checkbox.type = "checkbox";
+    draggable_checkbox.checked = settings.draggable_markers;
+    draggable_checkbox.style.pointerEvents = "none";
+    draggable_checkbox.style.width = "50%";
+    draggable_checkbox.style.height = "50%";
+    draggable_meta.context_icon.appendChild(draggable_checkbox);
+    draggable_meta.context_icon.style.display = "flex";
+    draggable_meta.context_icon.style.alignItems = "center";
+    draggable_meta.context_icon.style.justifyContent = "center";
 
     // Marker colour
     const dropper_svg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-6 -6 36 36" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="m15 11.25 1.5 1.5.75-.75V8.758l2.276-.61a3 3 0 1 0-3.675-3.675l-.61 2.277H12l-.75.75 1.5 1.5M15 11.25l-8.47 8.47c-.34.34-.8.53-1.28.53s-.94.19-1.28.53l-.97.97-.75-.75.97-.97c.34-.34.53-.8.53-1.28s.19-.94.53-1.28L12.75 9M15 11.25 12.75 9"/></svg>';
