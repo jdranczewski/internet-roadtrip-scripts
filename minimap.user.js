@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.5.4
+// @version     0.5.5
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -215,6 +215,14 @@
         settings,
         storedSettings
     );
+    // Migrate stored markers to the new format
+    Object.entries(settings.markers).forEach(([key, value]) => {
+        if (value.length == 2) {
+            settings.markers[key] = [value[0], value[1], {}]
+        } else if (typeof value[2] === 'string' || value[2] instanceof String) {
+            settings.markers[key] = [value[0], value[1], {color: value[2]}]
+        }
+    });
     await GM.setValues(settings);
 
     // Settings panel GUI
@@ -651,7 +659,7 @@
 
         if (!marker_id) {
             marker_id = crypto.randomUUID();
-            settings.markers[marker_id] = [lat, lng];
+            settings.markers[marker_id] = [lat, lng, {}];
             GM.setValues(settings);
         }
         marker._mmt_id = marker_id;
@@ -686,7 +694,7 @@
         });
     }
     for (const [marker_id, value] of Object.entries(settings.markers)) {
-        add_marker(value[0], value[1], marker_id, value[2]);
+        add_marker(value[0], value[1], marker_id, value[2].color);
     }
 
     // Add marker
@@ -731,7 +739,7 @@
             control.data.getElement().children[0].children[0].children[1].setAttribute(
                 "fill", mcol_input.value
             );
-            settings.markers[control.data._mmt_id][2] = mcol_input.value;
+            settings.markers[control.data._mmt_id][2].color = mcol_input.value;
             GM.setValues(settings);
         }
     })
