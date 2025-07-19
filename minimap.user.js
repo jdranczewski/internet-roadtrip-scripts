@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.5.6
+// @version     0.5.7
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -12,7 +12,7 @@
 // @grant        GM_getValue
 // @grant        GM.addStyle
 // @grant        unsafeWindow
-// @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
+// @require      https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
 // @require      https://cdn.jsdelivr.net/gh/ianengelbrecht/geo-coordinates-parser@b06d051f2a70bc95c2fa1a063ceef85f19823fee/bundle/geocoordsparser.js
 // @require      https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js
 // ==/UserScript==
@@ -814,7 +814,7 @@
     }
 
     // Add a scale bar
-    const scale_control = new (await IRF.modules.maplibre).ScaleControl({
+    const scale_control = new maplibre.ScaleControl({
         unit: odometer.data.isKilometers ? "metric": "imperial"
     })
     ml_map.addControl(scale_control, "bottom-right");
@@ -855,8 +855,8 @@
     const units_el = odometer_el.getElementsByClassName("miles-text")[0];
     decimal_el.style.display = "none";
     units_el.appendChild(decimal_el);
-    (await IRF.vdom.container).state.updateData = new Proxy(
-        (await IRF.vdom.container).methods.updateData, {
+    vcontainer.state.updateData = new Proxy(
+        vcontainer.methods.updateData, {
         apply: (target, thisArg, args) => {
             // debugger;
             let distance = args[0]["distance"]
@@ -1103,7 +1103,7 @@
     marker_el.appendChild(custom_car);
 
     // Correct the marker rotation when the car moves
-    const changeStop = (await IRF.vdom.container).methods.changeStop;
+    const changeStop = vcontainer.methods.changeStop;
     vcontainer.state.changeStop = new Proxy(changeStop, {
 		apply: (target, thisArg, args) => {
 			const returnValue = Reflect.apply(target, thisArg, args);
