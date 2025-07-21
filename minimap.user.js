@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.5.7
+// @version     0.5.8
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -171,6 +171,7 @@
         "default_zoom": 12.5,
         "timeout_centre": true,
         "reset_zoom": false,
+        "align_orientation": false,
         "show_scale": true,
         "km_units": false,
         "decimal_units": false,
@@ -293,6 +294,7 @@
     add_checkbox("Auto-expand map", "expand_map");
     add_checkbox("Re-centre map after a timeout", "timeout_centre");
     add_checkbox("Reset zoom with map re-centre", "reset_zoom");
+    add_checkbox("Align map orientation with car", "align_orientation");
 
     function add_slider(
         name, identifier, callback=undefined,
@@ -339,13 +341,19 @@
             zoom_subscription.unsubscribe();
         }
     })
-    function flyTo(map, coords) {
+    let latestBearing = 0;
+    function flyTo(map, coords=undefined, bearing=undefined) {
         let args = {
-            center: [
-                coords[1],
-                coords[0]
-            ],
             essential: !0
+        }
+        if (coords) {
+            args.center = [coords[1], coords[0]];
+        }
+        if (bearing) {
+            args.bearing = bearing;
+            latestBearing = bearing;
+        } else if (settings.align_orientation) {
+            args.bearing = latestBearing;
         }
         if (first_fly || settings.reset_zoom) {
             args["zoom"] = settings.default_zoom;
@@ -371,8 +379,15 @@
 	});
     ml_map.on("dragstart", mapMethods.handleUserInteraction);
     ml_map.on("zoomstart", mapMethods.handleUserInteraction);
+    ml_map.on("rotatestart", mapMethods.handleUserInteraction);
     // Sync map to the coordinates when the marker is updated
     // but only if the marker moved a significant distance (compared to the tile size)
+    function checkUpdateMap() {
+        return (
+            (Date.now() - map.data.lastUserInteraction > 30000)
+            && (settings.timeout_centre || map.data.lastUserInteraction == 0)
+        )
+    }
     map.data.marker.setLngLat = new Proxy(map.data.marker.setLngLat, {
         apply: (target, thisArg, args) => {
             const map_lnglat = ml_map.getCenter();
@@ -384,8 +399,7 @@
             const factor = 0.01;
             if (
                 (diff[0] > tile_width*factor || diff[1] > tile_width*factor)
-                && (Date.now() - map.data.lastUserInteraction > 30000)
-                && (settings.timeout_centre || map.data.lastUserInteraction == 0)
+                && checkUpdateMap()
             ) {
                 flyTo(ml_map, [args[0][1], args[0][0]])
             }
@@ -567,7 +581,7 @@
     // Go to coordinates
     control.addButton(
         "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%22-6%20-6%2036%2036%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22size-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M6%2012%203.269%203.125A59.8%2059.8%200%200%201%2021.485%2012%2059.8%2059.8%200%200%201%203.27%2020.875L5.999%2012Zm0%200h7.5%22%2F%3E%3C%2Fsvg%3E",
-        "Go to coordinates",
+        "Go to and mark coordinates",
         async (c) => {
             let converted;
             try {
@@ -715,7 +729,8 @@
         async (c) => {
             flyTo(
                 ml_map,
-                [c.lat, c.lng]
+                [c.lat, c.lng],
+                (settings.align_orientation && (c.context === "Side" || c.context === "Car")) ? vcontainer.data.currentHeading : undefined
             )
             if (c.context === "Side" || c.context === "Car") {
                 map.state.lastUserInteraction = 0;
@@ -1108,6 +1123,11 @@
 		apply: (target, thisArg, args) => {
 			const returnValue = Reflect.apply(target, thisArg, args);
             map.data.marker.setRotation(args[3]);
+            if (
+                checkUpdateMap()
+                && settings.align_orientation
+                && (Math.abs(ml_map.getBearing() - args[3]) % 360) > 1
+            ) flyTo(ml_map, undefined, args[3]);
             let x_flip = settings.car_marker_flip ? "-1" : "1";
             if (settings.car_marker_flip_x && args[3] > 180) {
                 custom_car.style.transform = `scale(${x_flip}, -1)`;
