@@ -69,6 +69,21 @@
         &:hover {
             opacity: 1 !important;
         }
+        z-index: -1 !important;
+        &.fullscreen {
+            opacity: 1 !important;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            & #mini-map {
+                width: 100% !important;
+                height: 100% !important;
+            }
+            & .expand-button {
+                display: none;
+            }
+        }
     }
     .maplibregl-marker {
         opacity: var(--marker-opacity, 1) !important;
@@ -656,6 +671,32 @@
         }
     );
 
+    // Fullscreen map
+    //TODO: Test this with LotW v1, works with v2
+    let getPanoUrlOverriden = false;
+    let getPanoUrlOverriding = false;
+    function toggleMapFullscreen(context=undefined, fullscreen=undefined) {
+        getPanoUrlOverriding = mapContainerEl.classList.toggle("fullscreen", fullscreen);
+        setLayerOpacity(getPanoUrlOverriding ? 1 : undefined);
+        if (!getPanoUrlOverriden){
+            vcontainer.state.getPanoUrl = new Proxy(
+                vcontainer.methods.getPanoUrl, {
+                apply: (target, thisArg, args) => {
+                    if (getPanoUrlOverriding) return "";
+                    return Reflect.apply(target, thisArg, args);
+                },
+            });
+        }
+    }
+    fullscreen_icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-6 -6 36 36" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/></svg>`;
+    control.addButton(
+        `data:image/svg+xml,${encodeURIComponent(fullscreen_icon)}`,
+        "Fullscreen map",
+        toggleMapFullscreen,
+        ["Side", "Map"],
+        {side_visible_default: false}
+    )
+
     // Set up markers
     const markers = {};
     unsafeWindow._MMT_getMarkers = () => {
@@ -1010,11 +1051,11 @@
         ml_map.setPaintProperty("route", "line-opacity", parseFloat(settings.route_opacity));
         setLayerOpacity();
         mapContainerEl.addEventListener("mouseenter", (e) => {
-            if (inPIP) return;
+            if (inPIP || getPanoUrlOverriding) return;
             setLayerOpacity(1);
         });
         mapContainerEl.addEventListener("mouseleave", (e) => {
-            if (inPIP) return;
+            if (inPIP || getPanoUrlOverriding) return;
             setLayerOpacity();
         });
 
@@ -1061,6 +1102,8 @@
         ml_map.moveLayer("sv-tiles", "svugc-tiles");
         ml_map.setPaintProperty("svugc-tiles", "raster-opacity", parseFloat(settings.coverage_opacity));
         ml_map.setPaintProperty("sv-tiles", "raster-opacity", parseFloat(settings.coverage_opacity));
+
+        if (window.location.hash == "#map") toggleMapFullscreen(undefined, true);
     });
     // Set the old route opacity once it's added
     const old_route_subscription = ml_map.on('data', "old-route-layer", (e) => {
