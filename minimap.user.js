@@ -81,7 +81,17 @@
                 height: 100% !important;
             }
             & .expand-button {
-                display: none;
+                display: none !important;
+            }
+            & .maplibregl-ctrl-top-left {
+                margin-top: 58px;
+                margin-left: 2px;
+            }
+            & .maplibregl-ctrl-bottom-right {
+                margin-bottom: 186px;
+                & .maplibregl-ctrl-scale {
+                    margin-right: 11px !important;
+                }
             }
         }
     }
