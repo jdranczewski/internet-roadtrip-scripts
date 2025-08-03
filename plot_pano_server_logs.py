@@ -70,16 +70,19 @@ for fname in tqdm(glob("logs/*.log")[:-4]):
         f.seek(0)
         contents = np.asarray(f.readlines())
     if data["time"].dtype != np.float64:
-        e_mask = np.asarray([i for i, x in enumerate(data["time"]) if x[0] == "T"], int)
+        e_mask = np.asarray([i for i, x in enumerate(data["time"]) if x[0] in "TR"], int)
         errors = data.iloc[e_mask-1].astype(float)
         errors.insert(4, "error", np.asarray(contents[e_mask]))
-        data = data.iloc[[i for i, x in enumerate(data["time"]) if x[0] != "T"]]
+        data = data.iloc[[i for i, x in enumerate(data["time"]) if x[0] not in "TR"]]
         datas_e.append(errors)
     datas.append(data.astype(float))
 data = pd.concat(datas)
 errors = pd.concat(datas_e).infer_objects()
 data.sort_values("time", inplace=True)
 errors.sort_values("time", inplace=True)
+
+# %%
+data["time"].iloc[-1]
 
 # %%
 errors
@@ -115,7 +118,7 @@ ax.set_xticks(hours[1::2], ((hours/3600) % 24).astype(int)[1::2])
 # %%
 fig = plt.figure(
     constrained_layout=True,
-    figsize=(8, 3)
+    figsize=(8, 5)
 )
 ax = fig.add_subplot(
     1,1,1,
@@ -123,7 +126,7 @@ ax = fig.add_subplot(
     xlabel="Longitude",
     ylabel="Latitude"
 )
-world.plot(ax=ax, color="white", edgecolor="black", alpha=.1)
+world.plot(ax=ax, color="white", edgecolor="black", alpha=.05)
 gdata.plot(ax=ax, color="tab:blue", alpha=.1, markersize=3)
 
 # %%
