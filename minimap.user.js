@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.5.8
+// @version     0.6.0
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -69,9 +69,10 @@
         &:hover {
             opacity: 1 !important;
         }
-        z-index: -1 !important;
+        z-index: 101 !important;
         &.fullscreen {
             opacity: 1 !important;
+            z-index: -1 !important;
             left: 0;
             bottom: 0;
             width: 100%;
@@ -79,6 +80,7 @@
             & #mini-map {
                 width: 100% !important;
                 height: 100% !important;
+                border-radius: 0;
             }
             & .expand-button {
                 display: none !important;
@@ -94,6 +96,9 @@
                 }
             }
         }
+    }
+    .lotwv1-overlay:has(~ .fullscreen) {
+        display: none !important;
     }
     .maplibregl-marker {
         opacity: var(--marker-opacity, 1) !important;
@@ -692,7 +697,7 @@
             vcontainer.state.getPanoUrl = new Proxy(
                 vcontainer.methods.getPanoUrl, {
                 apply: (target, thisArg, args) => {
-                    if (getPanoUrlOverriding) return "";
+                    if (getPanoUrlOverriding) return "about:blank";
                     return Reflect.apply(target, thisArg, args);
                 },
             });
@@ -978,10 +983,10 @@
 
     // Set the variables for map resizing if not undefined
     function setMiniMapSize({ width, height, expanded_width, expanded_height }) {
-        miniMapEl.style.setProperty('--map-width', width ? `${Math.min(Math.max(0, width), 100)}vw` : "");
-        miniMapEl.style.setProperty('--map-height', height ? `${Math.min(Math.max(0, height), 100)}vh` : "");
-        miniMapEl.style.setProperty('--map-width-expanded', expanded_width ? `${Math.min(Math.max(0, expanded_width), 100)}vw` : "");
-        miniMapEl.style.setProperty('--map-height-expanded', expanded_height ? `${Math.min(Math.max(0, expanded_height), 100)}vh` : "");
+        miniMapEl.style.setProperty('--map-width', width ? `${Math.min(Math.max(0, width), 90)}vw` : "");
+        miniMapEl.style.setProperty('--map-height', height ? `${Math.min(Math.max(0, height), 90)}vh` : "");
+        miniMapEl.style.setProperty('--map-width-expanded', expanded_width ? `${Math.min(Math.max(0, expanded_width), 90)}vw` : "");
+        miniMapEl.style.setProperty('--map-height-expanded', expanded_height ? `${Math.min(Math.max(0, expanded_height), 90)}vh` : "");
     }
 
     // Handle the dragging logic for resizing
