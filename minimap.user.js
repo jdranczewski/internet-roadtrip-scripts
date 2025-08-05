@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.6.0
+// @version     0.6.1
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -40,6 +40,11 @@
 
     // Custom styles
     GM.addStyle(`
+    /* Fix fullscreen map touch event for narrow windows */
+    /* I don't really understand why this is needed */
+    @media (max-width: 768px) {
+        body {height: auto;}
+    }
     @media (min-width: 900px) {
         .map-container {
             & .expand-button {
@@ -73,10 +78,12 @@
         &.fullscreen {
             opacity: 1 !important;
             z-index: -1 !important;
+            top: 0;
             left: 0;
             bottom: 0;
             width: 100%;
             height: 100%;
+            transform: none;
             & #mini-map {
                 width: 100% !important;
                 height: 100% !important;
@@ -200,6 +207,7 @@
         "expand_map": false,
         "default_zoom": 12.5,
         "timeout_centre": true,
+        "timeout_centre_fullscreen_disable": false,
         "reset_zoom": false,
         "align_orientation": false,
         "show_scale": true,
@@ -232,6 +240,7 @@
 
         "side_compass": false,
         "side_Go to coordinates": false,
+        "side_Go to and mark coordinates": false,
         "side_Copy coordinates": false,
         "side_Measure distance": false,
         "side_Open Street View": true,
@@ -323,6 +332,7 @@
     }
     add_checkbox("Auto-expand map", "expand_map");
     add_checkbox("Re-centre map after a timeout", "timeout_centre");
+    add_checkbox("Disable re-centring when map is fullscreen", "timeout_centre_fullscreen_disable");
     add_checkbox("Reset zoom with map re-centre", "reset_zoom");
     add_checkbox("Align map orientation with car", "align_orientation");
 
@@ -415,7 +425,10 @@
     function checkUpdateMap() {
         return (
             (Date.now() - map.data.lastUserInteraction > 30000)
-            && (settings.timeout_centre || map.data.lastUserInteraction == 0)
+            && ((
+                settings.timeout_centre
+                && (!getPanoUrlOverriding || !settings.timeout_centre_fullscreen_disable )
+            ) || map.data.lastUserInteraction == 0)
         )
     }
     map.data.marker.setLngLat = new Proxy(map.data.marker.setLngLat, {
@@ -687,12 +700,14 @@
     );
 
     // Fullscreen map
-    //TODO: Test this with LotW v1, works with v2
     let getPanoUrlOverriden = false;
     let getPanoUrlOverriding = false;
+    let changeStopArgs = undefined;
     function toggleMapFullscreen(context=undefined, fullscreen=undefined) {
         getPanoUrlOverriding = mapContainerEl.classList.toggle("fullscreen", fullscreen);
         setLayerOpacity(getPanoUrlOverriding ? 1 : undefined);
+        if (getPanoUrlOverriding) changeStopArgs = undefined;
+        if (!getPanoUrlOverriding && changeStopArgs && (vcontainer.data.endTime - Date.now()) > 2000) vcontainer.methods.changeStop(...changeStopArgs);
         if (!getPanoUrlOverriden){
             vcontainer.state.getPanoUrl = new Proxy(
                 vcontainer.methods.getPanoUrl, {
@@ -1180,6 +1195,7 @@
     vcontainer.state.changeStop = new Proxy(changeStop, {
 		apply: (target, thisArg, args) => {
 			const returnValue = Reflect.apply(target, thisArg, args);
+            changeStopArgs = args;
             map.data.marker.setRotation(args[3]);
             if (
                 checkUpdateMap()
