@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Minimap tricks
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.6.1
+// @version     0.6.3
 // @author      jdranczewski (+netux +GameRoMan)
 // @description Provide some bonus options for the Internet Roadtrip minimap.
 // @license     MIT
@@ -43,7 +43,7 @@
     /* Fix fullscreen map touch event for narrow windows */
     /* I don't really understand why this is needed */
     @media (max-width: 768px) {
-        body {height: auto;}
+        body {height: auto !important;}
     }
     @media (min-width: 900px) {
         .map-container {
@@ -173,6 +173,10 @@
                 padding: 0px 5px;
                 border-right: 1px solid #ddd;
             }
+        }
+        
+        .maplibregl-ctrl-compass {
+            cursor: pointer;
         }
     }
 
@@ -331,7 +335,7 @@
         return checkbox
     }
     add_checkbox("Auto-expand map", "expand_map");
-    add_checkbox("Re-centre map after a timeout", "timeout_centre");
+    add_checkbox("Re-centre map on the car after a timeout", "timeout_centre");
     add_checkbox("Disable re-centring when map is fullscreen", "timeout_centre_fullscreen_disable");
     add_checkbox("Reset zoom with map re-centre", "reset_zoom");
     add_checkbox("Align map orientation with car", "align_orientation");
@@ -382,7 +386,7 @@
         }
     })
     let latestBearing = 0;
-    function flyTo(map, coords=undefined, bearing=undefined) {
+    function flyTo(map, coords=undefined, bearing=undefined, interactionOverride=true) {
         let args = {
             essential: !0
         }
@@ -398,7 +402,7 @@
         if (first_fly || settings.reset_zoom) {
             args["zoom"] = settings.default_zoom;
         }
-        map.flyTo(args, {flying: true});
+        map.flyTo(args, {flying: interactionOverride});
     }
 	// Proxy the map resetting
 	map.state.flyTo = new Proxy(mapMethods.flyTo, {
@@ -636,7 +640,8 @@
             add_marker(converted.decimalLatitude, converted.decimalLongitude);
             flyTo(
                 ml_map,
-                [converted.decimalLatitude, converted.decimalLongitude]
+                [converted.decimalLatitude, converted.decimalLongitude],
+                undefined, false
             )
         },
         ["Side", "Map"]
@@ -1133,18 +1138,19 @@
         ml_map.setPaintProperty("svugc-tiles", "raster-opacity", parseFloat(settings.coverage_opacity));
         ml_map.setPaintProperty("sv-tiles", "raster-opacity", parseFloat(settings.coverage_opacity));
 
+        // Set the old route opacity once it's added
+        const old_route_subscription = ml_map.on('data', "old-route-layer", (e) => {
+            if (e.sourceID = "old-route-layer") {
+                ml_map.setPaintProperty("old-route-layer", "line-opacity", parseFloat(settings.route_opacity));
+                ml_map.moveLayer("old-route-layer", "route");
+                ml_map.moveLayer("svugc-tiles", "old-route-layer");
+                ml_map.moveLayer("sv-tiles", "svugc-tiles");
+                old_route_subscription.unsubscribe();
+            }
+        })
+
         if (window.location.hash == "#map") toggleMapFullscreen(undefined, true);
     });
-    // Set the old route opacity once it's added
-    const old_route_subscription = ml_map.on('data', "old-route-layer", (e) => {
-        if (e.sourceID = "old-route-layer") {
-            ml_map.setPaintProperty("old-route-layer", "line-opacity", parseFloat(settings.route_opacity));
-            ml_map.moveLayer("old-route-layer", "route");
-            ml_map.moveLayer("svugc-tiles", "old-route-layer");
-            ml_map.moveLayer("sv-tiles", "svugc-tiles");
-            old_route_subscription.unsubscribe();
-        }
-    })
 
     // Marker colour GUI setting
     {
