@@ -1,0 +1,164 @@
+/* Fix fullscreen map touch event for narrow windows */
+/* I don't really understand why this is needed */
+@media (max-width: 768px) {
+    body {height: auto !important;}
+}
+@media (min-width: 900px) {
+    .map-container {
+        & .expand-button {
+            cursor: nesw-resize;
+            display: flex !important;
+        }
+
+        & #mini-map {
+            position: relative;
+            width: var(--map-width, 250px) !important;
+            height: var(--map-height, 170px) !important;
+        }
+    }
+    .expanded #mini-map {
+        width: var(--map-width-expanded, 450px) !important;
+        height: var(--map-height-expanded, 300px) !important;
+    }
+    .expanded .expand-button img {
+        rotate: 180deg;
+    }
+    .expanded {
+        opacity: var(--map-opacity-expanded, 1) !important;
+    }
+}
+.map-container {
+    transition: opacity .5s;
+    &:hover {
+        opacity: 1 !important;
+    }
+    z-index: 101 !important;
+    &.fullscreen {
+        opacity: 1 !important;
+        z-index: -1 !important;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        transform: none;
+        & #mini-map {
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 0;
+        }
+        & .expand-button {
+            display: none !important;
+        }
+        & .maplibregl-ctrl-top-left {
+            margin-top: 58px;
+            margin-left: 2px;
+        }
+        & .maplibregl-ctrl-bottom-right {
+            margin-bottom: 186px;
+            & .maplibregl-ctrl-scale {
+                margin-right: 11px !important;
+            }
+        }
+    }
+}
+.lotwv1-overlay:has(~ .fullscreen) {
+    display: none !important;
+}
+.maplibregl-marker {
+    opacity: var(--marker-opacity, 1) !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.mmt-map-menu-opened {
+    opacity: 1 !important;
+}
+
+/* Putting this in #mini-map so Netux's PIP script
+    can copy the styles correctly */
+#mini-map {
+    #mmt-menu {
+        position: fixed;
+        z-index: 1000;
+        transform: translate(0, -100%);
+        & button {
+            width: 100%;
+            text-align: left;
+            display: flex;
+            align-items: center;
+        }
+        & .maplibregl-ctrl-icon {
+            width: 29px;
+        }
+        & .maplibregl-ctrl-icon + span {
+            margin: 0 9px 0 5px;
+            display: flex;
+            align-items: center;
+        }
+        & #mmt-menu-label {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            padding: 6px;
+            background: #f1f1f1;
+            display: flex;
+            justify-content: space-between;
+            & #mmt-menu-close {
+                margin-left: 10px;
+                margin-right: 2px;
+                cursor: pointer;
+            }
+        }
+
+        & #mmt-menu-color {
+            display: none;
+        }
+    }
+    .mmt-menu-Map .mmt-hide-Map {display: none !important;}
+    .mmt-menu-Marker .mmt-hide-Marker {display: none !important;}
+    .mmt-menu-Car .mmt-hide-Car {display: none !important;}
+
+    /* For debugging */
+    .mmt-menu-Map .mmt-hide-Map {opacity: 0.5 !important;}
+    .mmt-menu-Marker .mmt-hide-Marker {opacity: 0.5 !important;}
+    .mmt-menu-Car .mmt-hide-Car {opacity: 0.5 !important;}
+
+    .mmt-distance-control {
+        display: flex;
+        & div {
+            display: flex;
+            align-items: center;
+            padding: 0px 5px;
+            border-right: 1px solid #ddd;
+        }
+    }
+    
+    .maplibregl-ctrl-compass {
+        cursor: pointer;
+    }
+}
+
+/* Decimal points */
+.mmt-miles-decimal .miles-text {
+    text-align: center;
+    line-height: 10px;
+    & span {
+        display: inline !important;
+        font-size: 10px;
+    }
+}
+
+/* For Netux's PIP script */
+@media (display-mode: picture-in-picture) {
+    .maplibregl-ctrl-scale {
+        margin: 0px 5px 5px 0px !important;
+    }
+    #mini-map {
+        #mmt-menu {
+            transform: translate(0, 0px) !important;
+            top: 10px !important;
+            right: 10px !important;
+            left: auto !important;
+        }
+    }
+}

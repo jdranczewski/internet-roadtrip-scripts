@@ -1,0 +1,15 @@
+a {color: #aaa}
+
+.settings-item {
+	@apply grid grid-cols-[auto_1fr_auto] items-center;
+
+    & > hr {
+        @apply w-full;
+        @apply text-transparent bg-transparent;
+        @apply border-1 border-dashed border-[#41474b];
+    }
+}
+
+.setting {
+	@apply m-3;
+}
