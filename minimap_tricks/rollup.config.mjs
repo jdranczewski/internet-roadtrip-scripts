@@ -54,6 +54,7 @@ export default defineConfig(
       'internet-roadtrip-framework',
       "solid-js",
       "solid-js/web",
+      "geo-coordinates-parser"
     ]),
     output: {
       format: 'iife',
@@ -62,7 +63,10 @@ export default defineConfig(
         "internet-roadtrip-framework": "IRF",
         "solid-js": "VM.solid",
         "solid-js/web": "VM.solid.web",
+        "geo-coordinates-parser": "geoCoordinatesParser"
       },
+      banner: "const geoCoordinatesParser = {convert};",
+      intro: "if (!IRF.isInternetRoadtrip) return;",
       indent: false,
     },
   })),

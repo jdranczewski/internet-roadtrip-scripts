@@ -1,6 +1,7 @@
 import * as IRF from 'internet-roadtrip-framework'
 import styles, {stylesheet} from './settings.module.css'
-import { render } from "solid-js/web";
+import { delegateEvents, render, Show } from "solid-js/web";
+import { createEffect, createSignal } from "solid-js";
 
 // Default settings
 export const settings = {
@@ -39,14 +40,6 @@ export const settings = {
     "car_marker_flip_x": false,
 
     "side_compass": false,
-    "side_Go to coordinates": false,
-    "side_Go to and mark coordinates": false,
-    "side_Copy coordinates": false,
-    "side_Measure distance": false,
-    "side_Open Street View": true,
-    "side_Open SV coverage map": true,
-    "side_Add marker": false,
-    "side_Centre": true,
 
     "coverage": true,
     "coverage_opacity": 0.75,
@@ -73,22 +66,27 @@ let gm_info = GM.info
 gm_info.script.name = "Minimap tricks"
 
 // Wrapper around IRF panel
-export class Panel {
+class Section {
     name: string;
-    _irf_settings: {
-        container: HTMLDivElement;
-    }
+    description: string | undefined;
     container: HTMLDivElement;
 
-    constructor(name: string) {
+    constructor (name: string, description?: string) {
         this.name = name;
-        this._irf_settings = IRF.ui.panel.createTabFor(
-            gm_info, {
-                tabName: name,
-                style: stylesheet
-            }
-        );
-        this.container = this._irf_settings.container;
+        this.description = description;
+        this.container = document.createElement("div");
+        this.render_header();
+    }
+
+    render_header() {
+        this.container.classList.add(styles['settings-section']);
+        const item = 
+        <>
+            <hr></hr>
+            <h2>{this.name}</h2>
+            <Show when={this.description}><p>{this.description}</p></Show>
+        </>
+        render(() => item, this.container);
     }
 
     add_checkbox(
@@ -112,6 +110,65 @@ export class Panel {
                 />
             </div>
         </div>
+
+        render(() => item, this.container);
+    }
+
+    add_slider(
+        name: string, identifier: string, callback: CallableFunction=undefined,
+        slider_bits: [number, number, number]=[1, 17, .5]
+    ) {
+        const [value, setValue] = createSignal(settings[identifier]);
+        createEffect(() => {
+            settings[identifier] = value();
+            GM.setValues(settings);
+            if (callback) callback(value());
+        })
+        const item =
+        <div class={styles['settings-item-margin']}>
+            <div class={styles['setting']}>
+                <label> {name}: {value()}</label>
+                <input
+                    type="range"
+                    min={slider_bits[0]}
+                    max={slider_bits[1]}
+                    step={slider_bits[2]}
+                    value={value()}
+                    class={IRF.ui.panel.styles.slider}
+                    oninput={(e) => setValue(e.target.value)}
+                />
+            </div>
+        </div>
+
         render(() => item, this.container);
     }
 }
+
+export class Panel extends Section {
+    _irf_settings: {
+        container: HTMLDivElement;
+    }
+
+    constructor(name: string) {
+        super(name);
+        this._irf_settings = IRF.ui.panel.createTabFor(
+            gm_info, {
+                tabName: name,
+                style: stylesheet
+            }
+        );
+        this.container = this._irf_settings.container;
+    }
+
+    render_header(): void {
+        
+    }
+
+    add_section(name: string, description?: string): Section {
+        const section = new Section(name, description);
+        this.container.appendChild(section.container);
+        return section;
+    }
+}
+
+export const panel = new Panel("Minimap");

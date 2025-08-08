@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.24.1",
+    "geo-coordinates-parser": "^1.7.4",
     "internet-roadtrip-framework": "^0.4.1-beta",
     "solid-js": "^1.8.16"
   },
@@ -51,6 +52,7 @@
     "globals": "^15.14.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.11",
+    "maplibre-gl": "^5.6.2",
     "npm-run-all": "^4.1.5",
     "postcss": "^8.4.49",
     "postcss-calc": "^10.0.2",

@@ -1,7 +1,25 @@
 a {color: #aaa}
 
+.settings-section {
+    & > hr {
+        display: none
+    }
+    & ~.settings-section > hr {
+        display: block;
+        @apply mt-6;
+    }
+    & p {
+        @apply justify-content;
+    }
+}
+
+.settings-item-margin {
+    @apply mr-2;
+}
+
 .settings-item {
 	@apply grid grid-cols-[auto_1fr_auto] items-center;
+    @apply mr-2;
 
     & > hr {
         @apply w-full;
@@ -11,5 +29,5 @@ a {color: #aaa}
 }
 
 .setting {
-	@apply m-3;
+	@apply mx-3 my-2;
 }

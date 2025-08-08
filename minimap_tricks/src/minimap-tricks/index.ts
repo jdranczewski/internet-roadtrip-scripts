@@ -3,8 +3,9 @@ import * as IRF from 'internet-roadtrip-framework'
 
 import globalCss from './style.css';
 import './settings/settings'
-import './settings/main_settings'
 
-if (IRF.isInternetRoadtrip) {
-    GM_addStyle(globalCss);
-}
+GM_addStyle(globalCss);
+import './controlmenu'
+import './flying'
+import './units'
+import './menuactions'
