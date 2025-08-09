@@ -84,7 +84,7 @@ class Section {
         <>
             <hr></hr>
             <h2>{this.name}</h2>
-            <Show when={this.description}><p>{this.description}</p></Show>
+            <Show when={this.description}><p innerHTML={this.description} /></Show>
         </>
         render(() => item, this.container);
     }

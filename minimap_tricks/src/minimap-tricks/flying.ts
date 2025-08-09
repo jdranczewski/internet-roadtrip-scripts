@@ -3,6 +3,7 @@ import * as IRF from 'internet-roadtrip-framework'
 import {type FlyToOptions} from 'maplibre-gl'
 import { control } from './controlmenu'
 import { mapIsFullscreen } from './fullscreen'
+import { measure } from './distance'
 
 const section = panel.add_section("Map position", `The map will follow the car by default.
     You can change how (and if) this happens here.`)
@@ -83,10 +84,11 @@ export function checkUpdateMap() {
     )
 }
 
-// Sync map to the coordinates when the marker is updated
-// but only if the marker moved a significant distance compared to the tile size
+let prevPos = [0, 0];
 vmap.data.marker.setLngLat = new Proxy(vmap.data.marker.setLngLat, {
     apply: (target, thisArg, args) => {
+        // Sync map to the coordinates when the marker is updated
+        // but only if the marker moved a significant distance compared to the tile size
         const map_lnglat = ml_map.getCenter();
         const diff = [
             Math.abs(args[0][0] - map_lnglat.lng),
@@ -100,6 +102,14 @@ vmap.data.marker.setLngLat = new Proxy(vmap.data.marker.setLngLat, {
         ) {
             flyTo([args[0][1], args[0][0]])
         }
+
+        // Update the distance measurement when the car's position changes
+        // (this method is called on every websocket receive, so we filter it here)
+        if (args[0][0] !== prevPos[0] || args[0][1] !== prevPos[1]) {
+            measure.updateCar();
+            prevPos = args[0];
+        }
+
         return Reflect.apply(target, thisArg, args);
     }
 })
