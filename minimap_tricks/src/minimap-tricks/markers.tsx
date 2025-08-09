@@ -1,9 +1,11 @@
 import {settings, marker_panel} from './settings/settings'
 import { control } from './controlmenu'
+import { flyTo } from './flying'
 import * as IRF from 'internet-roadtrip-framework'
 import styles from './settings/settings.module.css'
 import { render } from "solid-js/web";
 import { createEffect, createSignal } from 'solid-js';
+import { convert } from 'geo-coordinates-parser'
 
 const maplibre = await IRF.modules.maplibre;
 const vmap = await IRF.vdom.map;
@@ -90,6 +92,28 @@ control.addButton(
         c.data._mmt_remove();
     },
     ["Marker"]
+);
+
+// Mark given coordinates
+control.addButton(
+    "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%22-6%20-6%2036%2036%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22size-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M6%2012%203.269%203.125A59.8%2059.8%200%200%201%2021.485%2012%2059.8%2059.8%200%200%201%203.27%2020.875L5.999%2012Zm0%200h7.5%22%2F%3E%3C%2Fsvg%3E",
+    "Go to and mark coordinates",
+    async (c) => {
+        let converted;
+        try {
+            converted = convert(prompt("Input coordinates here:"));
+        } catch {
+            alert("Coordinates were incorrect!");
+            return
+        }
+        add_marker(converted.decimalLatitude, converted.decimalLongitude);
+        flyTo(
+            [converted.decimalLatitude, converted.decimalLongitude],
+            undefined, false
+        )
+    },
+    ["Side", "Map"],
+    {side_visible_default: false}
 );
 
 // Draggable markers

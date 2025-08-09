@@ -2,6 +2,7 @@ import {settings, panel} from './settings/settings'
 import * as IRF from 'internet-roadtrip-framework'
 import {type FlyToOptions} from 'maplibre-gl'
 import { control } from './controlmenu'
+import { mapIsFullscreen } from './fullscreen'
 
 const section = panel.add_section("Map position", `The map will follow the car by default.
     You can change how (and if) this happens here.`)
@@ -28,7 +29,7 @@ const zoom_subscription = ml_map.on("moveend", () => {
 
 // General function for flying the map to a location
 let latestBearing = 0;
-function flyTo(coords?: number[], bearing?: number, interactionOverride: boolean=true) {
+export function flyTo(coords?: number[], bearing?: number, interactionOverride: boolean=true) {
     let args: FlyToOptions = {
         essential: !0,
     }
@@ -77,8 +78,7 @@ function checkUpdateMap() {
         (Date.now() - vmap.data.lastUserInteraction > 30000)
         && ((
             settings.timeout_centre
-            // TODO: revisit once fullscreen is implemented
-            // && (!getPanoUrlOverriding || !settings.timeout_centre_fullscreen_disable )
+            && (!mapIsFullscreen || !settings.timeout_centre_fullscreen_disable )
         ) || vmap.data.lastUserInteraction == 0)
     )
 }
