@@ -8,6 +8,7 @@ GM.addStyle(globalCss);
 import './controlmenu'
 import './flying'
 import './units'
+import './car'
 import './menuactions'
 import './markers'
 import './kml'

@@ -73,7 +73,7 @@ ml_map.on("zoomstart", vmap.methods.handleUserInteraction);
 ml_map.on("rotatestart", vmap.methods.handleUserInteraction);
 
 
-function checkUpdateMap() {
+export function checkUpdateMap() {
     return (
         (Date.now() - vmap.data.lastUserInteraction > 30000)
         && ((

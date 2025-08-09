@@ -15,6 +15,7 @@ a {color: #aaa}
 
 .settings-item-margin {
     @apply mr-2;
+    @apply grid;
 }
 
 .settings-item {

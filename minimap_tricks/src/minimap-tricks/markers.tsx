@@ -1,7 +1,7 @@
+import * as IRF from 'internet-roadtrip-framework'
 import {settings, marker_panel} from './settings/settings'
 import { control } from './controlmenu'
 import { flyTo } from './flying'
-import * as IRF from 'internet-roadtrip-framework'
 import styles from './settings/settings.module.css'
 import { render } from "solid-js/web";
 import { createEffect, createSignal } from 'solid-js';
@@ -29,17 +29,18 @@ class MMTMarker extends maplibre.Marker {
 }
 
 async function add_marker(lat: number, lng: number, marker_id?: string, color?: string) {
+    color = color ? color : settings.marker_color
     const marker = new MMTMarker({
         draggable: settings.draggable_markers,
         scale: 0.8,
-        color: color ? color : settings.marker_color
+        color: color
     })
         .setLngLat([lng, lat])
         .addTo(ml_map);
 
     if (!marker_id) {
         marker_id = crypto.randomUUID();
-        settings.markers[marker_id] = [lat, lng, {}];
+        settings.markers[marker_id] = [lat, lng, {color} ];
         GM.setValues(settings);
     }
     marker._mmt_id = marker_id;
@@ -161,28 +162,11 @@ mcol_input.addEventListener("input", (e) => {
 // Marker settings
 const section = marker_panel.add_section("User markers", `You can add and remove
     your own markers by right-clicking the minimap.`)
-{
-    const [color, setColor] = createSignal(settings.marker_color);
-    createEffect(() => {
-        settings.marker_color = color();
-        GM.setValues(settings);
-    })
-    const item =
-    <div class={styles['settings-item']}>
-        <span class={styles['setting']}>Default marker colour:</span>
-        <input
-            style="width: 100%;"
-            type='color'
-            value={color()}
-            onchange={(e) => setColor(e.target.value)}
-        />
-        <button
-            class={styles['setting']}
-            onclick={() => setColor("#f7a000")}
-        >Reset</button>
-    </div>
-    render(() => item, section.container);
-}
+
+section.add_input(
+    "Default marker colour", "marker_color", "color",
+    undefined, "#f7a000"
+)
 
 section.add_button(
     "Remove all markers",

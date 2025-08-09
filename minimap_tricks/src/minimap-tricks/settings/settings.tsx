@@ -159,6 +159,47 @@ class Section {
 
         render(() => item, this.container);
     }
+
+    add_input(
+        name:string, identifier: string, type: string,
+        callback?: CallableFunction,
+        default_value?: any
+    ) {
+        const [value, setValue] = createSignal(settings[identifier]);
+        createEffect(() => {
+            settings[identifier] = value();
+            GM.setValues(settings);
+            if (callback) callback(value());
+        })
+        const item =
+        <div class={styles['settings-item']}>
+            <span class={styles['setting']}>{name}:</span>
+            <input
+                style="width: 100%;"
+                type={type}
+                value={value()}
+                onchange={(e) => setValue(e.target.value)}
+            />
+            <Show when={default_value}>
+                <button
+                    class={styles['setting']}
+                    onclick={() => setValue(default_value)}
+                >Reset</button>
+            </Show>
+        </div>
+        render(() => item, this.container);
+    }
+
+    add_comment(text: string) {
+        const item = 
+        <div class={styles['settings-item-margin']}>
+            <p
+                class={styles['setting']}
+                innerHTML={text}
+            />
+        </div>
+        render(() => item, this.container);
+    }
 }
 
 export class Panel extends Section {
