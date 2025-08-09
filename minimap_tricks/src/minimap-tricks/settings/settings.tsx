@@ -1,7 +1,7 @@
 import * as IRF from 'internet-roadtrip-framework'
 import styles, {stylesheet} from './settings.module.css'
 import { render, Show } from "solid-js/web";
-import { createEffect, createSignal } from "solid-js";
+import { createEffect, createSignal, on } from "solid-js";
 
 // Default settings
 export const settings = {
@@ -26,7 +26,7 @@ export const settings = {
     "map_opacity_expanded": 1,
     "background_opacity_expanded": 1,
     "marker_opacity": 1,
-    "route_opacity": 1,
+    "route_opacity": "1",
     "marker_color": "#f7a000",
     "markers": {},
     "draggable_markers": true,
@@ -42,7 +42,7 @@ export const settings = {
     "side_compass": false,
 
     "coverage": true,
-    "coverage_opacity": 0.75,
+    "coverage_opacity": "0.75",
 }
 
 // Initialise settings
@@ -119,11 +119,13 @@ class Section {
         slider_bits: [number, number, number]=[1, 17, .5]
     ) {
         const [value, setValue] = createSignal(settings[identifier]);
-        createEffect(() => {
+
+        createEffect(on(value, () => {
             settings[identifier] = value();
             GM.setValues(settings);
             if (callback) callback(value());
-        })
+        }, {defer: true}))
+
         const item =
         <div class={styles['settings-item-margin']}>
             <div class={styles['setting']}>
@@ -166,11 +168,15 @@ class Section {
         default_value?: any
     ) {
         const [value, setValue] = createSignal(settings[identifier]);
-        createEffect(() => {
+
+        // We use on with defer here so the effect only runs when value changes
+        // and not when the effect is initially created
+        createEffect(on(value, () => {
             settings[identifier] = value();
             GM.setValues(settings);
             if (callback) callback(value());
-        })
+        }, {defer: true}));
+
         const item =
         <div class={styles['settings-item']}>
             <span class={styles['setting']}>{name}:</span>

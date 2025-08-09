@@ -19,6 +19,7 @@ function default_marker_svg() {
 marker_el.style.backgroundImage = default_marker_svg();
 marker_el.style.width = `${settings.car_marker_size}px`;
 marker_el.style.height = `${settings.car_marker_size}px`;
+marker_el.style.setProperty('--marker-opacity', settings.marker_opacity.toString());
 
 // Custom car marker
 const custom_car = document.createElement("img");
