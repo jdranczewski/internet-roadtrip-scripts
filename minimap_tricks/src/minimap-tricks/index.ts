@@ -4,7 +4,7 @@ import * as IRF from 'internet-roadtrip-framework'
 import globalCss from './style.css';
 import './settings/settings'
 
-GM_addStyle(globalCss);
+GM.addStyle(globalCss);
 import './controlmenu'
 import './flying'
 import './units'

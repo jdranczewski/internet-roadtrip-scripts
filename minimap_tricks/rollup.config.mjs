@@ -7,7 +7,8 @@ import { isAbsolute, relative, resolve } from 'path';
 import { readPackageUp } from 'read-package-up';
 import { defineConfig } from 'rollup';
 import postcssPlugin from 'rollup-plugin-postcss';
-import userscript from 'rollup-plugin-userscript';
+import userscript from '@netux/rollup-plugin-userscript';
+import tla from 'rollup-plugin-tla';
 
 const { packageJson } = await readPackageUp();
 const extensions = ['.ts', '.tsx', '.mjs', '.js', '.jsx'];
@@ -49,6 +50,7 @@ export default defineConfig(
       userscript((meta) =>
         meta.replace('process.env.AUTHOR', packageJson.author.name),
       ),
+      tla()
     ],
     external: defineExternal([
       'internet-roadtrip-framework',

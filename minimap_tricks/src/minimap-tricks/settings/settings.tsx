@@ -46,7 +46,7 @@ export const settings = {
 }
 
 // Initialise settings
-const storedSettings = GM_getValues(Object.keys(settings))
+const storedSettings = await GM.getValues(Object.keys(settings))
 Object.assign(
     settings,
     storedSettings
@@ -59,7 +59,7 @@ Object.entries(settings.markers).forEach(([key, value]) => {
         settings.markers[key] = [value[0], value[1], {color: value[2]}]
     }
 });
-GM_setValues(settings);
+GM.setValues(settings);
 
 // Update script name so it takes up less space
 let gm_info = GM.info

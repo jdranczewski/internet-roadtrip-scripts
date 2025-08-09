@@ -10,6 +10,7 @@ const section = panel.add_section("Side menu", `You can access all the map actio
 const contexts = ["Side", "Map", "Car", "Marker"];
 
 // A Maplibre Control class that implements our context and side menus
+const mapContainerEl = await IRF.dom.map;
 export class TricksControl implements IControl {
     _c_cont: HTMLDivElement; // Control container
     _m_cont: HTMLDivElement; // Menu container
@@ -25,7 +26,7 @@ export class TricksControl implements IControl {
         this._m_cont = document.createElement('div'); // Menu container
         this._m_cont.id = "mmt-menu";
         this._m_cont.style.display = "none";
-        IRF.dom.map.then((mapContainerEl) => mapContainerEl.querySelector('#mini-map').appendChild(this._m_cont));
+        mapContainerEl.querySelector('#mini-map').appendChild(this._m_cont);
         document.addEventListener("click", (e) => {
             this._hide_menu();
         });
@@ -57,11 +58,11 @@ export class TricksControl implements IControl {
 
     _show_menu(): void {
         control._m_cont.style.display = "block";
-        IRF.dom.map.then((mapContainerEl) => mapContainerEl.classList.add("mmt-map-menu-opened"));
+        mapContainerEl.classList.add("mmt-map-menu-opened");
     }
     _hide_menu(): void {
         this._m_cont.style.display = "none";
-        IRF.dom.map.then((mapContainerEl) => mapContainerEl.classList.remove("mmt-map-menu-opened"));
+        mapContainerEl.classList.remove("mmt-map-menu-opened");
     }
     openMenu(context: string, lat: number, lng: number, left: number, top: number, data: any=undefined) {
         this.context = context;
@@ -198,40 +199,40 @@ export const control = new TricksControl();
 }
 
 // Add the Control to the map and set up triggers for contex menus
-IRF.vdom.map.then(async (vmap) => {
-    const ml_map = vmap.data.map;
-    ml_map.addControl(control, "bottom-left");
-    ml_map.on("contextmenu", (e) => {
-        control.openMenu(
-            "Map", e.lngLat.lat, e.lngLat.lng,
-            e.originalEvent.clientX, e.originalEvent.clientY
-        )
-    })
+const vmap = await IRF.vdom.map;
+const ml_map = vmap.data.map;
 
-    const vcontainer = await IRF.vdom.container;
-    vmap.data.marker.getElement().oncontextmenu = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
+ml_map.addControl(control, "bottom-left");
+ml_map.on("contextmenu", (e) => {
+    control.openMenu(
+        "Map", e.lngLat.lat, e.lngLat.lng,
+        e.originalEvent.clientX, e.originalEvent.clientY
+    )
+});
 
-        control.openMenu(
-            "Car",
-            vcontainer.data.currentCoords.lat,
-            vcontainer.data.currentCoords.lng,
-            e.clientX, e.clientY
-        )
-    }
+const vcontainer = await IRF.vdom.container;
+vmap.data.marker.getElement().oncontextmenu = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
 
-    // Add a compass Control
-    const maplibre = await IRF.modules.maplibre;
-    const compass = new maplibre.NavigationControl({
-        visualizePitch: true,
-        visualizeRoll: true,
-        showCompass: true,
-        showZoom: false
-    })
-    ml_map.addControl(compass, "bottom-left");
-    compass._container.style.display = settings.side_compass ? "block" : "none";
-    section.add_checkbox("Show compass", "side_compass", (show) => {
-        compass._container.style.display = show ? "block" : "none";
-    })
-})
+    control.openMenu(
+        "Car",
+        vcontainer.data.currentCoords.lat,
+        vcontainer.data.currentCoords.lng,
+        e.clientX, e.clientY
+    )
+}
+
+// Add a compass Control
+const maplibre = await IRF.modules.maplibre;
+const compass = new maplibre.NavigationControl({
+    visualizePitch: true,
+    visualizeRoll: true,
+    showCompass: true,
+    showZoom: false
+});
+ml_map.addControl(compass, "bottom-left");
+compass._container.style.display = settings.side_compass ? "block" : "none";
+section.add_checkbox("Show compass", "side_compass", (show) => {
+    compass._container.style.display = show ? "block" : "none";
+});

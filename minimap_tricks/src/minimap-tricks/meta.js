@@ -3,12 +3,9 @@
 // @namespace   jdranczewski.github.io
 // @description Provide many bonus options for the Internet Roadtrip minimap.
 // @match       https://neal.fun/internet-roadtrip/*
-// @grant       GM_addStyle
 // @version     0.7.0
 // @author      jdranczewski (+netux +GameRoMan)
 // @license     MIT
-// @grant       GM.setValues
-// @grant       GM.getValues
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
 // @require     https://cdn.jsdelivr.net/npm/@violentmonkey/dom@2/dist/solid.min.js
 // @require     https://cdn.jsdelivr.net/gh/ianengelbrecht/geo-coordinates-parser@b06d051f2a70bc95c2fa1a063ceef85f19823fee/bundle/geocoordsparser.js
