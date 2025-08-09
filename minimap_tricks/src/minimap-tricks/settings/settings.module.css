@@ -9,7 +9,7 @@ a {color: #aaa}
         @apply mt-6;
     }
     & p {
-        @apply justify-content;
+        text-align: justify;
     }
 }
 
@@ -20,6 +20,12 @@ a {color: #aaa}
 .settings-item {
 	@apply grid grid-cols-[auto_1fr_auto] items-center;
     @apply mr-2;
+
+    &.inverse {
+        @apply grid-cols-[1fr_auto_1fr];
+        @apply ml-3;
+        @apply mr-5;
+    }
 
     & > hr {
         @apply w-full;

@@ -110,6 +110,17 @@
             }
         }
 
+        & .mmt-draggable-checkbox-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            & input {
+                width: 50%;
+                height: 50%;
+                pointer-events: none;
+            }
+        }
+
         & #mmt-menu-color {
             display: none;
         }

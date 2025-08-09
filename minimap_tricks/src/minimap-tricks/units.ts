@@ -1,7 +1,5 @@
 import {settings, panel} from './settings/settings'
 import * as IRF from 'internet-roadtrip-framework'
-import {type FlyToOptions} from 'maplibre-gl'
-import { control } from './controlmenu'
 
 const section = panel.add_section("Measurements and units", `Do you prefer metric? (correct) Or would you like more precision?`);
 

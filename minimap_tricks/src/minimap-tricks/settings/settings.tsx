@@ -1,6 +1,6 @@
 import * as IRF from 'internet-roadtrip-framework'
 import styles, {stylesheet} from './settings.module.css'
-import { delegateEvents, render, Show } from "solid-js/web";
+import { render, Show } from "solid-js/web";
 import { createEffect, createSignal } from "solid-js";
 
 // Default settings
@@ -142,6 +142,23 @@ class Section {
 
         render(() => item, this.container);
     }
+
+    add_button(
+        name: string, callback: CallableFunction
+    ) {
+        const item =
+        <div class={[styles['settings-item'], styles['inverse']].join(' ')}>
+            <hr />
+            <div class={styles['setting']}>
+                <button
+                    onclick={() => callback()}
+                >{name}</button>
+            </div>
+            <hr />
+        </div>
+
+        render(() => item, this.container);
+    }
 }
 
 export class Panel extends Section {
@@ -172,3 +189,4 @@ export class Panel extends Section {
 }
 
 export const panel = new Panel("Minimap");
+export const marker_panel = new Panel("Map markers");
