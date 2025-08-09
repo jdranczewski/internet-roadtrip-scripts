@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.24.1",
+    "@turf/turf": "^7.2.0",
     "geo-coordinates-parser": "^1.7.4",
     "internet-roadtrip-framework": "^0.4.1-beta",
     "solid-js": "^1.8.16"
@@ -30,7 +31,6 @@
     "@babel/plugin-transform-runtime": "^7.25.9",
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-typescript": "^7.26.0",
-    "@netux/rollup-plugin-userscript": "0.4.0",
     "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^28.0.2",
@@ -63,6 +63,7 @@
     "rollup": "^4.29.1",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-tla": "^0.0.2",
+    "rollup-plugin-userscript": "^1.0.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.18.1",
     "unocss": "^0.65.2"

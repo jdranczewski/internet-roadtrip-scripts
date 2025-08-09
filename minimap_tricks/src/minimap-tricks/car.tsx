@@ -1,6 +1,7 @@
 import * as IRF from 'internet-roadtrip-framework'
 import { settings, panel } from './settings/settings'
 import { checkUpdateMap, flyTo } from './flying'
+import { measure } from './distance';
 
 const vcontainer = await IRF.vdom.container;
 const vmap = await IRF.vdom.map;
@@ -47,8 +48,7 @@ vcontainer.state.changeStop = new Proxy(changeStop, {
         } else {
             custom_car.style.transform = `scale(${x_flip}, 1)`;
         }
-        // TODO: Revisit when implementing distance measurements
-        // if (measure) measure.updateCar();
+        measure.updateCar();
         return returnValue;
     },
 });

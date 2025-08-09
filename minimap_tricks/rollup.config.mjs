@@ -7,7 +7,7 @@ import { isAbsolute, relative, resolve } from 'path';
 import { readPackageUp } from 'read-package-up';
 import { defineConfig } from 'rollup';
 import postcssPlugin from 'rollup-plugin-postcss';
-import userscript from '@netux/rollup-plugin-userscript';
+import userscript from 'rollup-plugin-userscript';
 import tla from 'rollup-plugin-tla';
 
 const { packageJson } = await readPackageUp();
@@ -56,7 +56,8 @@ export default defineConfig(
       'internet-roadtrip-framework',
       "solid-js",
       "solid-js/web",
-      "geo-coordinates-parser"
+      "geo-coordinates-parser",
+      "turf"
     ]),
     output: {
       format: 'iife',
@@ -65,7 +66,8 @@ export default defineConfig(
         "internet-roadtrip-framework": "IRF",
         "solid-js": "VM.solid",
         "solid-js/web": "VM.solid.web",
-        "geo-coordinates-parser": "geoCoordinatesParser"
+        "geo-coordinates-parser": "geoCoordinatesParser",
+        "turf": "turf"
       },
       banner: "const geoCoordinatesParser = {convert};",
       intro: "if (!IRF.isInternetRoadtrip) return;",

@@ -1,3 +1,4 @@
+import { measure } from './distance';
 import {settings, panel} from './settings/settings'
 import * as IRF from 'internet-roadtrip-framework'
 
@@ -28,8 +29,7 @@ Object.defineProperty(vodometer.state, 'isKilometers', {
         // Set the units on the scale bar
         scale_control.setUnit(isKilometers ? "metric": "imperial");
         // Update the units on the distance measurement
-        // TODO: come back here once distance measuring is a thing
-        // if (measure) measure.setDistance();
+        measure.setDistance();
         return r_value
     },
     configurable: true,
