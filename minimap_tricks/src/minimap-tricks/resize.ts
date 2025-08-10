@@ -93,9 +93,9 @@ Object.defineProperty(vmap.state, 'isExpanded', {
 });
 
 // Settings
-export const section = panel.add_section("Map size", `You can drag on the expand
+export const section = panel.add_section("Map size", `You can drag the "expand"
     button of the map to change its size, and you can save two different sizes this way
-    - expanded and not expanded. Click the expand button to toggle between these.`);
+    - expanded and not expanded. Click the "expand" button to toggle between these.`);
 
 section.add_button("Reset map size", () => {
     settings.map_size = {

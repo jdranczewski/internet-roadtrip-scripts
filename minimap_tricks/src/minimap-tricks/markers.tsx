@@ -1,5 +1,5 @@
 import * as IRF from 'internet-roadtrip-framework'
-import {settings, marker_panel} from './settings/settings'
+import {settings, panel} from './settings/settings'
 import { control } from './controlmenu'
 import { flyTo } from './flying'
 import styles from './settings/settings.module.css'
@@ -13,9 +13,6 @@ const ml_map = vmap.data.map;
 
 // In memory marker storage
 export const markers = {};
-(unsafeWindow as any)._MMT_getMarkers = () => {
-    return markers;
-}
 
 class MMTMarker extends maplibre.Marker {
     _mmt_id: string;
@@ -83,7 +80,7 @@ control.addButton(
         add_marker(c.lat, c.lng);
     },
     ["Side", "Car", "Map"],
-    {side_visible_default: false}
+    {side_visible_default: false, before: "Centre"}
 );
 
 control.addButton(
@@ -114,7 +111,7 @@ control.addButton(
         )
     },
     ["Side", "Map"],
-    {side_visible_default: false}
+    {side_visible_default: false, before: "Copy coordinates"}
 );
 
 // Draggable markers
@@ -129,7 +126,7 @@ const draggable_meta = control.addButton(
             (marker as MMTMarker).setDraggable(settings.draggable_markers);
         }
     },
-    ["Marker"]
+    ["Marker"], {before: "Remove marker"}
 )
 const draggable_checkbox = document.createElement("input");
 draggable_checkbox.type = "checkbox";
@@ -144,7 +141,7 @@ control.addButton(
     `data:image/svg+xml,${encodeURIComponent(dropper_svg)}`,
     "Set color",
     (c) => {mcol_input.click()},
-    ["Marker"]
+    ["Marker"], {before: "Remove marker"}
 )
 const mcol_input = document.createElement("input");
 mcol_input.type = "color";
@@ -160,7 +157,7 @@ mcol_input.addEventListener("input", (e) => {
 })
 
 // Marker settings
-const section = marker_panel.add_section("User markers", `You can add and remove
+const section = panel.add_section("User markers", `You can add and remove
     your own markers by right-clicking the minimap.`)
 
 section.add_input(

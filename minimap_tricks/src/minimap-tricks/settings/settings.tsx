@@ -236,4 +236,4 @@ export class Panel extends Section {
 }
 
 export const panel = new Panel("Minimap");
-export const marker_panel = new Panel("Map markers");
+// export const marker_panel = new Panel("Map markers");

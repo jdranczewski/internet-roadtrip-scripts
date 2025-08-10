@@ -4,7 +4,7 @@ import { mapIsFullscreen } from './fullscreen';
 import { control } from './controlmenu';
 import { type MapSourceDataEvent } from 'maplibre-gl';
 
-export const section = panel.add_section("Map appearance", `Change the the opacity of
+export const section = panel.add_section("Map appearance", `Change the opacity of
     map elements here. You can use the sliders below to make the map mostly transparent,
     or even set it so that only the streets are visible unless you put your mouse over it!`);
 

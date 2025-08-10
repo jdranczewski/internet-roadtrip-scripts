@@ -3,8 +3,8 @@ import * as IRF from 'internet-roadtrip-framework'
 import {type IControl, type Map} from 'maplibre-gl'
 
 // Settings page for the side menu
-const section = panel.add_section("Side menu", `You can access all the map actions by right-clicking the map,
-    the car, or added markers, but here you can also pin your favourite buttons to the map's side menu.`);
+const section = panel.add_section("Side menu", `You can access all map actions by right-clicking the map,
+    the car, or added markers. Use the toggles below to pin your favourite buttons to the map's side menu.`);
 
 // Default contexts for the context menu
 const contexts = ["Side", "Map", "Car", "Marker"];
@@ -180,10 +180,7 @@ export class TricksControl implements IControl {
 
 // Define map controls to add buttons for
 export const control = new TricksControl();
-
-// Export some APIs
-(unsafeWindow as any)._MMT_control = control;
-(unsafeWindow as any)._MMT_addContext = (name: string, available: string[]) => {
+export function addContext(name: string, available: string[]) {
     contexts.push(name);
     const css_name = name.replaceAll(' ', '-');
     Array.from(control._m_options.children).forEach((child) => {

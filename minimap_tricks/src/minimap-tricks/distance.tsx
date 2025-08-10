@@ -291,5 +291,6 @@ control.addButton(
         distance_control.startMeasure();
         if (c.context === "Car") measure.toggleCar();
         else if (c.context !== "Side") measure.addPoint(c.lat, c.lng);
-    }
+    },
+    undefined, {side_visible_default: false, before: "Open Street View"}
 )

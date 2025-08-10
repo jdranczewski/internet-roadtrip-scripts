@@ -3,6 +3,7 @@
 // @namespace   jdranczewski.github.io
 // @description Provide many bonus options for the Internet Roadtrip minimap.
 // @match       https://neal.fun/internet-roadtrip/*
+// @icon        https://files.catbox.moe/v4yu3f.png
 // @version     0.7.0
 // @author      jdranczewski (+netux +GameRoMan)
 // @license     MIT
