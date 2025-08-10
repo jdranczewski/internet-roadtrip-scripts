@@ -57,7 +57,8 @@ export default defineConfig(
       "solid-js",
       "solid-js/web",
       "geo-coordinates-parser",
-      "@turf/turf"
+      "@turf/turf",
+      "@tmcw/togeojson"
     ]),
     output: {
       format: 'iife',
@@ -67,7 +68,8 @@ export default defineConfig(
         "solid-js": "VM.solid",
         "solid-js/web": "VM.solid.web",
         "geo-coordinates-parser": "geoCoordinatesParser",
-        "@turf/turf": "turf"
+        "@turf/turf": "turf",
+        "@tmcw/togeojson": "toGeoJSON",
       },
       banner: "const geoCoordinatesParser = {convert};",
       intro: "if (!IRF.isInternetRoadtrip) return;",

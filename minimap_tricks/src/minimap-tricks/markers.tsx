@@ -1,5 +1,5 @@
 import * as IRF from 'internet-roadtrip-framework'
-import {settings, panel} from './settings/settings'
+import {settings, marker_panel } from './settings/settings'
 import { control } from './controlmenu'
 import { flyTo } from './flying'
 import { convert } from 'geo-coordinates-parser'
@@ -154,7 +154,7 @@ mcol_input.addEventListener("input", () => {
 })
 
 // Marker settings
-const section = panel.add_section("User markers", `You can add and remove
+const section = marker_panel.add_section("User markers", `You can add and remove
     your own markers by right-clicking the minimap.`)
 
 section.add_input(

@@ -14,7 +14,7 @@ import './resize';
 import './opacity';
 import './distance';
 import './coverage';
-// import './kml';
+import './kml';
 
 // Export some APIs
 declare global {

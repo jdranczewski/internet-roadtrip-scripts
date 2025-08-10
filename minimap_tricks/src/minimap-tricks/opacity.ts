@@ -16,6 +16,7 @@ const mapContainerEl = await IRF.dom.map;
 export function setLayerOpacity(value=undefined) {
     if (!value) {
         value = vmap.data.isExpanded ? settings.background_opacity_expanded : settings.background_opacity;
+        if (mapIsFullscreen) value = 1;
     }
     value = parseFloat(value);
     ml_map.setPaintProperty("background", "background-opacity", value);
@@ -65,7 +66,6 @@ ml_map.once('load', () => {
 
 // Full opacity when map is in fullscreen
 mapContainerEl.addEventListener("toggleFullscreenMap", () => {
-    console.log("setting map opacity!")
     setLayerOpacity(mapIsFullscreen ? 1 : undefined);
 })
 

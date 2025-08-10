@@ -43,6 +43,8 @@ export const settings = {
 
     "coverage": true,
     "coverage_opacity": "0.75",
+
+    "kml": {},
 }
 
 // Initialise settings
@@ -236,4 +238,4 @@ export class Panel extends Section {
 }
 
 export const panel = new Panel("Minimap");
-// export const marker_panel = new Panel("Map markers");
+export const marker_panel = new Panel("Map markers");

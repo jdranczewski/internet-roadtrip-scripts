@@ -1,6 +1,6 @@
 {
   "name": "minimap_tricks",
-  "version": "0.7.1",
+  "version": "1.0.0",
   "description": "Provide many bonus options for the Internet Roadtrip minimap.",
   "author": "jdranczewski",
   "license": "MIT",
@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.24.1",
+    "@tmcw/togeojson": "^7.1.2",
     "@turf/turf": "^7.2.0",
     "geo-coordinates-parser": "^1.7.4",
     "internet-roadtrip-framework": "^0.4.1-beta",

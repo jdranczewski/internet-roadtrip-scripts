@@ -4,13 +4,14 @@
 // @description Provide many bonus options for the Internet Roadtrip minimap.
 // @match       https://neal.fun/internet-roadtrip/*
 // @icon        https://files.catbox.moe/v4yu3f.png
-// @version     0.7.1
+// @version     1.0.0
 // @author      jdranczewski (+netux +GameRoMan)
 // @license     MIT
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
 // @require     https://cdn.jsdelivr.net/npm/@violentmonkey/dom@2/dist/solid.min.js
 // @require     https://cdn.jsdelivr.net/gh/ianengelbrecht/geo-coordinates-parser@b06d051f2a70bc95c2fa1a063ceef85f19823fee/bundle/geocoordsparser.js
 // @require     https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js
+// @require     https://cdn.jsdelivr.net/npm/@tmcw/togeojson@7.1.2
 // ==/UserScript==
 
 /**
