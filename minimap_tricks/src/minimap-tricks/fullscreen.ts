@@ -11,7 +11,7 @@ const event = new CustomEvent("toggleFullscreenMap");
 // Implement toggling fullscreen mode
 let getPanoUrlOverriden = false;
 export let mapIsFullscreen = false;
-export let changeStopArgs : any = undefined;
+export let changeStopArgs = undefined;
 function toggleMapFullscreen(fullscreen?: boolean) {
     mapIsFullscreen = mapContainerEl.classList.toggle("fullscreen", fullscreen);
     mapContainerEl.dispatchEvent(event);
@@ -25,6 +25,7 @@ function toggleMapFullscreen(fullscreen?: boolean) {
                 return Reflect.apply(target, thisArg, args);
             },
         });
+        getPanoUrlOverriden = true;
     }
 }
 
@@ -42,7 +43,7 @@ const fullscreen_icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" vie
 control.addButton(
     `data:image/svg+xml,${encodeURIComponent(fullscreen_icon)}`,
     "Fullscreen map",
-    (c) => toggleMapFullscreen(),
+    () => toggleMapFullscreen(),
     ["Side", "Map"],
     {side_visible_default: true}
 )

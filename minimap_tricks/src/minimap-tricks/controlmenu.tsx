@@ -27,7 +27,7 @@ export class TricksControl implements IControl {
         this._m_cont.id = "mmt-menu";
         this._m_cont.style.display = "none";
         mapContainerEl.querySelector('#mini-map').appendChild(this._m_cont);
-        document.addEventListener("click", (e) => {
+        document.addEventListener("click", () => {
             this._hide_menu();
         });
 
@@ -35,7 +35,7 @@ export class TricksControl implements IControl {
         this._m_options.className = 'maplibregl-ctrl maplibregl-ctrl-group';
         this._m_cont.appendChild(this._m_options);
 
-        let label_box = document.createElement('div');
+        const label_box = document.createElement('div');
         label_box.id = "mmt-menu-label";
         label_box.className = 'maplibregl-ctrl maplibregl-ctrl-group';
         this._m_cont.appendChild(label_box);
@@ -43,12 +43,12 @@ export class TricksControl implements IControl {
         this._m_label = document.createElement('span'); // Menu label
         this._m_label.innerText = "Map";
 
-        let label =  document.createElement('span');
+        const label =  document.createElement('span');
         label.innerText = " menu";
         label.prepend(this._m_label);
         label_box.appendChild(label);
 
-        let close =  document.createElement('span');
+        const close =  document.createElement('span');
         close.innerText = "X";
         close.id = "mmt-menu-close";
         label_box.appendChild(close);
@@ -64,7 +64,7 @@ export class TricksControl implements IControl {
         this._m_cont.style.display = "none";
         mapContainerEl.classList.remove("mmt-map-menu-opened");
     }
-    openMenu(context: string, lat: number, lng: number, left: number, top: number, data: any=undefined) {
+    openMenu(context: string, lat: number, lng: number, left: number, top: number, data: unknown=undefined) {
         this.context = context;
         this.lat = lat;
         this.lng = lng;
@@ -76,7 +76,7 @@ export class TricksControl implements IControl {
     }
 
     _context = undefined;
-    set context(value: any) {
+    set context(value: string) {
         this._m_label.innerText = value;
         this._m_cont.className = `mmt-menu-${value.replaceAll(' ', '-')}`
         this._context = value;
@@ -99,7 +99,7 @@ export class TricksControl implements IControl {
     }
 
     addButton(
-        icon: any, name: string, callback: (arg0: this) => void,context=undefined,
+        icon: string, name: string, callback: (arg0: this) => void, context=undefined,
         { side_visible_default = true, before = undefined } = {}
     ) {
         // Add side button
@@ -116,15 +116,15 @@ export class TricksControl implements IControl {
             context_label: undefined,
         }
         if (context == undefined || context.includes("Side")) {
-            let button = document.createElement("button");
+            const button = document.createElement("button");
             settings[`side_${name}`] = GM_getValue(`side_${name}`, side_visible_default)
             button.style.display = settings[`side_${name}`] ? "block" : "none";
             button.title = name;
-            const checkbox = section.add_checkbox(`Show ${name}`, `side_${name}`, (value: any) => {
+            const checkbox = section.add_checkbox(`Show ${name}`, `side_${name}`, (value) => {
                 button.style.display = value ? "block" : "none";
             });
 
-            let button_icon = document.createElement("span");
+            const button_icon = document.createElement("span");
             button_icon.className = "maplibregl-ctrl-icon";
             button_icon.style.backgroundImage = `url("${icon}")`;
             button_icon.style.backgroundSize = "contain";
@@ -146,20 +146,20 @@ export class TricksControl implements IControl {
             returnValue.side_checkbox = checkbox;
         }
         
-        let button = document.createElement("button");
+        const button = document.createElement("button");
         if (context !== undefined) {
-            contexts.forEach((v, i) => {
+            contexts.forEach((v) => {
                 if (!context.includes(v)) button.classList.add(`mmt-hide-${v.replaceAll(' ', '-')}`);
             })
         }
 
-        let button_icon = document.createElement("span");
+        const button_icon = document.createElement("span");
         button_icon.className = "maplibregl-ctrl-icon";
         button_icon.style.backgroundImage = `url("${icon}")`;
         button_icon.style.backgroundSize = "contain";
         button.appendChild(button_icon);
 
-        let button_label = document.createElement("span");
+        const button_label = document.createElement("span");
         button_label.innerText = name;
         button.appendChild(button_label);
 

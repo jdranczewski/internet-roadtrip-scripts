@@ -62,7 +62,7 @@ Object.entries(settings.markers).forEach(([key, value]) => {
 GM.setValues(settings);
 
 // Update script name so it takes up less space
-let gm_info = GM.info
+const gm_info = GM.info
 gm_info.script.name = "Minimap tricks"
 
 // Wrapper around IRF panel
@@ -165,7 +165,7 @@ class Section {
     add_input(
         name:string, identifier: string, type: string,
         callback?: CallableFunction,
-        default_value?: any
+        default_value?: unknown
     ) {
         const [value, setValue] = createSignal(settings[identifier]);
 

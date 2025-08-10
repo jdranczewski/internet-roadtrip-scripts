@@ -41,7 +41,7 @@ vcontainer.state.changeStop = new Proxy(changeStop, {
             && settings.align_orientation
             && (Math.abs(ml_map.getBearing() - args[3]) % 360) > 1
         ) flyTo(undefined, args[3]);
-        let x_flip = settings.car_marker_flip ? "-1" : "1";
+        const x_flip = settings.car_marker_flip ? "-1" : "1";
         if (settings.car_marker_flip_x && args[3] > 180) {
             custom_car.style.transform = `scale(${x_flip}, -1)`;
         } else {
@@ -52,7 +52,7 @@ vcontainer.state.changeStop = new Proxy(changeStop, {
 });
 // Override the normal marker rotation setting method, we do it above!
 vmap.state.setMarkerRotation = new Proxy(vmap.methods.setMarkerRotation, {
-    apply: (target, thisArg, args) => {}
+    apply: () => {}
 });
 
 // Settings

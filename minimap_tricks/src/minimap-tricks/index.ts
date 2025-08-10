@@ -1,5 +1,4 @@
 import './meta.js?userscript-metadata';
-import * as IRF from 'internet-roadtrip-framework'
 
 import globalCss from './style.css';
 import './settings/settings'
@@ -18,8 +17,16 @@ import './coverage';
 // import './kml';
 
 // Export some APIs
-(unsafeWindow as any)._MMT_control = control;
-(unsafeWindow as any)._MMT_addContext = addContext;
-(unsafeWindow as any)._MMT_getMarkers = () => {
+declare global {
+    interface Window {
+        _MMT_control?: typeof control;
+        _MMT_addContext?: typeof addContext;
+        _MMT_getMarkers?: CallableFunction;
+    }
+}
+
+unsafeWindow._MMT_control = control;
+unsafeWindow._MMT_addContext = addContext;
+unsafeWindow._MMT_getMarkers = () => {
     return markers;
 }

@@ -24,7 +24,7 @@ export function setLayerOpacity(value=undefined) {
 
 declare global {
     interface Window {
-        documentPictureInPicture?: any;
+        documentPictureInPicture?;
     }
 }
 
@@ -34,7 +34,7 @@ if (window.documentPictureInPicture) {
     window.documentPictureInPicture.addEventListener("enter", (e) => {
         setLayerOpacity(1);
         inPIP = true;
-        e.window.addEventListener("pagehide", (f) => {
+        e.window.addEventListener("pagehide", () => {
             control._hide_menu();
             setLayerOpacity();
             inPIP = false;
@@ -53,11 +53,11 @@ ml_map.once('load', () => {
     setLayerOpacity();
 
     // Full layer opacity when mouse over the map
-    mapContainerEl.addEventListener("mouseenter", (e) => {
+    mapContainerEl.addEventListener("mouseenter", () => {
         if (inPIP || mapIsFullscreen) return;
         setLayerOpacity(1);
     });
-    mapContainerEl.addEventListener("mouseleave", (e) => {
+    mapContainerEl.addEventListener("mouseleave", () => {
         if (inPIP || mapIsFullscreen) return;
         setLayerOpacity();
     });

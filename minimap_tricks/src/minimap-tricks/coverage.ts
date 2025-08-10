@@ -65,7 +65,7 @@ section.add_checkbox("Show coverage", "coverage", (value) => {
     ["svugc-tiles", "sv-tiles"].forEach((kind) => {
         ml_map.setLayoutProperty(
             kind, "visibility",
-            settings.coverage ? "visible" : "none"
+            value ? "visible" : "none"
         )
     });
 })

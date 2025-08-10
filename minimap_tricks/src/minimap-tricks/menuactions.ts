@@ -19,11 +19,12 @@ control.addButton(
 );
 
 // Open Street View
+const vcontainer = await IRF.vdom.container
 control.addButton(
     "https://storage.googleapis.com/support-kms-prod/SNP_E2308F5561BE1525D2C88838252137BC5634_4353424_en_v0",
     "Open Street View",
     async (c) => {
-        let data = (await IRF.vdom.container).data;
+        const data = vcontainer.data;
         // URL pattern from https://roadtrip.pikarocks.dev/
         const url = (
             "https://www.google.com/maps/@?api=1&map_action=pano" +

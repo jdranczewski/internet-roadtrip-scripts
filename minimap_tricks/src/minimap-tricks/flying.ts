@@ -31,7 +31,7 @@ const zoom_subscription = ml_map.on("moveend", () => {
 // General function for flying the map to a location
 let latestBearing = 0;
 export function flyTo(coords?: number[], bearing?: number, interactionOverride: boolean=true) {
-    let args: FlyToOptions = {
+    const args: FlyToOptions = {
         essential: !0,
     }
     if (coords) {
@@ -52,9 +52,7 @@ export function flyTo(coords?: number[], bearing?: number, interactionOverride: 
 // Disable the default map reset function
 // so we can implement our own logic for when this should happen
 vmap.state.flyTo = new Proxy(vmap.methods.flyTo, {
-    apply: (target, thisArg, args) => {
-        return;
-    },
+    apply: () => {},
 });
 
 // Proxy the user interaction handling to not include flyTo calls

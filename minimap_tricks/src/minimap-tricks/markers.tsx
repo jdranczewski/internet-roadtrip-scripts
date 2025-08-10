@@ -2,9 +2,6 @@ import * as IRF from 'internet-roadtrip-framework'
 import {settings, panel} from './settings/settings'
 import { control } from './controlmenu'
 import { flyTo } from './flying'
-import styles from './settings/settings.module.css'
-import { render } from "solid-js/web";
-import { createEffect, createSignal } from 'solid-js';
 import { convert } from 'geo-coordinates-parser'
 
 const maplibre = await IRF.modules.maplibre;
@@ -43,7 +40,7 @@ async function add_marker(lat: number, lng: number, marker_id?: string, color?: 
     marker._mmt_id = marker_id;
     markers[marker_id] = marker;
 
-    marker.on("dragend", (e) => {
+    marker.on("dragend", () => {
         const lngLat = marker.getLngLat();
         settings.markers[marker_id][0] = lngLat.lat;
         settings.markers[marker_id][1] = lngLat.lng;
@@ -96,7 +93,7 @@ control.addButton(
 control.addButton(
     "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%22-6%20-6%2036%2036%22%20stroke-width%3D%221.5%22%20stroke%3D%22currentColor%22%20class%3D%22size-6%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M6%2012%203.269%203.125A59.8%2059.8%200%200%201%2021.485%2012%2059.8%2059.8%200%200%201%203.27%2020.875L5.999%2012Zm0%200h7.5%22%2F%3E%3C%2Fsvg%3E",
     "Go to and mark coordinates",
-    async (c) => {
+    async () => {
         let converted;
         try {
             converted = convert(prompt("Input coordinates here:"));
@@ -118,11 +115,11 @@ control.addButton(
 const draggable_meta = control.addButton(
     "",
     "Draggable markers",
-    (c) => {
+    () => {
         settings.draggable_markers = !settings.draggable_markers;
         GM.setValues(settings);
         draggable_checkbox.checked = settings.draggable_markers;
-        for (const [marker_id, marker] of Object.entries(markers)) {
+        for (const [, marker] of Object.entries(markers)) {
             (marker as MMTMarker).setDraggable(settings.draggable_markers);
         }
     },
@@ -140,13 +137,13 @@ const dropper_svg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox
 control.addButton(
     `data:image/svg+xml,${encodeURIComponent(dropper_svg)}`,
     "Set color",
-    (c) => {mcol_input.click()},
+    () => {mcol_input.click()},
     ["Marker"], {before: "Remove marker"}
 )
 const mcol_input = document.createElement("input");
 mcol_input.type = "color";
 mcol_input.id = "mmt-menu-color";
-mcol_input.addEventListener("input", (e) => {
+mcol_input.addEventListener("input", () => {
     if (control.data) {
         control.data.getElement().children[0].children[0].children[1].setAttribute(
             "fill", mcol_input.value
@@ -168,7 +165,7 @@ section.add_input(
 section.add_button(
     "Remove all markers",
     () => {
-        for (const [marker_id, marker] of Object.entries(markers)) {
+        for (const [, marker] of Object.entries(markers)) {
             (marker as MMTMarker)._mmt_remove();
         }
     }

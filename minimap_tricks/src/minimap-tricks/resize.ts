@@ -72,7 +72,7 @@ document.addEventListener('mousemove', (e) => {
 });
 
 // End drag
-document.addEventListener('mouseup', (e) => {
+document.addEventListener('mouseup', () => {
     isClicked = false;
 });
 
