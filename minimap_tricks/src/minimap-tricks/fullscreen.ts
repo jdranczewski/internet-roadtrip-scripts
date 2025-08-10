@@ -6,13 +6,15 @@ const mapContainerEl = await IRF.dom.map;
 const vmap = await IRF.vdom.map;
 const ml_map = vmap.data.map;
 
+const event = new CustomEvent("toggleFullscreenMap");
+
+// Implement toggling fullscreen mode
 let getPanoUrlOverriden = false;
 export let mapIsFullscreen = false;
 export let changeStopArgs : any = undefined;
 function toggleMapFullscreen(fullscreen?: boolean) {
     mapIsFullscreen = mapContainerEl.classList.toggle("fullscreen", fullscreen);
-    // TODO revisit when implementing opacity
-    // setLayerOpacity(mapIsFullscreen ? 1 : undefined);
+    mapContainerEl.dispatchEvent(event);
     if (mapIsFullscreen) changeStopArgs = undefined;
     if (!mapIsFullscreen && changeStopArgs && (vcontainer.data.endTime - Date.now()) > 2000) vcontainer.methods.changeStop.apply(null, changeStopArgs);
     if (!getPanoUrlOverriden){

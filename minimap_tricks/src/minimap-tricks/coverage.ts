@@ -57,7 +57,7 @@ ml_map.once("load", () => {
 })
 
 // Settings
-const section = panel.add_section("SV coverage", `Inlcude official and unofficial SV coverage
+const section = panel.add_section("SV coverage", `Include official and unofficial SV coverage
     on the map. Official lines are shown in blue, unofficial lines are shown in orange.
     You may see a brown-ish colour where the two overlap. Photospheres are shown as red circles.`)
 
