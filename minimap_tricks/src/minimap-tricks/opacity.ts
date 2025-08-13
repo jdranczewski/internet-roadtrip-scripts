@@ -73,7 +73,8 @@ mapContainerEl.addEventListener("toggleFullscreenMap", () => {
 const old_route_subscription = ml_map.on("data", (e: MapSourceDataEvent) => {
     if (e.sourceId == "old-route") {
         ml_map.setPaintProperty("old-route-layer", "line-opacity", parseFloat(settings.route_opacity));
-        ml_map.moveLayer("old-route-layer", "boundary_3");
+        ml_map.moveLayer("route", "boundary_3");
+        ml_map.moveLayer("old-route-layer", "route");
         old_route_subscription.unsubscribe();
     }
 })
