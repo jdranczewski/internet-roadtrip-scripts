@@ -51,8 +51,42 @@ ml_map.once("load", () => {
             'circle-stroke-color': "#fff",
             'circle-stroke-width': 2,
         },
+        filter: ['in', '$type', 'Point']
+    });
+    ml_map.addLayer({
+        id: 'kml-lines-outline',
+        type: 'line',
+        source: 'kml_points',
+        layout: {
+            'line-cap': 'round',
+            'line-join': 'round'
+        },
+        paint: {
+            'line-color': "#fff",
+            'line-width': 3,
+            'line-gap-width': 5,
+            'line-opacity': .7
+        },
+        filter: ['in', '$type', 'LineString'],
+    });
+    ml_map.addLayer({
+        id: 'kml-lines',
+        type: 'line',
+        source: 'kml_points',
+        layout: {
+            'line-cap': 'round',
+            'line-join': 'round'
+        },
+        paint: {
+            'line-color': ['get', 'stroke'],
+            'line-width': 5,
+            'line-dasharray': [3, 2]
+        },
+        filter: ['in', '$type', 'LineString'],
     });
     ml_map.moveLayer("kml-points", "label_other");
+    ml_map.moveLayer("kml-lines", ml_map.getLayer("old-route-layer") ? "old-route-layer" : "route");
+    ml_map.moveLayer("kml-lines-outline", "kml-lines");
 
     // Update the map when the loaded KML files change
     createEffect(() => {
