@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Simple Interactive Street View
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/*
-// @match       https://www.google.com/maps/embed/v1/streetview?key=<API_KEY>*
+// @match       https://www.google.com/maps/embed/v1/streetview*
 // @version     0.1.3
 // @author      jdranczewski
 // @description Make the mebedded Street View in the Internet Roadtrip somewhat interactive.
@@ -18,6 +18,9 @@
  */
 
 (async function() {
+	const marco = "are you neal.fun?";
+	const polo = "yes I am neal.fun!";
+
 	if (IRF.isInternetRoadtrip) {
 		// Get some references
 		const switchFrameOrder = (await IRF.vdom.container).methods.switchFrameOrder;
@@ -42,6 +45,12 @@
 
 		// Always enable pointer events for the pano that's at the back
 		pano0.style.pointerEvents = "auto"
+
+		// Listen and respond to messages from embeds
+		window.addEventListener("message", (event) => {
+			if (event.origin !== "https://www.google.com" && event.data !== marco) return;
+			event.source.postMessage(polo, event.origin);
+		});
 	} else {
 		// We're in Street View! Set the pano options here
 		// Waiting based on Netux's implementation in the Pathfinder
@@ -70,9 +79,16 @@
 				const originalConstructor = unsafeWindow.google.maps.StreetViewPanorama;
 				unsafeWindow.google.maps.StreetViewPanorama = function(container, opts) {
 					const instance = new originalConstructor(container, opts);
-					// Modify options
-					instance.setOptions({ linksControl: false });
-					instance.setOptions({ clickToGo: false });
+
+					// Send a message to the parent window to verify that it is neal.fun
+					window.parent.postMessage(marco, "https://neal.fun");
+
+					// Modify options if the parent responds
+					window.addEventListener("message", (event) => {
+						if (event.origin !== "https://neal.fun" && event.data !== marco) return;
+						instance.setOptions({ linksControl: false });
+						instance.setOptions({ clickToGo: false });
+					});
 					return instance;
 				};
 				return originalOnApiLoad(args);
