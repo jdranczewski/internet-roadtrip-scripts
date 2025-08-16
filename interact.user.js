@@ -3,9 +3,9 @@
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/*
 // @match       https://www.google.com/maps/embed/v1/streetview*
-// @version     0.1.3
+// @version     0.2.1
 // @author      jdranczewski
-// @description Make the mebedded Street View in the Internet Roadtrip somewhat interactive.
+// @description Make the ebedded Street View in the Internet Roadtrip interactive.
 // @license     MIT
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
@@ -24,6 +24,7 @@
 	if (IRF.isInternetRoadtrip) {
 		// Get some references
 		const switchFrameOrder = (await IRF.vdom.container).methods.switchFrameOrder;
+		
 		// Changing this in preparation for the breaking changes in IRF 0.5.0
 		// const refs = (await IRF.vdom.container).$refs;
 		const pano0 = document.getElementById("pano0");
@@ -48,7 +49,7 @@
 
 		// Listen and respond to messages from embeds
 		window.addEventListener("message", (event) => {
-			if (event.origin !== "https://www.google.com" && event.data !== marco) return;
+			if (event.origin !== "https://www.google.com" || event.data !== marco) return;
 			event.source.postMessage(polo, event.origin);
 		});
 	} else {
@@ -85,7 +86,7 @@
 
 					// Modify options if the parent responds
 					window.addEventListener("message", (event) => {
-						if (event.origin !== "https://neal.fun" && event.data !== marco) return;
+						if (event.origin !== "https://neal.fun" || event.data !== polo) return;
 						instance.setOptions({ linksControl: false });
 						instance.setOptions({ clickToGo: false });
 					});
