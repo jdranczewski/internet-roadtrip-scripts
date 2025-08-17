@@ -51,6 +51,7 @@ export const settings = {
     "kml_lines_dashed": true,
     "klm_shapes_opacity": "0.8",
     "klm_shapes_outline_opacity": "0.8",
+    "kml_update_check": true
 }
 
 // Initialise settings

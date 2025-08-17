@@ -3,7 +3,7 @@ import { render } from 'solid-js/web';
 import styles from './settings/settings.module.css';
 import { marker_panel, settings } from './settings/settings';
 import { kml } from "@tmcw/togeojson";
-import { createEffect, createSignal, For } from 'solid-js';
+import { createEffect, createSignal, For, Show } from 'solid-js';
 import { type GeoJSONSource } from 'maplibre-gl';
 
 interface KMLstorage {
@@ -12,14 +12,44 @@ interface KMLstorage {
     features,
     url?: string,
     lastUpdated?: number,
+    lastChecked?: number,
+    hash?: number
 }
+
+// Hashing function from https://stackoverflow.com/a/7616484
+const generateHash = (string) => {
+  let hash = 0;
+  for (const char of string) {
+    hash = (hash << 5) - hash + char.charCodeAt(0);
+    hash |= 0; // Constrain to 32bit integer
+  }
+  return hash;
+};
 
 // Store and retrieve this separately from the settings object,
 // as otherwise all actions involving saving the settings object
 // become quite slow
-const stored_kml = GM_getValue("kml");
-function loadKMLtext(text: string) {
+const stored_kml: {string: KMLstorage} = GM_getValue("kml");
+async function loadKMLtext(text: string, storage_id?, source_url?) {
+    setKMLstatus("loading KML file...");
+    // Generate hash and check with the one already stored
+    const hash = generateHash(text);
+    if (storage_id && stored_kml[storage_id]?.hash === hash) {
+        setKMLstatus("no update found");
+        stored_kml[storage_id].lastChecked = Date.now();
+        GM.setValues({kml: stored_kml});
+        setSolidKeys();
+        return;
+    };
+
+    // Check if this is a "keep up to date" KML
     const dom = new DOMParser().parseFromString(text, "text/xml");
+    const hrefNode = dom.querySelector("Document > NetworkLink > Link > href")
+    if (hrefNode) {
+        loadKMLurl(hrefNode.childNodes[0].nodeValue, storage_id);
+        return;
+    }
+
     const features = kml(dom).features;
 
     // Support for random opacity for areas
@@ -28,15 +58,38 @@ function loadKMLtext(text: string) {
     })
 
     // Store the features in extension storage
-    const storage : KMLstorage = {
-        name: dom.querySelector("Document > name").innerHTML,
-        enabled: true,
-        features: features,
+    if (!storage_id) {
+        storage_id = crypto.randomUUID();
+        stored_kml[storage_id] = {
+            name: dom.querySelector("Document > name").innerHTML,
+            enabled: true,
+            features: features,
+        };
+        setKMLstatus(`${stored_kml[storage_id].name} loaded`);
+    } else {
+        stored_kml[storage_id].name = dom.querySelector("Document > name").innerHTML;
+        stored_kml[storage_id].features = features;
+        setKMLstatus(`${stored_kml[storage_id].name} updated`);
     }
-    const storage_id = crypto.randomUUID();
-    stored_kml[storage_id] = storage;
+    stored_kml[storage_id].lastUpdated = Date.now();
+    stored_kml[storage_id].lastChecked = Date.now();
+    stored_kml[storage_id].hash = hash;
+    if (source_url) {stored_kml[storage_id].url = source_url};
+    
     GM.setValues({kml: stored_kml});
-    setKMLkeys(Object.keys(stored_kml));
+    setSolidKeys();
+}
+
+async function loadKMLurl(url: string, storage_id?) {
+    setKMLstatus("downloading KML file...");
+    GM.xmlHttpRequest({
+        method: "GET",
+        url: url,
+        onload: async (response) => {
+            const result = response.responseText;
+            loadKMLtext(result, storage_id, url);
+        }
+    });
 }
 
 const vmap = await IRF.vdom.map;
@@ -138,11 +191,12 @@ ml_map.once("load", () => {
 
     // Update the map when the loaded KML files change
     createEffect(() => {
+        console.log("Running effect");
         const collection = {
             'type': 'FeatureCollection' as const,
             'features': []
         }
-        for (const index of KMLkeys()) {
+        for (const [index,] of KMLkeys()) {
             if (stored_kml[index].enabled) {
                 collection.features.push(...stored_kml[index].features);
             }
@@ -175,6 +229,18 @@ ml_map.once("load", () => {
         currentFeatureCoordinates = undefined;
         if (popup.isOpen()) popup.remove();
     });
+
+    // Check for updates to the KML files
+    if (settings.kml_update_check) {
+        const now = Date.now()
+        Object.keys(stored_kml).forEach((key) => {
+            if (
+                stored_kml[key].enabled &&
+                stored_kml[key]?.url &&
+                (!stored_kml[key]?.lastChecked || now - stored_kml[key]?.lastChecked > 43200000)
+            ) loadKMLurl(stored_kml[key].url, key);
+        })
+    }
 });
 
 // Settings
@@ -182,7 +248,8 @@ const section = marker_panel.add_section("KML layers", `For more complex maps,
     you can use <a href="https://mymaps.google.com/" target="_blank">Google My Maps</a>
     or another map creation tool to create KML files with many markers. You can then
     add your KML files here to show them on the in-game map!<br><br>
-    Make sure you download as KML and not KMZ, and don't choose "keep data up to date".`)
+    Make sure you download as KML and not KMZ, and do select "keep data up to date" if
+    you would like the option to update the layer later!`)
 
 const import_item =
     <div class={styles['settings-item']}>
@@ -195,7 +262,6 @@ const import_item =
                 onchange={(event) => {
                     // Adapted from https://developer.mozilla.org/en-US/docs/Web/API/FileReader#examples
                     const file = event.target.files[0];
-                    console.log(file);
                     
                     if (!file) {
                         alert("No file selected. Please choose a file.");
@@ -218,8 +284,33 @@ const import_item =
 
 render(() => import_item, section.container);
 
+section.add_button("Import KML from URL", () => {
+    const url = prompt("Paste the URL of your KML file here:");
+    if (url) loadKMLurl(url);
+});
+section.add_checkbox("Check enabled layers for updates every 12 hours", "kml_update_check")
+
 // Solid magic to support managing multiple files
-const [KMLkeys, setKMLkeys] = createSignal(Object.keys(stored_kml));
+function generateSolidKeys() {
+    return Object.entries(stored_kml).map(([key, value]) => {
+        return [key, value.hash]
+    })
+}
+const [KMLkeys, setKMLkeys] = createSignal(generateSolidKeys());
+function setSolidKeys() {
+    setKMLkeys(generateSolidKeys());
+}
+function padNumber(number, pad) {
+    return String(number).padStart(pad, '0');
+}
+function numberToDate(number) {
+    if (!number) return "";
+    const date = new Date(number);
+    return (
+        `${date.getFullYear()}/${padNumber(date.getMonth()+1, 2)}/${padNumber(date.getDate(), 2)} - ` +
+        `${padNumber(date.getHours(), 2)}:${padNumber(date.getMinutes(), 2)}`
+    )
+}
 
 const KMLRow = (props) => {
     return (
@@ -231,17 +322,37 @@ const KMLRow = (props) => {
                     class={IRF.ui.panel.styles.toggle}
                     onChange={(e) => {
                         stored_kml[props.id].enabled = e.currentTarget.checked;
-                        setKMLkeys(Object.keys(stored_kml));
+                        setSolidKeys();
                         GM.setValues({kml: stored_kml});
                     }}
                 />
             </div>
-            <span class={styles['setting']}>{stored_kml[props.id].name}</span>
+            <span class={styles['setting']}>
+                {stored_kml[props.id].name}&nbsp;
+                <Show when={stored_kml[props.id].lastUpdated}>
+                    <span 
+                        innerText={"- " + numberToDate(stored_kml[props.id].lastUpdated)}
+                        class={styles['sidenote']}
+                        title={
+                            stored_kml[props.id].lastChecked ?
+                            "Last update check: " + numberToDate(stored_kml[props.id].lastChecked)
+                            : "Last updated"
+                        }
+                    />
+                </Show>
+            </span>
             <div class={styles['setting']}>
+                <Show when={stored_kml[props.id].url}>
+                    <button
+                        onclick={() => {
+                            loadKMLurl(stored_kml[props.id].url, props.id);
+                        }}
+                    >Update</button>&nbsp;
+                </Show>
                 <button
                     onclick={() => {
                         delete stored_kml[props.id];
-                        setKMLkeys(Object.keys(stored_kml));
+                        setSolidKeys();
                         GM.setValues({kml: stored_kml});
                     }}
                 >Remove</button>
@@ -250,12 +361,21 @@ const KMLRow = (props) => {
     )
 }
 
+const [KMLstatus, setKMLstatus] = createSignal("");
 const list_item =
-    <For each={KMLkeys()}>
-        {(item) => (
-            <KMLRow id={item} />
-        )}
-    </For>
+    <>
+        <div class={styles['setting']}>
+            KML layers: <span
+                innerText={ KMLstatus() }
+                class={styles['sidenote']}
+            />
+        </div>
+        <For each={KMLkeys()}>
+            {(item) => (
+                <KMLRow id={item[0]} />
+            )}
+        </For>
+    </>    
 
 render(() => list_item, section.container);
 

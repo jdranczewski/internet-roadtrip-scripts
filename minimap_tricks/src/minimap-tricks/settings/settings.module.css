@@ -38,3 +38,8 @@ a {color: #aaa}
 .setting {
 	@apply mx-3 my-2;
 }
+
+.sidenote {
+    color: #aaa;
+    @apply text-sm;
+}
