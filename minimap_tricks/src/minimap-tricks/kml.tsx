@@ -67,9 +67,9 @@ ml_map.once("load", () => {
         },
         paint: {
             'line-color': "#fff",
-            'line-width': 3,
-            'line-gap-width': 5,
-            'line-opacity': .7
+            'line-width': 2,
+            'line-gap-width': 3,
+            'line-opacity': .5
         },
         filter: ['in', '$type', 'LineString'],
     });
@@ -88,9 +88,33 @@ ml_map.once("load", () => {
         },
         filter: ['in', '$type', 'LineString'],
     });
+    ml_map.addLayer({
+        id: 'kml-shapes',
+        type: 'fill',
+        source: 'kml_points',
+        paint: {
+            'fill-color':[
+                'let',
+                'random', ['-', 0.8, ['/', ['sin', ["distance", {"type": "Point", "coordinates": [0, 0]}]], 5]],
+                'colour', ['to-rgba', ['get', 'fill']],
+                [
+                    'rgba',
+                    ['at', 0, ['var', 'colour']],
+                    ['at', 1, ['var', 'colour']],
+                    ['at', 2, ['var', 'colour']],
+                    ['*', 1, ['var', 'random']]
+                ]
+            ],
+            'fill-outline-color': ['get', 'stroke'],
+        },
+        filter: ['in', '$type', 'Polygon']
+    });
     ml_map.moveLayer("kml-points", "label_other");
     ml_map.moveLayer("kml-lines", ml_map.getLayer("old-route-layer") ? "old-route-layer" : "route");
     ml_map.moveLayer("kml-lines-outline", "kml-lines");
+    ml_map.moveLayer("kml-shapes", ml_map.getLayer("sv-tiles") ? "sv-tiles" : (
+        ml_map.getLayer("old-route-layer") ? "old-route-layer" : "route"
+    ));
 
     // Update the map when the loaded KML files change
     createEffect(() => {

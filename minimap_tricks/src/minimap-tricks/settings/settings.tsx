@@ -10,6 +10,8 @@ export const settings = {
     "timeout_centre": true,
     "timeout_centre_fullscreen_disable": false,
     "reset_zoom": false,
+    "disable_fly_in": true,
+    "disable_flying_animations": false,
     "align_orientation": false,
     "show_scale": true,
     "km_units": false,

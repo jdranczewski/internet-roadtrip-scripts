@@ -11,7 +11,9 @@ const section = panel.add_section("Map position", `The map will follow the car b
 section.add_checkbox("Re-centre map on the car after a timeout", "timeout_centre");
 section.add_checkbox("Disable re-centring when map is in fullscreen", "timeout_centre_fullscreen_disable");
 section.add_checkbox("Align map orientation with the car", "align_orientation");
+section.add_checkbox("Snap the map to locations instead of animating", "disable_flying_animations");
 section.add_checkbox("Reset zoom when the map re-centres", "reset_zoom");
+section.add_checkbox("Disable fly-in animation on load", "disable_fly_in");
 section.add_slider("Default map zoom", "default_zoom");
 
 const vcontainer = await IRF.vdom.container
@@ -33,6 +35,7 @@ let latestBearing = 0;
 export function flyTo(coords?: number[], bearing?: number, interactionOverride: boolean=true) {
     const args: FlyToOptions = {
         essential: !0,
+        animate: !(settings.disable_flying_animations || (first_fly && settings.disable_fly_in)),
     }
     if (coords) {
         args.center = [coords[1], coords[0]];
