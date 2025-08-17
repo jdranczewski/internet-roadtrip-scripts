@@ -43,8 +43,6 @@ export const settings = {
 
     "coverage": true,
     "coverage_opacity": "0.75",
-
-    "kml": {},
 }
 
 // Initialise settings

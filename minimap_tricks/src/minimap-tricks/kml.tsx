@@ -14,6 +14,10 @@ interface KMLstorage {
     lastUpdated?: number,
 }
 
+// Store and retrieve this separately from the settings object,
+// as otherwise all actions involving saving the settings object
+// become quite slow
+let stored_kml = GM_getValue("kml");
 function loadKMLtext(text: string) {
     const dom = new DOMParser().parseFromString(text, "text/xml");
     const storage : KMLstorage = {
@@ -22,9 +26,9 @@ function loadKMLtext(text: string) {
         features: kml(dom).features,
     }
     const storage_id = crypto.randomUUID();
-    settings.kml[storage_id] = storage;
-    GM.setValues(settings);
-    setKMLkeys(Object.keys(settings.kml));
+    stored_kml[storage_id] = storage;
+    GM.setValues({kml: stored_kml});
+    setKMLkeys(Object.keys(stored_kml));
 }
 
 const vmap = await IRF.vdom.map;
@@ -95,8 +99,8 @@ ml_map.once("load", () => {
             'features': []
         }
         for (const index of KMLkeys()) {
-            if (settings.kml[index].enabled) {
-                collection.features.push(...settings.kml[index].features);
+            if (stored_kml[index].enabled) {
+                collection.features.push(...stored_kml[index].features);
             }
         }
         (ml_map.getSource('kml_points') as GeoJSONSource).setData(collection);
@@ -171,7 +175,7 @@ const import_item =
 render(() => import_item, section.container);
 
 // Solid magic to support managing multiple files
-const [KMLkeys, setKMLkeys] = createSignal(Object.keys(settings.kml));
+const [KMLkeys, setKMLkeys] = createSignal(Object.keys(stored_kml));
 
 const KMLRow = (props) => {
     return (
@@ -179,22 +183,22 @@ const KMLRow = (props) => {
             <div class={styles['setting']}>
                 <input
                     type="checkbox"
-                    checked={settings.kml[props.id].enabled}
+                    checked={stored_kml[props.id].enabled}
                     class={IRF.ui.panel.styles.toggle}
                     onChange={(e) => {
-                        settings.kml[props.id].enabled = e.currentTarget.checked;
-                        setKMLkeys(Object.keys(settings.kml));
-                        GM.setValues(settings);
+                        stored_kml[props.id].enabled = e.currentTarget.checked;
+                        setKMLkeys(Object.keys(stored_kml));
+                        GM.setValues({kml: stored_kml});
                     }}
                 />
             </div>
-            <span class={styles['setting']}>{settings.kml[props.id].name}</span>
+            <span class={styles['setting']}>{stored_kml[props.id].name}</span>
             <div class={styles['setting']}>
                 <button
                     onclick={() => {
-                        delete settings.kml[props.id];
-                        setKMLkeys(Object.keys(settings.kml));
-                        GM.setValues(settings);
+                        delete stored_kml[props.id];
+                        setKMLkeys(Object.keys(stored_kml));
+                        GM.setValues({kml: stored_kml});
                     }}
                 >Remove</button>
             </div>
