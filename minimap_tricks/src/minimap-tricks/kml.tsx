@@ -17,13 +17,21 @@ interface KMLstorage {
 // Store and retrieve this separately from the settings object,
 // as otherwise all actions involving saving the settings object
 // become quite slow
-let stored_kml = GM_getValue("kml");
+const stored_kml = GM_getValue("kml");
 function loadKMLtext(text: string) {
     const dom = new DOMParser().parseFromString(text, "text/xml");
+    const features = kml(dom).features;
+
+    // Support for random opacity for areas
+    features.forEach((feature) => {
+        feature.properties.random = Math.random();
+    })
+
+    // Store the features in extension storage
     const storage : KMLstorage = {
         name: dom.querySelector("Document > name").innerHTML,
         enabled: true,
-        features: kml(dom).features,
+        features: features,
     }
     const storage_id = crypto.randomUUID();
     stored_kml[storage_id] = storage;
@@ -54,6 +62,8 @@ ml_map.once("load", () => {
             'circle-color': ['get', 'icon-color'],
             'circle-stroke-color': "#fff",
             'circle-stroke-width': 2,
+            'circle-opacity': parseFloat(settings.kml_points_opacity),
+            'circle-stroke-opacity': parseFloat(settings.kml_points_opacity)
         },
         filter: ['in', '$type', 'Point']
     });
@@ -84,7 +94,8 @@ ml_map.once("load", () => {
         paint: {
             'line-color': ['get', 'stroke'],
             'line-width': 5,
-            'line-dasharray': [3, 2]
+            'line-dasharray': settings.kml_lines_dashed ? [3, 2] : [1],
+            'line-opacity': parseFloat(settings.kml_lines_opacity)
         },
         filter: ['in', '$type', 'LineString'],
     });
@@ -93,19 +104,28 @@ ml_map.once("load", () => {
         type: 'fill',
         source: 'kml_points',
         paint: {
-            'fill-color':[
+            'fill-color': [
                 'let',
-                'random', ['-', 0.8, ['/', ['sin', ["distance", {"type": "Point", "coordinates": [0, 0]}]], 5]],
                 'colour', ['to-rgba', ['get', 'fill']],
                 [
                     'rgba',
                     ['at', 0, ['var', 'colour']],
                     ['at', 1, ['var', 'colour']],
                     ['at', 2, ['var', 'colour']],
-                    ['*', 1, ['var', 'random']]
+                    ['*', parseFloat(settings.klm_shapes_opacity), ['-', 1, ['*', 0.4, ['get', 'random']]]]
                 ]
             ],
-            'fill-outline-color': ['get', 'stroke'],
+            'fill-outline-color': [
+                'let',
+                'colour', ['to-rgba', ['get', 'stroke']],
+                [
+                    'rgba',
+                    ['at', 0, ['var', 'colour']],
+                    ['at', 1, ['var', 'colour']],
+                    ['at', 2, ['var', 'colour']],
+                    parseFloat(settings.klm_shapes_outline_opacity),
+                ]
+            ],
         },
         filter: ['in', '$type', 'Polygon']
     });
@@ -238,3 +258,46 @@ const list_item =
     </For>
 
 render(() => list_item, section.container);
+
+const section_styling = marker_panel.add_section("KML layer appearance", `Adjust the opacities
+    of the various KML objects. The lines are dashed by default to distinguish them from
+    everything else on the map, and the areas appear with slightly varying opacities to
+    distinguish them when close together.`);
+
+section_styling.add_checkbox("KML lines dashed", "kml_lines_dashed", (value) => {
+    ml_map.setPaintProperty("kml-lines", 'line-dasharray', value ? [3, 2] : [1])
+})
+
+section_styling.add_slider("KML marker opacity", "kml_points_opacity", (value) => {
+    ml_map.setPaintProperty("kml-points", "circle-opacity", parseFloat(value));
+    ml_map.setPaintProperty("kml-points", 'circle-stroke-opacity', parseFloat(value));
+}, [0, 1, 0.05])
+section_styling.add_slider("KML lines opacity", "kml_lines_opacity", (value) => {
+    ml_map.setPaintProperty("kml-lines", "line-opacity", parseFloat(value));
+}, [0, 1, 0.05])
+section_styling.add_slider("KML shape opacity", "klm_shapes_opacity", (value) => {
+    ml_map.setPaintProperty("kml-shapes", "fill-color", [
+        'let',
+        'colour', ['to-rgba', ['get', 'fill']],
+        [
+            'rgba',
+            ['at', 0, ['var', 'colour']],
+            ['at', 1, ['var', 'colour']],
+            ['at', 2, ['var', 'colour']],
+            ['*', parseFloat(value), ['-', 1, ['*', 0.4, ['get', 'random']]]]
+        ]
+    ]);
+}, [0, 1, 0.05])
+section_styling.add_slider("KML shape outline opacity", "klm_shapes_outline_opacity", (value) => {
+    ml_map.setPaintProperty("kml-shapes", 'fill-outline-color', [
+        'let',
+        'colour', ['to-rgba', ['get', 'stroke']],
+        [
+            'rgba',
+            ['at', 0, ['var', 'colour']],
+            ['at', 1, ['var', 'colour']],
+            ['at', 2, ['var', 'colour']],
+            parseFloat(value),
+        ]
+    ]);
+}, [0, 1, 0.05])

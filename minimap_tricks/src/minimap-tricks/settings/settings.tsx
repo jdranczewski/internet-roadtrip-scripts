@@ -45,6 +45,12 @@ export const settings = {
 
     "coverage": true,
     "coverage_opacity": "0.75",
+
+    "kml_points_opacity": "1",
+    "kml_lines_opacity": "1",
+    "kml_lines_dashed": true,
+    "klm_shapes_opacity": "0.8",
+    "klm_shapes_outline_opacity": "0.8",
 }
 
 // Initialise settings
