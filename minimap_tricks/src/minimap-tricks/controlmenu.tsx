@@ -1,6 +1,7 @@
-import {settings, panel} from './settings/settings'
 import * as IRF from 'internet-roadtrip-framework'
-import {type IControl, type Map} from 'maplibre-gl'
+import { settings, panel } from './settings/settings'
+import { vcontainer, vmap } from './awaits';
+import { type IControl, type Map } from 'maplibre-gl'
 
 // Settings page for the side menu
 const section = panel.add_section("Side menu", `You can access all map actions by right-clicking the map,
@@ -131,7 +132,6 @@ export class TricksControl implements IControl {
             button.appendChild(button_icon);
             button.onclick = async () => {
                 this.context = "Side";
-                const vcontainer = await IRF.vdom.container;
                 this.lat = vcontainer.data.currentCoords.lat;
                 this.lng = vcontainer.data.currentCoords.lng;
                 this.data = undefined;
@@ -196,7 +196,6 @@ export function addContext(name: string, available: string[]) {
 }
 
 // Add the Control to the map and set up triggers for contex menus
-const vmap = await IRF.vdom.map;
 const ml_map = vmap.data.map;
 
 ml_map.addControl(control, "bottom-left");
@@ -207,7 +206,6 @@ ml_map.on("contextmenu", (e) => {
     )
 });
 
-const vcontainer = await IRF.vdom.container;
 vmap.data.marker.getElement().oncontextmenu = (e) => {
     e.stopPropagation();
     e.preventDefault();

@@ -1,14 +1,12 @@
-import { measure } from './distance';
-import {settings, panel} from './settings/settings'
 import * as IRF from 'internet-roadtrip-framework'
+import { vcontainer, vmap, vodometer } from './awaits';
+import { measure } from './distance';
+import { settings, panel } from './settings/settings'
 
 const section = panel.add_section("Measurements and units", `Do you prefer metric? (correct) Or would you like more precision?`);
 
-const vcontainer = await IRF.vdom.container;
-const vmap = await IRF.vdom.map;
 const ml_map = await vmap.data.map;
 const maplibre = await IRF.modules.maplibre;
-const vodometer = await IRF.vdom.odometer;
 const odometer_el = await IRF.dom.odometer;
 
 // Add a scale bar

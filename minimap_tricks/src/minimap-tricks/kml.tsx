@@ -1,4 +1,5 @@
 import * as IRF from 'internet-roadtrip-framework'
+import { vmap } from './awaits';
 import { render } from 'solid-js/web';
 import styles from './settings/settings.module.css';
 import { marker_panel, settings } from './settings/settings';
@@ -103,7 +104,6 @@ async function loadKMLurl(url: string, storage_id?) {
     });
 }
 
-const vmap = await IRF.vdom.map;
 const ml_map = vmap.data.map;
 const maplibre = await IRF.modules.maplibre;
 

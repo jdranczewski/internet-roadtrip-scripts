@@ -1,9 +1,8 @@
 import * as IRF from 'internet-roadtrip-framework'
+import { vcontainer, vmap } from './awaits';
 import { control } from './controlmenu'
 
-const vcontainer = await IRF.vdom.container;
 const mapContainerEl = await IRF.dom.map;
-const vmap = await IRF.vdom.map;
 const ml_map = vmap.data.map;
 
 const event = new CustomEvent("toggleFullscreenMap");

@@ -1,9 +1,7 @@
-import * as IRF from 'internet-roadtrip-framework'
+import { vcontainer, vmap } from './awaits';
 import { settings, panel } from './settings/settings'
 import { checkUpdateMap, flyTo } from './flying'
 
-const vcontainer = await IRF.vdom.container;
-const vmap = await IRF.vdom.map;
 const ml_map = vmap.data.map;
 const car_marker = vmap.data.marker;
 const marker_el = vmap.data.marker.getElement();

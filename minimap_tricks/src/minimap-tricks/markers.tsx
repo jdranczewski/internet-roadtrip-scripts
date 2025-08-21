@@ -1,11 +1,11 @@
 import * as IRF from 'internet-roadtrip-framework'
+import { vmap } from './awaits'
 import {settings, marker_panel } from './settings/settings'
 import { control } from './controlmenu'
 import { flyTo } from './flying'
 import { convert } from 'geo-coordinates-parser'
 
 const maplibre = await IRF.modules.maplibre;
-const vmap = await IRF.vdom.map;
 const ml_map = vmap.data.map;
 
 // In memory marker storage

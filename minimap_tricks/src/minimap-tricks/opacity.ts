@@ -1,4 +1,5 @@
 import * as IRF from 'internet-roadtrip-framework';
+import { vmap } from './awaits';
 import { settings, panel } from "./settings/settings";
 import { mapIsFullscreen } from './fullscreen';
 import { control } from './controlmenu';
@@ -8,7 +9,6 @@ export const section = panel.add_section("Map appearance", `Change the opacity o
     map elements here. You can use the sliders below to make the map mostly transparent,
     or even set it so that only the streets are visible unless you put your mouse over it!`);
 
-const vmap = await IRF.vdom.map;
 const ml_map = vmap.data.map;
 const mapContainerEl = await IRF.dom.map;
 

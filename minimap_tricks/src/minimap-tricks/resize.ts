@@ -1,7 +1,7 @@
 import * as IRF from 'internet-roadtrip-framework';
+import { vmap } from './awaits';
 import { settings, panel } from "./settings/settings";
 
-const vmap = await IRF.vdom.map;
 const ml_map = vmap.data.map;
 const mapContainerEl = await IRF.dom.map;
 const miniMapEl = mapContainerEl.querySelector('#mini-map') as HTMLElement;

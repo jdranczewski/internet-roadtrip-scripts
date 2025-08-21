@@ -1,5 +1,5 @@
 import {settings, panel} from './settings/settings'
-import * as IRF from 'internet-roadtrip-framework'
+import { vcontainer, vmap } from './awaits'
 import {type FlyToOptions} from 'maplibre-gl'
 import { control } from './controlmenu'
 import { mapIsFullscreen } from './fullscreen'
@@ -16,8 +16,6 @@ section.add_checkbox("Reset zoom when the map re-centres", "reset_zoom");
 section.add_checkbox("Disable fly-in animation on load", "disable_fly_in");
 section.add_slider("Default map zoom", "default_zoom");
 
-const vcontainer = await IRF.vdom.container
-const vmap = await IRF.vdom.map;
 const ml_map = vmap.data.map;
 
 // First flight will always want to be to the default zoom level
