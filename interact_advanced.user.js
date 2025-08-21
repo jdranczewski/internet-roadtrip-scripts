@@ -27,6 +27,23 @@
 		const vcontainer = await IRF.vdom.container;
         const voptions = await IRF.vdom.options;
 
+        GM.addStyle(`
+        #aisv-reset {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            color: white;
+            transform: rotate(-90deg);
+            transform-origin: bottom left;
+            width: 67px;
+            margin: 0;
+            z-index: -1;
+        }
+        .radio-body {
+            border-bottom-left-radius: 0 !important;
+        }
+        `);
+
 		// Changing this in preparation for the breaking changes in IRF 0.5.0
 		// const refs = (await IRF.vdom.container).$refs;
 		const pano0 = document.getElementById("pano0");
@@ -48,6 +65,20 @@
 		iframe.style.pointerEvents = "auto";
 		iframe.dataset["v-5f07f20e"] = "";
 		pano1.parentNode.insertBefore(iframe, iframe.nextSibling);
+
+        // Add a reset button
+        const radio = await IRF.dom.radio;
+        const reset = document.createElement("div");
+        reset.id = "aisv-reset";
+        reset.innerText = "Reset";
+        reset.classList.add("odometer-container");
+        reset.dataset["v-259ab0e2"] = "";
+        radio.appendChild(reset);
+        radio.addEventListener("click", () => {
+            iframe.contentWindow.postMessage({
+				action: "resetPov",
+			}, "https://www.google.com")
+        })
 
 		// Override the source setters on the existing iframes
 		pano0.src = "about:blank";
@@ -242,7 +273,13 @@
 						await changePano(args);
 						prev_pano = args.pano;
 					}
-				}
+				} else if (event.data.action === "resetPov") {
+                    instance.setPov({
+                        heading: canonicalPov.heading,
+                        pitch: canonicalPov.pitch,
+                        zoom: fovToZoom(canonicalPov.fov),
+                    })
+                }
 			});
 
 			async function changePano(args) {
