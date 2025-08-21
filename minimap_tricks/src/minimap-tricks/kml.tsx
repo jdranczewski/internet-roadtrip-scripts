@@ -16,6 +16,10 @@ interface KMLstorage {
     hash?: number
 }
 
+type StoredKML = {
+    [key: string]: KMLstorage;
+};
+
 // Hashing function from https://stackoverflow.com/a/7616484
 const generateHash = (string) => {
   let hash = 0;
@@ -29,7 +33,12 @@ const generateHash = (string) => {
 // Store and retrieve this separately from the settings object,
 // as otherwise all actions involving saving the settings object
 // become quite slow
-const stored_kml: {string: KMLstorage} = GM_getValue("kml");
+let _stored_kml: StoredKML = GM_getValue("kml");
+if (!_stored_kml) {
+    _stored_kml = {};
+    GM.setValues({kml: _stored_kml});
+}
+const stored_kml = _stored_kml;
 async function loadKMLtext(text: string, storage_id?, source_url?) {
     setKMLstatus("loading KML file...");
     // Generate hash and check with the one already stored
@@ -72,9 +81,11 @@ async function loadKMLtext(text: string, storage_id?, source_url?) {
         setKMLstatus(`${stored_kml[storage_id].name} updated`);
     }
     stored_kml[storage_id].lastUpdated = Date.now();
-    stored_kml[storage_id].lastChecked = Date.now();
     stored_kml[storage_id].hash = hash;
-    if (source_url) {stored_kml[storage_id].url = source_url};
+    if (source_url) {
+        stored_kml[storage_id].url = source_url;
+        stored_kml[storage_id].lastChecked = Date.now();
+    };
     
     GM.setValues({kml: stored_kml});
     setSolidKeys();
@@ -191,7 +202,6 @@ ml_map.once("load", () => {
 
     // Update the map when the loaded KML files change
     createEffect(() => {
-        console.log("Running effect");
         const collection = {
             'type': 'FeatureCollection' as const,
             'features': []
@@ -249,7 +259,7 @@ const section = marker_panel.add_section("KML layers", `For more complex maps,
     or another map creation tool to create KML files with many markers. You can then
     add your KML files here to show them on the in-game map!<br><br>
     Make sure you download as KML and not KMZ, and do select "keep data up to date" if
-    you would like the option to update the layer later!`)
+    you would like the option to automatically update the layer when the source map changes.`)
 
 const import_item =
     <div class={styles['settings-item']}>
