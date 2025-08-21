@@ -7,7 +7,8 @@
 // @author      jdranczewski
 // @description Make the ebedded Street View in the Internet Roadtrip interactive.
 // @license     MIT
-// @run-at      document-end
+// @grant       GM.addStyle
+// @grant       unsafeWindow
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
 // ==/UserScript==
 
@@ -158,6 +159,19 @@
 			let internalHeading = 0;
 			let prev_pano = instance.getPano();
 
+			GM.addStyle(`
+			html {background-color: #b0bdbd;}
+			body {
+				transition: filter 0.3s;
+				&.filtered {
+					filter: blur(15px) grayscale(1) opacity(0);
+				}
+				&.aBitFiltered {
+					filter: blur(5px) grayscale(.1) opacity(.9);
+				}
+			}
+			`);
+
 			[
 				"pano_changed", "position_changed", "pov_changed", "status_changed",
 				"visible_changed", "zoom_changed", "links_changed"
@@ -188,7 +202,7 @@
 						|| Math.abs(shortestAngleDist(
 							internalHeading,
 							args.heading
-						)) > 20
+						)) > 10
 					) {
 						console.debug("[AISV] Animating angle")
 						internalHeading = args.heading;
@@ -218,8 +232,10 @@
 				// If the pano is linked, great, just go there
 				if (instance.getLinks().some(({ pano }) => pano === args.pano)) {
 					console.debug("[AISV] Pano is linked, jumping directly");
-					instance.setPano(args.pano)
-					return
+					document.body.classList.toggle("aBitFiltered", true);
+					await setPanoAndWait(args.pano);
+					document.body.classList.toggle("aBitFiltered", false);
+					return;
 				} else if (args.optionsN === 1) { // Also filter by angle
 					// The pano is not linked. Sigh.
 					// We won't get a nice animation if we jump straight into it.
@@ -234,9 +250,11 @@
 						if (closestLink.pano == args.pano) {
 							// Congrats, we've found a path!
 							console.debug("[AISV] Further straight found, executing jumps", path);
+							document.body.classList.toggle("aBitFiltered", true);
 							for (let pano of path) {
-								await setPanoAndWait(pano)
+								await setPanoAndWait(pano);
 							}
+							document.body.classList.toggle("aBitFiltered", false);
 							return;
 						} else {
 							service_pano = await service.getPanoramaById(closestLink.pano);
@@ -245,43 +263,34 @@
 					}
 				}
 				// The pano is not linked, and we weren't able to find a further straight
-				// TODO: Let's do a simple fade animation and jump to it
 				console.debug("[AISV] Pano not linked, no further straight found");
-				instance.setPano(args.pano);
+				document.body.classList.toggle("filtered", true);
+				setTimeout(() => {
+					instance.setPano(args.pano);
+					setTimeout(() => document.body.classList.toggle("filtered", false), 100)
+				}, 300);
 			}
 
 			async function setPanoAndWait(pano) {
 				return new Promise((resolve) => {
-					let panoHasChanged = false;
-					let linksHaveChanged = false;
-					let statusHasChanged = false;
-					const checkAndResolve = () => {
-						if (!panoHasChanged || !linksHaveChanged || !statusHasChanged) return;
-						// resolve();
-						setTimeout(() => {
+					let last_pov_changed = undefined;
+					const wait_time = 150;
+					function checkAndResolve() {
+						if (last_pov_changed && Date.now() - last_pov_changed > 150) {
+							console.debug("[AISV] setPanoAndWait resolved", pano);
+							povChangedListener.remove();
 							resolve();
-							// console.debug("[AISV] setPanoAndWait resolve", pano);
-						}, 750);
+						} else {
+							setTimeout(checkAndResolve, 150);
+						}
 					}
-
-					const panoChangedListener = instance.addListener('pano_changed', (event) => {
-						panoHasChanged = true;
-						panoChangedListener.remove();
-						checkAndResolve();
-					})
-					const linksChangedListener = instance.addListener('links_changed', (event) => {
-						linksHaveChanged = true;
-						linksChangedListener.remove();
-						checkAndResolve();
-					});
-					const statusChangedListener = instance.addListener('links_changed', (event) => {
-						statusHasChanged = true;
-						statusChangedListener.remove();
-						checkAndResolve();
+					const povChangedListener = instance.addListener('pov_changed', () => {
+						last_pov_changed = Date.now();
 					});
 
 					console.debug("[AISV] setPanoAndWait", pano);
 					instance.setPano(pano);
+					setTimeout(checkAndResolve, 150);
 				})
 			}
 
