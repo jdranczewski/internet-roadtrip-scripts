@@ -25,6 +25,7 @@
 	if (IRF.isInternetRoadtrip) {
 		// Get some references
 		const vcontainer = await IRF.vdom.container;
+        const voptions = await IRF.vdom.options;
 
 		// Changing this in preparation for the breaking changes in IRF 0.5.0
 		// const refs = (await IRF.vdom.container).$refs;
@@ -91,9 +92,25 @@
 
 		// Listen and respond to messages from embeds
 		window.addEventListener("message", (event) => {
-			if (event.origin !== "https://www.google.com" || event.data !== marco) return;
-			event.source.postMessage(polo, event.origin);
+			if (event.origin !== "https://www.google.com") return;
+            if (event.data === marco) {
+                event.source.postMessage(polo, event.origin);
+            } else if (event.data.action === "setHeading") {
+                currentPanoramaHeading = event.data.args.heading;
+                document.querySelectorAll('.option').forEach(async (option, index) => {
+                    option.style.rotate = `${voptions.methods.getRotation(index)}deg`;
+                });
+            }
 		});
+        let currentPanoramaHeading = 0;
+        voptions.state.getRotation = new Proxy(voptions.methods.getRotation, {
+            apply: (target, thisArg, args) => {
+                // Multiplication by 1.25 offsets the vanilla game's multiplication by 0.8.
+                // This way, the arrows actually point towards the road they correspond to.
+                const angle = Reflect.apply(target, thisArg, args) * 1.25;
+                return angle - (currentPanoramaHeading - vcontainer.state.currentHeading) % 360;
+            },
+        });
 	} else {
 		// We're in Street View! Set the pano options here
 		// Waiting based on Netux's implementation in the Pathfinder
@@ -156,7 +173,7 @@
 				pitch: undefined,
 				fov: undefined
 			}
-			let internalHeading = 0;
+			let internalHeading = instance.getPov().heading;
 			let prev_pano = instance.getPano();
 
 			GM.addStyle(`
@@ -169,17 +186,20 @@
 				&.aBitFiltered {
 					filter: blur(5px) grayscale(.1) opacity(.9);
 				}
+                .widget-scene {
+                    cursor: move !important;
+                }
 			}
 			`);
 
-			[
-				"pano_changed", "position_changed", "pov_changed", "status_changed",
-				"visible_changed", "zoom_changed", "links_changed"
-			].forEach((name) => {
-				instance.addListener(name, (event) => {
-					console.log(name, event);
-				})
-			})
+			// [
+			// 	"pano_changed", "position_changed", "pov_changed", "status_changed",
+			// 	"visible_changed", "zoom_changed", "links_changed"
+			// ].forEach((name) => {
+			// 	instance.addListener(name, (event) => {
+			// 		console.log(name, event);
+			// 	})
+			// })
 
 			window.addEventListener("message", async (event) => {
 				if (event.origin !== "https://neal.fun") return;
@@ -205,9 +225,13 @@
 						)) > 10
 					) {
 						console.debug("[AISV] Animating angle")
+						const userHeadingOffset = shortestAngleDist(
+							instance.getPov().heading, internalHeading
+						);
+						console.log("[AISV] userHeadingOffset", userHeadingOffset, instance.getPov().heading, internalHeading)
 						internalHeading = args.heading;
 						animateHeading(
-							instance, args.heading,
+							instance, internalHeading - userHeadingOffset,
 							async () => {
 								await changePano(args);
 								prev_pano = args.pano;
@@ -230,7 +254,7 @@
 				console.debug("[AISV] Current links...", service_pano.data, links);
 
 				// If the pano is linked, great, just go there
-				if (instance.getLinks().some(({ pano }) => pano === args.pano)) {
+				if (links.some(({ pano }) => pano === args.pano)) {
 					console.debug("[AISV] Pano is linked, jumping directly");
 					document.body.classList.toggle("aBitFiltered", true);
 					await setPanoAndWait(args.pano);
@@ -245,6 +269,7 @@
 					const path = [];
 					for (let i = 0; i < 5; i++) {
 						let closestLink = closestLinkToHeading(links, args.currentHeading);
+                        if (!closestLink) break;
 						console.debug("[AISV] Checking for further straights...", closestLink.pano);
 						path.push(closestLink.pano);
 						if (closestLink.pano == args.pano) {
@@ -274,14 +299,14 @@
 			async function setPanoAndWait(pano) {
 				return new Promise((resolve) => {
 					let last_pov_changed = undefined;
-					const wait_time = 150;
+					const wait_time = 250;
 					function checkAndResolve() {
-						if (last_pov_changed && Date.now() - last_pov_changed > 150) {
+						if (last_pov_changed && Date.now() - last_pov_changed > wait_time) {
 							console.debug("[AISV] setPanoAndWait resolved", pano);
 							povChangedListener.remove();
 							resolve();
 						} else {
-							setTimeout(checkAndResolve, 150);
+							setTimeout(checkAndResolve, 50);
 						}
 					}
 					const povChangedListener = instance.addListener('pov_changed', () => {
@@ -290,7 +315,24 @@
 
 					console.debug("[AISV] setPanoAndWait", pano);
 					instance.setPano(pano);
-					setTimeout(checkAndResolve, 150);
+					setTimeout(checkAndResolve, wait_time);
+				})
+			}
+
+			// Let the parent frame know when the heading changes
+			{
+				let lastHeading = null;
+				instance.addListener('pov_changed', () => {
+					const heading = instance.getPov()?.heading;
+
+					if (!heading || heading === lastHeading) {
+					return;
+					}
+
+					window.parent.postMessage({
+						action: "setHeading",
+						args: { heading }
+					}, "https://neal.fun")
 				})
 			}
 
