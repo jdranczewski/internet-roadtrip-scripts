@@ -32,9 +32,11 @@
 	if (IRF.isInternetRoadtrip) {
 		// Show both iframes for debugging
 		GM.addStyle(`
+		.ISV_debug {
 			#pano0 {top: 0;}
 			#pano1 {top: 50vh; opacity: 1 !important}
 			.pano {height: 50vh !important;}
+		}
 		`)
 
 		// Get some references
@@ -141,21 +143,17 @@
 							console.log(instance.zoom);	
 						} else if (event.data.action === "setPano") {
 							console.log("Setting pano", event.data.args.pano);
-							// instance.setPov({
-							// 	heading: parseFloat(event.data.args.heading),
-							// 	pitch: parseFloat(event.data.args.pitch),
-							// 	zoom: fovToZoom(parseFloat(event.data.args.fov)),
-							// });
-							// instance.setPano(event.data.args.pano);
 							const pov = {
 								heading: parseFloat(event.data.args.heading),
 								pitch: parseFloat(event.data.args.pitch),
 								zoom: fovToZoom(parseFloat(event.data.args.fov))
 							}
-							instance.setOptions({
-								pano: event.data.args.pano,
-								pov: pov,
-							})
+							// instance.setOptions({
+							// 	pano: event.data.args.pano,
+							// 	pov: pov,
+							// })
+							instance.setPov(pov);
+							instance.setPano(event.data.args.pano);
 							if (JSON.stringify(instance.pov) !== JSON.stringify(pov)) {
 								console.log("Discrepancy detected", instance.pov, pov);
 							}

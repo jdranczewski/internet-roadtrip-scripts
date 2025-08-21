@@ -274,6 +274,7 @@
 						prev_pano = args.pano;
 					}
 				} else if (event.data.action === "resetPov") {
+                    internalHeading = canonicalPov.heading;
                     instance.setPov({
                         heading: canonicalPov.heading,
                         pitch: canonicalPov.pitch,
