@@ -232,46 +232,30 @@
 			// 	})
 			// })
 
+			let scheduledSetPanoMessageData = null;
+			document.addEventListener('visibilitychange', async () => {
+				if (document.hidden) {
+					console.debug('[AISV] visible to hidden');
+					instance.setVisible(false);
+				} else {
+					console.debug('[AISV] hidden to visible', { scheduledSetPanoMessageData });
+					instance.setVisible(true);
+					if (scheduledSetPanoMessageData) {
+						console.debug('[AISV] playing last set pano');
+
+						await handleSetPanoMessage(scheduledSetPanoMessageData, 'instant');
+						scheduledSetPanoMessageData = null;
+					}
+				}
+			})
+
 			window.addEventListener("message", async (event) => {
 				if (event.origin !== "https://neal.fun") return;
 				if (event.data.action === "setPano") {
-					const args = event.data.args;
-					console.debug("[AISV] Setting pano", args.pano);
-
-					// Store the canonical values
-					canonicalPov = {
-						heading: args.heading,
-						pitch: args.pitch,
-						fov: args.fov
-					}
-
-					// Only animate the heading if it's a
-					// significant change or the pano hasn't changed
-					// (dead end)
-					if (
-						(prev_pano === args.pano)
-						|| Math.abs(shortestAngleDist(
-							internalHeading,
-							args.heading
-						)) > 10
-					) {
-						console.debug("[AISV] Animating angle")
-						const userHeadingOffset = shortestAngleDist(
-							instance.getPov().heading, internalHeading
-						);
-						console.log("[AISV] userHeadingOffset", userHeadingOffset, instance.getPov().heading, internalHeading)
-						internalHeading = args.heading;
-						animateHeading(
-							instance, internalHeading - userHeadingOffset,
-							async () => {
-								await changePano(args);
-								prev_pano = args.pano;
-							}
-						);
+					if (document.hidden) {
+						scheduledSetPanoMessageData = event.data;
 					} else {
-						console.debug("[AISV] Keeping angle the same")
-						await changePano(args);
-						prev_pano = args.pano;
+						await handleSetPanoMessage(event.data, 'smooth');
 					}
 				} else if (event.data.action === "resetPov") {
 					internalHeading = canonicalPov.heading;
@@ -283,10 +267,61 @@
 				}
 			});
 
-			async function changePano(args) {
+			async function handleSetPanoMessage(messageData, mode) {
+				const args = messageData.args;
+				console.debug("[AISV] Setting pano", args.pano);
+
+				// Store the canonical values
+				canonicalPov = {
+					heading: args.heading,
+					pitch: args.pitch,
+					fov: args.fov
+				};
+
+				const doInstantJump = mode === 'instant';
+
+				// Only animate the heading if it's a
+				// significant change or the pano hasn't changed
+				// (dead end)
+				if (
+					(prev_pano === args.pano)
+					|| Math.abs(shortestAngleDist(
+						internalHeading,
+						args.heading
+					)) > 10
+				) {
+					console.debug("[AISV] Animating angle")
+					const userHeadingOffset = shortestAngleDist(
+						instance.getPov().heading, internalHeading
+					);
+					console.log("[AISV] userHeadingOffset", userHeadingOffset, instance.getPov().heading, internalHeading)
+					internalHeading = args.heading;
+					animateHeading(
+						instance, internalHeading - userHeadingOffset,
+						async () => {
+							await changePano(args, doInstantJump);
+							prev_pano = args.pano;
+						}
+					);
+				} else {
+					console.debug("[AISV] Keeping angle the same")
+					await changePano(args, doInstantJump);
+					prev_pano = args.pano;
+				}
+			}
+
+			async function changePano(args, instantJump) {
 				// Do nothing if it's the same pano
 				if (prev_pano && instance.getPano() !== prev_pano) console.log("[AISV] Prev pano not equal to current!", prev_pano, instance.getPano());
 				if (prev_pano === args.pano) return;
+
+				if (instantJump) {
+					document.body.classList.toggle("filtered", true);
+					await setPanoAndWait(args.pano);
+					document.body.classList.toggle("filtered", false);
+					return;
+				}
+
 				let service_pano = await service.getPanoramaById(prev_pano);
 				let links = service_pano.data.links;
 				console.debug("[AISV] Current links...", service_pano.data, links);
