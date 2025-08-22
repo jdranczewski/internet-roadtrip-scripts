@@ -29,18 +29,24 @@
 
 		GM.addStyle(`
 			#aisv-reset {
-					position: absolute;
-					left: 0;
-					bottom: 0;
-					color: white;
-					transform: rotate(-90deg);
-					transform-origin: bottom left;
-					width: 67px;
-					margin: 0;
-					z-index: -1;
+				position: absolute;
+				left: 0;
+				bottom: -1px;
+				color: white;
+				transform: rotate(-90deg);
+				transform-origin: bottom left;
+				width: 67px;
+				margin: 0;
+				z-index: -1;
+
+				&.aisv-frosted {
+					opacity: 0.75;
+					background: #5c89e9cc;
+    				background: linear-gradient(81deg, rgb(112 204 247 / 60%) 0%, #5c89e9cc 27%, #668de1cc 46%, #5c89e9cc 58%, rgb(209 248 255 / 71%) 100%);
+				}
 			}
 			.radio-body {
-					border-bottom-left-radius: 0 !important;
+				border-bottom-left-radius: 0 !important;
 			}
 		`);
 
@@ -61,7 +67,7 @@
 		iframe.allowFullscreen = true;
 		iframe.classList.add("pano");
 		iframe.style.border = "0px";
-		iframe.style.zIndex = -1;
+		iframe.style.zIndex = -2;
 		iframe.style.pointerEvents = "auto";
 		iframe.dataset["v-5f07f20e"] = "";
 		pano1.parentNode.insertBefore(iframe, iframe.nextSibling);
@@ -108,6 +114,7 @@
 				iframe.src = url.toString();
 				return;
 			};
+			if (url.origin !== 'https://www.google.com') return;
 			iframe.contentWindow.postMessage({
 				action: "setPano",
 				args: {
@@ -121,6 +128,12 @@
 			}, "https://www.google.com")
 		}
 
+		document.addEventListener("keydown", (event) => {
+			if (event.key == "Escape") iframe.contentWindow.postMessage({
+				action: "togglePaused",
+			}, "https://www.google.com");
+		});
+
 		// Listen and respond to messages from embeds
 		window.addEventListener("message", (event) => {
 			if (event.origin !== "https://www.google.com") return;
@@ -131,6 +144,8 @@
 				document.querySelectorAll('.option').forEach(async (option, index) => {
 					option.style.rotate = `${voptions.methods.getRotation(index)}deg`;
 				});
+			} else if (event.data.action === "setFrosted") {
+				reset.classList.toggle("aisv-frosted", event.data.args.frosted);
 			}
 		});
 		let currentPanoramaHeading = 0;
@@ -208,7 +223,7 @@
 			let prev_pano = instance.getPano();
 
 			GM.addStyle(`
-			html {background-color: #b0bdbd;}
+			html {background-color: #46484f;}
 			body {
 				transition: filter 0.3s;
 				&.filtered {
@@ -237,22 +252,34 @@
 				if (document.hidden) {
 					console.debug('[AISV] visible to hidden');
 					instance.setVisible(false);
+					pauseUpdates(true);
 				} else {
 					console.debug('[AISV] hidden to visible', { scheduledSetPanoMessageData });
 					instance.setVisible(true);
-					if (scheduledSetPanoMessageData) {
-						console.debug('[AISV] playing last set pano');
-
-						await handleSetPanoMessage(scheduledSetPanoMessageData, 'instant');
-						scheduledSetPanoMessageData = null;
-					}
+					pauseUpdates(false);
 				}
 			})
+
+			let updatesPaused = false;
+			async function pauseUpdates(pause) {
+				updatesPaused = pause;
+				if (!updatesPaused && scheduledSetPanoMessageData) {
+					await handleSetPanoMessage(scheduledSetPanoMessageData, 'instant');
+					scheduledSetPanoMessageData = null;
+				}
+				window.parent.postMessage({
+					action: "setFrosted",
+					args: { frosted: updatesPaused }
+				}, "https://neal.fun")
+			}
+			document.addEventListener("keydown", (event) => {
+				if (event.key == "Escape") pauseUpdates(!updatesPaused);
+			});
 
 			window.addEventListener("message", async (event) => {
 				if (event.origin !== "https://neal.fun") return;
 				if (event.data.action === "setPano") {
-					if (document.hidden) {
+					if (updatesPaused) {
 						scheduledSetPanoMessageData = event.data;
 					} else {
 						await handleSetPanoMessage(event.data, 'smooth');
@@ -264,6 +291,8 @@
 						pitch: canonicalPov.pitch,
 						zoom: fovToZoom(canonicalPov.fov),
 					})
+				} else if (event.data.action === "togglePaused") {
+					pauseUpdates(!updatesPaused);
 				}
 			});
 
@@ -315,13 +344,6 @@
 				if (prev_pano && instance.getPano() !== prev_pano) console.log("[AISV] Prev pano not equal to current!", prev_pano, instance.getPano());
 				if (prev_pano === args.pano) return;
 
-				if (instantJump) {
-					document.body.classList.toggle("filtered", true);
-					await setPanoAndWait(args.pano);
-					document.body.classList.toggle("filtered", false);
-					return;
-				}
-
 				let service_pano = await service.getPanoramaById(prev_pano);
 				let links = service_pano.data.links;
 				console.debug("[AISV] Current links...", service_pano.data, links);
@@ -333,7 +355,7 @@
 					await setPanoAndWait(args.pano);
 					document.body.classList.toggle("aBitFiltered", false);
 					return;
-				} else if (args.optionsN === 1) { // Also filter by angle
+				} else if (!instantJump && args.optionsN === 1) { // Also filter by angle
 					// The pano is not linked. Sigh.
 					// We won't get a nice animation if we jump straight into it.
 					// Since there was only one option, this could have been
