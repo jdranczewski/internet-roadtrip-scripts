@@ -18,31 +18,31 @@
  * @typedef {typeof import('internet-roadtrip-framework')} IRF
  */
 
-(async function() {
+(async function () {
 	const marco = "are you neal.fun?";
 	const polo = "yes I am neal.fun!";
 
 	if (IRF.isInternetRoadtrip) {
 		// Get some references
 		const vcontainer = await IRF.vdom.container;
-        const voptions = await IRF.vdom.options;
+		const voptions = await IRF.vdom.options;
 
-        GM.addStyle(`
-        #aisv-reset {
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            color: white;
-            transform: rotate(-90deg);
-            transform-origin: bottom left;
-            width: 67px;
-            margin: 0;
-            z-index: -1;
-        }
-        .radio-body {
-            border-bottom-left-radius: 0 !important;
-        }
-        `);
+		GM.addStyle(`
+			#aisv-reset {
+					position: absolute;
+					left: 0;
+					bottom: 0;
+					color: white;
+					transform: rotate(-90deg);
+					transform-origin: bottom left;
+					width: 67px;
+					margin: 0;
+					z-index: -1;
+			}
+			.radio-body {
+					border-bottom-left-radius: 0 !important;
+			}
+		`);
 
 		// Changing this in preparation for the breaking changes in IRF 0.5.0
 		// const refs = (await IRF.vdom.container).$refs;
@@ -51,7 +51,7 @@
 
 		// Don't switch frame order, we'll have our own iframe
 		vcontainer.state.switchFrameOrder = new Proxy(vcontainer.methods.switchFrameOrder, {
-			apply: () => {},
+			apply: () => { },
 		});
 
 		// Add our own iframe
@@ -66,19 +66,19 @@
 		iframe.dataset["v-5f07f20e"] = "";
 		pano1.parentNode.insertBefore(iframe, iframe.nextSibling);
 
-        // Add a reset button
-        const radio = await IRF.dom.radio;
-        const reset = document.createElement("div");
-        reset.id = "aisv-reset";
-        reset.innerText = "Reset";
-        reset.classList.add("odometer-container");
-        reset.dataset["v-259ab0e2"] = "";
-        radio.appendChild(reset);
-        radio.addEventListener("click", () => {
-            iframe.contentWindow.postMessage({
+		// Add a reset button
+		const radio = await IRF.dom.radio;
+		const reset = document.createElement("div");
+		reset.id = "aisv-reset";
+		reset.innerText = "Reset";
+		reset.classList.add("odometer-container");
+		reset.dataset["v-259ab0e2"] = "";
+		radio.appendChild(reset);
+		radio.addEventListener("click", () => {
+			iframe.contentWindow.postMessage({
 				action: "resetPov",
 			}, "https://www.google.com")
-        })
+		})
 
 		// Override the source setters on the existing iframes
 		pano0.src = "about:blank";
@@ -124,24 +124,24 @@
 		// Listen and respond to messages from embeds
 		window.addEventListener("message", (event) => {
 			if (event.origin !== "https://www.google.com") return;
-            if (event.data === marco) {
-                event.source.postMessage(polo, event.origin);
-            } else if (event.data.action === "setHeading") {
-                currentPanoramaHeading = event.data.args.heading;
-                document.querySelectorAll('.option').forEach(async (option, index) => {
-                    option.style.rotate = `${voptions.methods.getRotation(index)}deg`;
-                });
-            }
+			if (event.data === marco) {
+				event.source.postMessage(polo, event.origin);
+			} else if (event.data.action === "setHeading") {
+				currentPanoramaHeading = event.data.args.heading;
+				document.querySelectorAll('.option').forEach(async (option, index) => {
+					option.style.rotate = `${voptions.methods.getRotation(index)}deg`;
+				});
+			}
 		});
-        let currentPanoramaHeading = 0;
-        voptions.state.getRotation = new Proxy(voptions.methods.getRotation, {
-            apply: (target, thisArg, args) => {
-                // Multiplication by 1.25 offsets the vanilla game's multiplication by 0.8.
-                // This way, the arrows actually point towards the road they correspond to.
-                const angle = Reflect.apply(target, thisArg, args) * 1.25;
-                return angle - (currentPanoramaHeading - vcontainer.state.currentHeading) % 360;
-            },
-        });
+		let currentPanoramaHeading = 0;
+		voptions.state.getRotation = new Proxy(voptions.methods.getRotation, {
+			apply: (target, thisArg, args) => {
+				// Multiplication by 1.25 offsets the vanilla game's multiplication by 0.8.
+				// This way, the arrows actually point towards the road they correspond to.
+				const angle = Reflect.apply(target, thisArg, args) * 1.25;
+				return angle - (currentPanoramaHeading - vcontainer.state.currentHeading) % 360;
+			},
+		});
 	} else {
 		// We're in Street View! Set the pano options here
 		// Waiting based on Netux's implementation in the Pathfinder
@@ -162,14 +162,14 @@
 				configurable: true,
 				enumerable: true,
 			});
-    	});
+		});
 
 		// Override the StreetViewPanorama function to get the embed's instance
 		Promise.all([waitForOnApiLoad]).then(([onApiLoad]) => {
 			const originalOnApiLoad = onApiLoad;
-			unsafeWindow.onApiLoad = function(args) {
+			unsafeWindow.onApiLoad = function (args) {
 				const originalConstructor = unsafeWindow.google.maps.StreetViewPanorama;
-				unsafeWindow.google.maps.StreetViewPanorama = function(container, opts) {
+				unsafeWindow.google.maps.StreetViewPanorama = function (container, opts) {
 					const instance = new originalConstructor(container, opts);
 					unsafeWindow._SVP = instance;
 
@@ -217,9 +217,9 @@
 				&.aBitFiltered {
 					filter: blur(5px) grayscale(.1) opacity(.9);
 				}
-                .widget-scene {
-                    cursor: move !important;
-                }
+				.widget-scene {
+						cursor: move !important;
+				}
 			}
 			`);
 
@@ -232,61 +232,96 @@
 			// 	})
 			// })
 
+			let scheduledSetPanoMessageData = null;
+			document.addEventListener('visibilitychange', async () => {
+				if (document.hidden) {
+					console.debug('[AISV] visible to hidden');
+					instance.setVisible(false);
+				} else {
+					console.debug('[AISV] hidden to visible', { scheduledSetPanoMessageData });
+					instance.setVisible(true);
+					if (scheduledSetPanoMessageData) {
+						console.debug('[AISV] playing last set pano');
+
+						await handleSetPanoMessage(scheduledSetPanoMessageData, 'instant');
+						scheduledSetPanoMessageData = null;
+					}
+				}
+			})
+
 			window.addEventListener("message", async (event) => {
 				if (event.origin !== "https://neal.fun") return;
 				if (event.data.action === "setPano") {
-					const args = event.data.args;
-					console.debug("[AISV] Setting pano", args.pano);
-
-					// Store the canonical values
-					canonicalPov = {
-						heading: args.heading,
-						pitch: args.pitch,
-						fov: args.fov
-					}
-
-					// Only animate the heading if it's a
-					// significant change or the pano hasn't changed
-					// (dead end)
-					if (
-						(prev_pano === args.pano)
-						|| Math.abs(shortestAngleDist(
-							internalHeading,
-							args.heading
-						)) > 10
-					) {
-						console.debug("[AISV] Animating angle")
-						const userHeadingOffset = shortestAngleDist(
-							instance.getPov().heading, internalHeading
-						);
-						console.log("[AISV] userHeadingOffset", userHeadingOffset, instance.getPov().heading, internalHeading)
-						internalHeading = args.heading;
-						animateHeading(
-							instance, internalHeading - userHeadingOffset,
-							async () => {
-								await changePano(args);
-								prev_pano = args.pano;
-							}
-						);
+					if (document.hidden) {
+						scheduledSetPanoMessageData = event.data;
 					} else {
-						console.debug("[AISV] Keeping angle the same")
-						await changePano(args);
-						prev_pano = args.pano;
+						await handleSetPanoMessage(event.data, 'smooth');
 					}
 				} else if (event.data.action === "resetPov") {
-                    internalHeading = canonicalPov.heading;
-                    instance.setPov({
-                        heading: canonicalPov.heading,
-                        pitch: canonicalPov.pitch,
-                        zoom: fovToZoom(canonicalPov.fov),
-                    })
-                }
+					internalHeading = canonicalPov.heading;
+					instance.setPov({
+						heading: canonicalPov.heading,
+						pitch: canonicalPov.pitch,
+						zoom: fovToZoom(canonicalPov.fov),
+					})
+				}
 			});
 
-			async function changePano(args) {
+			async function handleSetPanoMessage(messageData, mode) {
+				const args = messageData.args;
+				console.debug("[AISV] Setting pano", args.pano);
+
+				// Store the canonical values
+				canonicalPov = {
+					heading: args.heading,
+					pitch: args.pitch,
+					fov: args.fov
+				};
+
+				const doInstantJump = mode === 'instant';
+
+				// Only animate the heading if it's a
+				// significant change or the pano hasn't changed
+				// (dead end)
+				if (
+					(prev_pano === args.pano)
+					|| Math.abs(shortestAngleDist(
+						internalHeading,
+						args.heading
+					)) > 10
+				) {
+					console.debug("[AISV] Animating angle")
+					const userHeadingOffset = shortestAngleDist(
+						instance.getPov().heading, internalHeading
+					);
+					console.log("[AISV] userHeadingOffset", userHeadingOffset, instance.getPov().heading, internalHeading)
+					internalHeading = args.heading;
+					animateHeading(
+						instance, internalHeading - userHeadingOffset,
+						async () => {
+							await changePano(args, doInstantJump);
+							prev_pano = args.pano;
+						}
+					);
+				} else {
+					console.debug("[AISV] Keeping angle the same")
+					await changePano(args, doInstantJump);
+					prev_pano = args.pano;
+				}
+			}
+
+			async function changePano(args, instantJump) {
 				// Do nothing if it's the same pano
 				if (prev_pano && instance.getPano() !== prev_pano) console.log("[AISV] Prev pano not equal to current!", prev_pano, instance.getPano());
 				if (prev_pano === args.pano) return;
+
+				if (instantJump) {
+					document.body.classList.toggle("filtered", true);
+					await setPanoAndWait(args.pano);
+					document.body.classList.toggle("filtered", false);
+					return;
+				}
+
 				let service_pano = await service.getPanoramaById(prev_pano);
 				let links = service_pano.data.links;
 				console.debug("[AISV] Current links...", service_pano.data, links);
@@ -307,7 +342,7 @@
 					const path = [];
 					for (let i = 0; i < 5; i++) {
 						let closestLink = closestLinkToHeading(links, args.currentHeading);
-                        if (!closestLink) break;
+						if (!closestLink) break;
 						console.debug("[AISV] Checking for further straights...", closestLink.pano);
 						path.push(closestLink.pano);
 						if (closestLink.pano == args.pano) {
@@ -364,7 +399,7 @@
 					const heading = instance.getPov()?.heading;
 
 					if (!heading || heading === lastHeading) {
-					return;
+						return;
 					}
 
 					window.parent.postMessage({
@@ -421,14 +456,14 @@
 				3.914760113,
 			]
 			function fovToZoom(fov) {
-				for (let i = 0; i < fovs.length-1; i++) {
-					if (fovs[i+1] <= fov) {
-						return zooms[i] + (fov - fovs[i])/(fovs[i+1]-fovs[i]) * (zooms[i+1]-zooms[i])
+				for (let i = 0; i < fovs.length - 1; i++) {
+					if (fovs[i + 1] <= fov) {
+						return zooms[i] + (fov - fovs[i]) / (fovs[i + 1] - fovs[i]) * (zooms[i + 1] - zooms[i])
 					}
 				}
 			}
 
-			const easeInOutQuad = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+			const easeInOutQuad = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 			function animateHeading(panorama, targetHeading, callback) {
 				const startPov = panorama.getPov();
 				const startTime = performance.now();
@@ -442,7 +477,7 @@
 
 					// Interpolate heading with shortest path
 					const heading = normalizeAngle(startPov.heading + headingDiff * easedT);
-					panorama.setPov({ ... panorama.getPov(), heading });
+					panorama.setPov({ ...panorama.getPov(), heading });
 
 					if (t < 1) {
 						requestAnimationFrame(step);
