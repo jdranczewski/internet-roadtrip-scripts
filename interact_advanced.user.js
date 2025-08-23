@@ -4,7 +4,7 @@
 // @match       https://neal.fun/*
 // @match       https://www.google.com/maps/embed/v1/streetview*
 // @version     0.2.1
-// @author      jdranczewski
+// @author      jdranczewski & netux
 // @description Make the ebedded Street View in the Internet Roadtrip interactive.
 // @license     MIT
 // @grant       GM.addStyle
@@ -28,18 +28,32 @@
 		const voptions = await IRF.vdom.options;
 
 		GM.addStyle(`
-			#aisv-reset {
+			#aisv-buttons {
 				position: absolute;
 				left: 0;
 				bottom: -1px;
 				color: white;
 				transform: rotate(-90deg);
 				transform-origin: bottom left;
-				width: 67px;
-				margin: 0;
 				z-index: -1;
+				display: flex;
 
-				&.aisv-frosted {
+				& .aisv-button {
+					width: 34px;
+					margin: 0;
+					position: static;
+				}
+				& .aisv-button:has(+ .aisv-button) {
+					border-top-right-radius: 0;
+				}
+				& .aisv-button+.aisv-button {
+					border-top-left-radius: 0;
+				}
+				& .aisv-button span {
+					transform: rotate(-90deg);
+				}
+
+				& .aisv-button.aisv-frosted {
 					opacity: 0.75;
 					background: #5c89e9cc;
     				background: linear-gradient(81deg, rgb(112 204 247 / 60%) 0%, #5c89e9cc 27%, #668de1cc 46%, #5c89e9cc 58%, rgb(209 248 255 / 71%) 100%);
@@ -74,15 +88,31 @@
 
 		// Add a reset button
 		const radio = await IRF.dom.radio;
+		const buttons = document.createElement("div");
+		buttons.id = "aisv-buttons";
+		radio.appendChild(buttons);
+
 		const reset = document.createElement("div");
-		reset.id = "aisv-reset";
-		reset.innerText = "Reset";
+		reset.innerText = "↺";
 		reset.classList.add("odometer-container");
+		reset.classList.add("aisv-button");
 		reset.dataset["v-259ab0e2"] = "";
-		radio.appendChild(reset);
-		radio.addEventListener("click", () => {
+		buttons.appendChild(reset);
+		reset.addEventListener("click", () => {
 			iframe.contentWindow.postMessage({
 				action: "resetPov",
+			}, "https://www.google.com")
+		})
+
+		const pause = document.createElement("div");
+		pause.innerHTML = "<span>❚❚</span>";
+		pause.classList.add("odometer-container");
+		pause.classList.add("aisv-button");
+		pause.dataset["v-259ab0e2"] = "";
+		buttons.appendChild(pause);
+		pause.addEventListener("click", () => {
+			iframe.contentWindow.postMessage({
+				action: "togglePaused",
 			}, "https://www.google.com")
 		})
 
@@ -145,7 +175,7 @@
 					option.style.rotate = `${voptions.methods.getRotation(index)}deg`;
 				});
 			} else if (event.data.action === "setFrosted") {
-				reset.classList.toggle("aisv-frosted", event.data.args.frosted);
+				pause.classList.toggle("aisv-frosted", event.data.args.frosted);
 			}
 		});
 		let currentPanoramaHeading = 0;
@@ -327,7 +357,7 @@
 					|| Math.abs(shortestAngleDist(
 						internalHeading,
 						args.heading
-					)) > 10
+					)) > 5
 				) {
 					console.debug("[AISV] Animating angle")
 					const userHeadingOffset = shortestAngleDist(
