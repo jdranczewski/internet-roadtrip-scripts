@@ -417,8 +417,10 @@
 					);
 					console.log("[AISV] userHeadingOffset", userHeadingOffset, instance.getPov().heading, internalHeading)
 					internalHeading = args.heading;
-					animateHeading(
-						instance, internalHeading - userHeadingOffset,
+					await animatePov(
+						instance,
+						{ heading: internalHeading - userHeadingOffset },
+						1000,
 						async () => {
 							await changePano(args, doInstantJump);
 							prev_pano = args.pano;
@@ -526,11 +528,15 @@
 
 			function resetPov() {
 				internalHeading = canonicalPov.heading;
-				instance.setPov({
-					heading: canonicalPov.heading,
-					pitch: canonicalPov.pitch,
-					zoom: fovToZoom(canonicalPov.fov),
-				})
+				animatePov(
+					instance,
+					{
+						heading: canonicalPov.heading,
+						pitch: canonicalPov.pitch,
+						zoom: fovToZoom(canonicalPov.fov),
+					},
+					250
+				)
 			}
 
 			// Let the parent frame know when the heading changes
@@ -613,26 +619,52 @@
 				}
 			}
 
+			let animatePovAsyncAbortController = new AsyncAbortController();
 			const easeInOutQuad = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-			function animateHeading(panorama, targetHeading, callback) {
+			async function animatePov(panorama, targetPov, speed, callback) {
+				await Promise.all([
+					changePanoAsyncAbortController.abort(), // probably not needed
+					animatePovAsyncAbortController.refresh()
+				]);
+
 				const startPov = panorama.getPov();
 				const startTime = performance.now();
-				const headingDiff = shortestAngleDist(startPov.heading, targetHeading);
-				const duration = Math.max(1000 * Math.abs(headingDiff) / 180, 100);
+				const headingDiff = shortestAngleDist(startPov.heading, targetPov.heading);
+				const duration = Math.max(speed * Math.abs(headingDiff) / 180, 100);
 
 				function step(now) {
+					if (animatePovAsyncAbortController.signal.aborted) {
+						return;
+					}
+
 					const elapsed = now - startTime;
 					const t = Math.max(0, Math.min(elapsed / duration, 1)); // progress 0..1
 					const easedT = easeInOutQuad(t);
 
+					const newPov = { ... startPov };
+
 					// Interpolate heading with shortest path
-					const heading = normalizeAngle(startPov.heading + headingDiff * easedT);
-					panorama.setPov({ ...panorama.getPov(), heading });
+					newPov.heading = normalizeAngle(startPov.heading + headingDiff * easedT);
+
+					if (targetPov.pitch != null) {
+						// Interpolate pitch linearly
+						newPov.pitch = startPov.pitch + (targetPov.pitch - startPov.pitch) * easedT;
+					}
+
+					if (targetPov.zoom != null) {
+						// Interpolate zoom linearly if needed
+						newPov.zoom =
+							startPov.zoom !== undefined && targetPov.zoom !== undefined
+								? startPov.zoom + (targetPov.zoom - startPov.zoom) * easedT
+								: targetPov.zoom || 0;
+					}
+
+					panorama.setPov(newPov);
 
 					if (t < 1) {
 						requestAnimationFrame(step);
 					} else {
-						callback();
+						callback?.();
 					}
 				}
 				requestAnimationFrame(step);
