@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "internet-roadtrip-framework": "^0.4.1-beta"
+  },
+  "devDependencies": {
+    "@violentmonkey/types": "^0.2.2"
   }
 }
