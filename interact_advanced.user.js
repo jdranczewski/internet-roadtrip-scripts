@@ -476,7 +476,7 @@
 							document.body.classList.toggle("aBitFiltered", true);
 							for (let pano of path) {
 								await changePanoAsyncAbortController.signal.protect(
-									() =>setPanoAndWait(pano)
+									() => setPanoAndWait(pano)
 								);
 							}
 							document.body.classList.toggle("aBitFiltered", false);
