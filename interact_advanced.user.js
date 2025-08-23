@@ -162,6 +162,9 @@
 			if (event.key == "Escape") iframe.contentWindow.postMessage({
 				action: "togglePaused",
 			}, "https://www.google.com");
+			if (event.key == " ") iframe.contentWindow.postMessage({
+				action: "resetPov",
+			}, "https://www.google.com");
 		});
 
 		// Listen and respond to messages from embeds
@@ -314,6 +317,7 @@
 
 			document.addEventListener("keydown", (event) => {
 				if (event.key === "Escape") toggleManualPause();
+				if (event.key === " ") resetPov();
 			});
 
 			window.addEventListener("message", async (event) => {
@@ -325,12 +329,7 @@
 						await handleSetPanoMessage(event.data, 'smooth');
 					}
 				} else if (event.data.action === "resetPov") {
-					internalHeading = canonicalPov.heading;
-					instance.setPov({
-						heading: canonicalPov.heading,
-						pitch: canonicalPov.pitch,
-						zoom: fovToZoom(canonicalPov.fov),
-					})
+					resetPov();
 				} else if (event.data.action === "togglePaused") {
 					toggleManualPause();
 				}
@@ -451,6 +450,15 @@
 					console.debug("[AISV] setPanoAndWait", pano);
 					instance.setPano(pano);
 					setTimeout(checkAndResolve, wait_time);
+				})
+			}
+
+			function resetPov() {
+				internalHeading = canonicalPov.heading;
+				instance.setPov({
+					heading: canonicalPov.heading,
+					pitch: canonicalPov.pitch,
+					zoom: fovToZoom(canonicalPov.fov),
 				})
 			}
 
