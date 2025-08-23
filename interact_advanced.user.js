@@ -248,6 +248,8 @@
 			// })
 
 			let scheduledSetPanoMessageData = null;
+			let updatesPausedManually = false;
+
 			document.addEventListener('visibilitychange', async () => {
 				if (document.hidden) {
 					console.debug('[AISV] visible to hidden');
@@ -256,7 +258,9 @@
 				} else {
 					console.debug('[AISV] hidden to visible', { scheduledSetPanoMessageData });
 					instance.setVisible(true);
-					pauseUpdates(false);
+					if (!updatesPausedManually) {
+						pauseUpdates(false);
+					}
 				}
 			})
 
@@ -272,8 +276,14 @@
 					args: { frosted: updatesPaused }
 				}, "https://neal.fun")
 			}
+
+			function toggleManualPause() {
+				updatesPausedManually = !updatesPausedManually;
+				pauseUpdates(!updatesPaused);
+			}
+
 			document.addEventListener("keydown", (event) => {
-				if (event.key == "Escape") pauseUpdates(!updatesPaused);
+				if (event.key === "Escape") toggleManualPause();
 			});
 
 			window.addEventListener("message", async (event) => {
@@ -292,7 +302,7 @@
 						zoom: fovToZoom(canonicalPov.fov),
 					})
 				} else if (event.data.action === "togglePaused") {
-					pauseUpdates(!updatesPaused);
+					toggleManualPause();
 				}
 			});
 
