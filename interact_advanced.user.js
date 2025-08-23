@@ -245,6 +245,57 @@
 			};
 		});
 
+		class AsyncAbortSignal extends EventTarget {
+			aborted = false;
+			currentActionPromise;
+			reason;
+
+			async protect(callback) {
+				if (this.aborted) {
+					return;
+				}
+
+				const callbackResult = callback();
+				this.currentActionPromise = callbackResult instanceof Promise
+					? callbackResult.then(() => { /* no-op */ })
+					: Promise.resolve();
+
+				return callbackResult;
+			}
+
+			static dummy() {
+				const signal = new AsyncAbortSignal();
+				signal.protect = () => Promise.resolve();
+				return signal;
+			}
+		}
+
+		class AsyncAbortController {
+			signal;
+
+			constructor() {
+				this.refresh();
+			}
+
+			async abort(reason) {
+				this.signal.aborted = true;
+				this.signal.reason = reason;
+				this.signal.dispatchEvent(new Event('abort'));
+
+				await this.signal.currentActionPromise;
+			}
+
+			async refresh() {
+				if (this.signal != null) {
+					await this.abort();
+				}
+
+				this.signal = new AsyncAbortSignal();
+
+				return this;
+			}
+		}
+
 		// Handle messages from the parent window
 		function handleMessages(instance, service) {
 			let canonicalPov = {
@@ -310,9 +361,11 @@
 				}, "https://neal.fun")
 			}
 
-			function toggleManualPause() {
+			async function toggleManualPause() {
 				updatesPausedManually = !updatesPausedManually;
 				pauseUpdates(!updatesPaused);
+
+				await changePanoAsyncAbortController.abort();
 			}
 
 			document.addEventListener("keydown", (event) => {
@@ -378,7 +431,10 @@
 				}
 			}
 
+			let changePanoAsyncAbortController = new AsyncAbortController();
 			async function changePano(args, instantJump) {
+				await changePanoAsyncAbortController.refresh();
+
 				// Do nothing if it's the same pano
 				if (prev_pano && instance.getPano() !== prev_pano) console.log("[AISV] Prev pano not equal to current!", prev_pano, instance.getPano());
 				if (prev_pano === args.pano) return;
@@ -390,9 +446,11 @@
 				// If the pano is linked, great, just go there
 				if (links.some(({ pano }) => pano === args.pano)) {
 					console.debug("[AISV] Pano is linked, jumping directly");
-					document.body.classList.toggle("aBitFiltered", true);
-					await setPanoAndWait(args.pano);
-					document.body.classList.toggle("aBitFiltered", false);
+					await changePanoAsyncAbortController.signal.protect(async () => {
+						document.body.classList.toggle("aBitFiltered", true);
+						await setPanoAndWait(args.pano);
+						document.body.classList.toggle("aBitFiltered", false);
+					});
 					return;
 				} else if (!instantJump && args.optionsN === 1) { // Also filter by angle
 					// The pano is not linked. Sigh.
@@ -402,6 +460,10 @@
 					// in a couple of jumps.
 					const path = [];
 					for (let i = 0; i < 5; i++) {
+						if (changePanoAsyncAbortController.signal.aborted) {
+							return;
+						}
+
 						let closestLink = closestLinkToHeading(links, args.currentHeading);
 						if (!closestLink) break;
 						console.debug("[AISV] Checking for further straights...", closestLink.pano);
@@ -411,7 +473,9 @@
 							console.debug("[AISV] Further straight found, executing jumps", path);
 							document.body.classList.toggle("aBitFiltered", true);
 							for (let pano of path) {
-								await setPanoAndWait(pano);
+								await changePanoAsyncAbortController.signal.protect(
+									() =>setPanoAndWait(pano)
+								);
 							}
 							document.body.classList.toggle("aBitFiltered", false);
 							return;
@@ -421,13 +485,20 @@
 						}
 					}
 				}
+
+				if (changePanoAsyncAbortController.signal.aborted) {
+					return;
+				}
+
 				// The pano is not linked, and we weren't able to find a further straight
 				console.debug("[AISV] Pano not linked, no further straight found");
-				document.body.classList.toggle("filtered", true);
-				setTimeout(() => {
+				await changePanoAsyncAbortController.signal.protect(async () => {
+					document.body.classList.toggle("filtered", true);
+					await asyncTimeout(300);
 					instance.setPano(args.pano);
-					setTimeout(() => document.body.classList.toggle("filtered", false), 100)
-				}, 300);
+					await asyncTimeout(100);
+					document.body.classList.toggle("filtered", false);
+				});
 			}
 
 			async function setPanoAndWait(pano) {
@@ -480,6 +551,15 @@
 			}
 
 			// Utility functions
+
+			const asyncTimeout = (ms, options = {}) => new Promise((resolve, reject) => {
+				const { abortSignal } = options;
+				const timeout = setTimeout(resolve, ms);
+				abortSignal?.addEventListener('abort', () => {
+					clearTimeout(timeout);
+					reject(abortSignal.reason);
+				});
+			});
 
 			// Normalize angles to [0, 360)
 			function normalizeAngle(angle) {
