@@ -622,10 +622,7 @@
 			let animatePovAsyncAbortController = new AsyncAbortController();
 			const easeInOutQuad = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 			async function animatePov(panorama, targetPov, speed, callback) {
-				await Promise.all([
-					changePanoAsyncAbortController.abort(), // probably not needed
-					animatePovAsyncAbortController.refresh()
-				]);
+				await animatePovAsyncAbortController.refresh()
 
 				const startPov = panorama.getPov();
 				const startTime = performance.now();
