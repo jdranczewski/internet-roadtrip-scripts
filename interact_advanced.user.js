@@ -332,38 +332,42 @@
 			// })
 
 			let lastSetPanoMessageData = null;
-			let updatesPausedManually = false;
-
-			document.addEventListener('visibilitychange', async () => {
-				if (document.hidden) {
-					console.debug('[AISV] visible to hidden');
-					instance.setVisible(false);
-					pauseUpdates(true);
-				} else {
-					console.debug('[AISV] hidden to visible', { lastSetPanoMessageData });
-					instance.setVisible(true);
-					if (!updatesPausedManually) {
-						pauseUpdates(false);
-					}
-				}
-			})
 
 			let updatesPaused = false;
-			async function pauseUpdates(pause) {
-				updatesPaused = pause;
-				if (!updatesPaused && lastSetPanoMessageData) {
+			let updatesPausedManually = false;
+			async function pauseUpdates(pause, source) {
+				if (!pause && lastSetPanoMessageData) {
 					await handleSetPanoMessage(lastSetPanoMessageData, 'instant');
 				}
+
+				updatesPaused = pause;
+				updatesPausedManually = pause && source === 'manual';
+
 				window.parent.postMessage({
 					action: "setFrosted",
 					args: { frosted: updatesPaused }
 				}, "https://neal.fun")
 			}
 
+			document.addEventListener('visibilitychange', async () => {
+				if (document.hidden) {
+					console.debug('[AISV] visible to hidden');
+					instance.setVisible(false);
+					if (!updatesPausedManually) {
+						pauseUpdates(true, 'visibility');
+					}
+				} else {
+					console.debug('[AISV] hidden to visible', { lastSetPanoMessageData });
+					instance.setVisible(true);
+					if (!updatesPausedManually) {
+						pauseUpdates(false, 'visibility');
+					}
+				}
+			});
+
 			async function toggleManualPause() {
-				updatesPausedManually = !updatesPausedManually;
 				prev_pano = instance.getPano();
-				pauseUpdates(!updatesPaused);
+				pauseUpdates(!updatesPaused, 'manual');
 
 				await changePanoAsyncAbortController.abort();
 			}
