@@ -178,7 +178,11 @@
 					option.style.rotate = `${voptions.methods.getRotation(index)}deg`;
 				});
 			} else if (event.data.action === "setFrosted") {
-				pause.classList.toggle("aisv-frosted", event.data.args.frosted);
+				const element = ({
+					"togglePauseBtn": pause,
+					"resetPovBtn": reset
+				})[event.data.args.thing];
+				element.classList.toggle("aisv-frosted", event.data.args.frosted);
 			}
 		});
 		let currentPanoramaHeading = 0;
@@ -306,8 +310,11 @@
 				}
 				window.parent.postMessage({
 					action: "setFrosted",
-					args: { frosted: updatesPaused }
-				}, "https://neal.fun")
+					args: {
+						thing: "togglePauseBtn",
+						frosted: updatesPaused
+					}
+				}, "https://neal.fun");
 			}
 
 			function toggleManualPause() {
@@ -460,6 +467,23 @@
 					pitch: canonicalPov.pitch,
 					zoom: fovToZoom(canonicalPov.fov),
 				})
+
+				window.parent.postMessage({
+					action: "setFrosted",
+					args: {
+						thing: "resetPovBtn",
+						frosted: true
+					}
+				}, "https://neal.fun");
+				setTimeout(() => {
+					window.parent.postMessage({
+						action: "setFrosted",
+						args: {
+							thing: "resetPovBtn",
+							frosted: false
+						}
+					}, "https://neal.fun");
+				}, 100);
 			}
 
 			// Let the parent frame know when the heading changes
