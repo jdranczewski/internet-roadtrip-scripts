@@ -331,7 +331,7 @@
 			// 	})
 			// })
 
-			let scheduledSetPanoMessageData = null;
+			let lastSetPanoMessageData = null;
 			let updatesPausedManually = false;
 
 			document.addEventListener('visibilitychange', async () => {
@@ -340,7 +340,7 @@
 					instance.setVisible(false);
 					pauseUpdates(true);
 				} else {
-					console.debug('[AISV] hidden to visible', { scheduledSetPanoMessageData });
+					console.debug('[AISV] hidden to visible', { lastSetPanoMessageData });
 					instance.setVisible(true);
 					if (!updatesPausedManually) {
 						pauseUpdates(false);
@@ -351,9 +351,8 @@
 			let updatesPaused = false;
 			async function pauseUpdates(pause) {
 				updatesPaused = pause;
-				if (!updatesPaused && scheduledSetPanoMessageData) {
-					await handleSetPanoMessage(scheduledSetPanoMessageData, 'instant');
-					scheduledSetPanoMessageData = null;
+				if (!updatesPaused && lastSetPanoMessageData) {
+					await handleSetPanoMessage(lastSetPanoMessageData, 'instant');
 				}
 				window.parent.postMessage({
 					action: "setFrosted",
@@ -363,6 +362,7 @@
 
 			async function toggleManualPause() {
 				updatesPausedManually = !updatesPausedManually;
+				prev_pano = instance.getPano();
 				pauseUpdates(!updatesPaused);
 
 				await changePanoAsyncAbortController.abort();
@@ -376,11 +376,10 @@
 			window.addEventListener("message", async (event) => {
 				if (event.origin !== "https://neal.fun") return;
 				if (event.data.action === "setPano") {
-					if (updatesPaused) {
-						scheduledSetPanoMessageData = event.data;
-					} else {
+					if (!updatesPaused) {
 						await handleSetPanoMessage(event.data, 'smooth');
 					}
+					lastSetPanoMessageData = event.data;
 				} else if (event.data.action === "resetPov") {
 					resetPov();
 				} else if (event.data.action === "togglePaused") {
