@@ -337,7 +337,10 @@
 			let updatesPausedManually = false;
 			async function pauseUpdates(pause, source) {
 				if (!pause && lastSetPanoMessageData) {
-					await handleSetPanoMessage(lastSetPanoMessageData, 'instant');
+					await handleSetPanoMessage(
+						lastSetPanoMessageData,
+						updatesPausedManually ? 'smooth' : 'instant'
+					);
 				}
 
 				updatesPaused = pause;
@@ -354,13 +357,13 @@
 					console.debug('[AISV] visible to hidden');
 					instance.setVisible(false);
 					if (!updatesPausedManually) {
-						pauseUpdates(true, 'visibility');
+						pauseUpdates(true, 'document-visibility');
 					}
 				} else {
 					console.debug('[AISV] hidden to visible', { lastSetPanoMessageData });
 					instance.setVisible(true);
 					if (!updatesPausedManually) {
-						pauseUpdates(false, 'visibility');
+						pauseUpdates(false, 'document-visibility');
 					}
 				}
 			});
