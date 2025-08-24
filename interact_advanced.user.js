@@ -62,6 +62,10 @@
 			.radio-body {
 				border-bottom-left-radius: 0 !important;
 			}
+
+			.voted {
+				pointer-events: none;
+			}
 		`);
 
 		// Changing this in preparation for the breaking changes in IRF 0.5.0
