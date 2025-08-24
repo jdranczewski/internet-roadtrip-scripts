@@ -137,10 +137,7 @@
 		function setPanoFromURL(urlString) {
 			const url = new URL(urlString);
 			if (!iframe.src) {
-				// url.searchParams.set(
-				// 	"key",
-				// 	"API_KEY"
-				// )
+				url.hash = "aisv-frame";
 				iframe.src = url.toString();
 				return;
 			};
@@ -191,6 +188,10 @@
 			},
 		});
 	} else {
+		if (location.hash !== "#aisv-frame") {
+			return;
+		}
+
 		// We're in Street View! Set the pano options here
 		// Waiting based on Netux's implementation in the Pathfinder
 		const waitForOnApiLoad = new Promise((resolve) => {
