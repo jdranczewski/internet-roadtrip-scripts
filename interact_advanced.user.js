@@ -331,6 +331,13 @@
 			// 	})
 			// })
 
+			async function withFadeTransition(callback, animation) {
+				document.body.classList.toggle(animation, true);
+				const result = await callback();
+				document.body.classList.toggle(animation, false);
+				return result;
+			}
+
 			let lastSetPanoMessageData = null;
 
 			let updatesPaused = false;
@@ -454,11 +461,12 @@
 				// If the pano is linked, great, just go there
 				if (links.some(({ pano }) => pano === args.pano)) {
 					console.debug("[AISV] Pano is linked, jumping directly");
-					await changePanoAsyncAbortController.signal.protect(async () => {
-						document.body.classList.toggle("aBitFiltered", true);
-						await setPanoAndWait(args.pano);
-						document.body.classList.toggle("aBitFiltered", false);
-					});
+					await changePanoAsyncAbortController.signal.protect(async () =>
+						await withFadeTransition(
+							async () => await setPanoAndWait(args.pano),
+							"aBitFiltered"
+						)
+					);
 					return;
 				} else if (!instantJump && args.optionsN === 1) { // Also filter by angle
 					// The pano is not linked. Sigh.
@@ -479,13 +487,13 @@
 						if (closestLink.pano == args.pano) {
 							// Congrats, we've found a path!
 							console.debug("[AISV] Further straight found, executing jumps", path);
-							document.body.classList.toggle("aBitFiltered", true);
-							for (let pano of path) {
-								await changePanoAsyncAbortController.signal.protect(
-									() => setPanoAndWait(pano)
-								);
-							}
-							document.body.classList.toggle("aBitFiltered", false);
+							await withFadeTransition(async () => {
+								for (let pano of path) {
+									await changePanoAsyncAbortController.signal.protect(
+										() => setPanoAndWait(pano)
+									);
+								}
+							}, "aBitFiltered");
 							return;
 						} else {
 							service_pano = await service.getPanoramaById(closestLink.pano);
@@ -500,13 +508,13 @@
 
 				// The pano is not linked, and we weren't able to find a further straight
 				console.debug("[AISV] Pano not linked, no further straight found");
-				await changePanoAsyncAbortController.signal.protect(async () => {
-					document.body.classList.toggle("filtered", true);
-					await asyncTimeout(300);
-					instance.setPano(args.pano);
-					await asyncTimeout(100);
-					document.body.classList.toggle("filtered", false);
-				});
+				await changePanoAsyncAbortController.signal.protect(async () =>
+					await withFadeTransition(async () => {
+						await asyncTimeout(300);
+						instance.setPano(args.pano);
+						await asyncTimeout(100);
+					}, "filtered")
+				);
 			}
 
 			async function setPanoAndWait(pano) {
