@@ -1,0 +1,37 @@
+/* global css */
+/* Note: might conflict with existing styles if not in shadow DOM */
+
+#aisv-buttons {
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    color: white;
+    transform: rotate(-90deg);
+    transform-origin: bottom left;
+    z-index: -1;
+    display: flex;
+
+    & .aisv-button {
+        width: 34px;
+        margin: 0;
+        position: static;
+    }
+    & .aisv-button:has(+ .aisv-button) {
+        border-top-right-radius: 0;
+    }
+    & .aisv-button+.aisv-button {
+        border-top-left-radius: 0;
+    }
+    & .aisv-button span {
+        transform: rotate(-90deg);
+    }
+
+    & .aisv-button.aisv-frosted {
+        opacity: 0.75;
+        background: #5c89e9cc;
+        background: linear-gradient(81deg, rgb(112 204 247 / 60%) 0%, #5c89e9cc 27%, #668de1cc 46%, #5c89e9cc 58%, rgb(209 248 255 / 71%) 100%);
+    }
+}
+.radio-body {
+    border-bottom-left-radius: 0 !important;
+}
