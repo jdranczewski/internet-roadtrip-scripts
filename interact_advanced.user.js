@@ -331,10 +331,26 @@
 			// 	})
 			// })
 
-			async function withFadeTransition(callback, animation) {
-				document.body.classList.toggle(animation, true);
+			let currentlyFadeTransitioning = false;
+			async function withFadeTransition(callback, filterClass) {
+				if (currentlyFadeTransitioning) {
+					// Fade transition inside fade transition
+					// Simply let the callback run through.
+					return callback();
+				}
+
+				if (filterClass != null) {
+					currentlyFadeTransitioning = true;
+					document.body.classList.toggle(filterClass, true);
+				}
+
 				const result = await callback();
-				document.body.classList.toggle(animation, false);
+
+				if (filterClass != null) {
+					document.body.classList.toggle(filterClass, false);
+					currentlyFadeTransitioning = false;
+				}
+
 				return result;
 			}
 
@@ -430,13 +446,20 @@
 					);
 					console.log("[AISV] userHeadingOffset", userHeadingOffset, instance.getPov().heading, internalHeading)
 					internalHeading = args.heading;
-					await animatePov(
-						instance,
-						{ heading: internalHeading - userHeadingOffset },
-						1000
+					await withFadeTransition(
+						async () => {
+							await animatePov(
+								instance,
+								{ heading: internalHeading - userHeadingOffset },
+								1000
+							);
+							await changePano(args, doInstantJump);
+							prev_pano = args.pano;
+						},
+						doInstantJump
+							? "filtered"
+							: null
 					);
-					await changePano(args, doInstantJump);
-					prev_pano = args.pano;
 				} else {
 					console.debug("[AISV] Keeping angle the same")
 					await changePano(args, doInstantJump);
