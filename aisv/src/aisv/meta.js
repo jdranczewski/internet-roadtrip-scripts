@@ -1,13 +1,14 @@
 // ==UserScript==
-// @name        My Script
-// @namespace   Violentmonkey Scripts
-// @description This is a userscript.
-// @match       *://*/*
-// @grant       GM_addStyle
-// @version     0.0.0
+// @name        Internet Roadtrip Advanced Interactive Street View
+// @namespace   jdranczewski.github.io
+// @description Make the ebedded Street View in the Internet Roadtrip interactive.
+// @match       https://neal.fun/*
+// @match       https://www.google.com/maps/embed/v1/streetview*
+// @version     process.env.VERSION
 // @author      process.env.AUTHOR
 // @require     https://cdn.jsdelivr.net/npm/@violentmonkey/dom@2
 // @require     https://cdn.jsdelivr.net/npm/@violentmonkey/ui@0.7
+// @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
 // ==/UserScript==
 
 /**

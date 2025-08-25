@@ -47,9 +47,11 @@ export default defineConfig(
       resolvePlugin({ browser: false, extensions }),
       commonjsPlugin(),
       jsonPlugin(),
-      userscript((meta) =>
-        meta.replace('process.env.AUTHOR', packageJson.author.name),
-      ),
+      userscript((meta) => {
+        meta = meta.replace('process.env.AUTHOR', packageJson.author.name);
+        meta = meta.replace('process.env.VERSION', packageJson.version);
+        return meta;
+      }),
       tla()
     ],
     external: defineExternal([
@@ -66,6 +68,7 @@ export default defineConfig(
         'internet-roadtrip-framework': 'IRF',
       },
       indent: false,
+      inlineDynamicImports: true
     },
   })),
 );
