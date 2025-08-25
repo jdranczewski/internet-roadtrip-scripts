@@ -448,11 +448,20 @@
 					internalHeading = args.heading;
 					await withFadeTransition(
 						async () => {
-							await animatePov(
-								instance,
-								{ heading: internalHeading - userHeadingOffset },
-								1000
-							);
+							const targetHeading = internalHeading - userHeadingOffset;
+							if (doInstantJump) {
+								instance.setPov({
+									... instance.getPov(),
+									heading: targetHeading
+								})
+							} else {
+								await animatePov(
+									instance,
+									{ heading: targetHeading },
+									1000
+								);
+							}
+
 							await changePano(args, doInstantJump);
 							prev_pano = args.pano;
 						},
