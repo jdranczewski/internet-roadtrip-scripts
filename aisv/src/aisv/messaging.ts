@@ -1,5 +1,5 @@
-export class MessageEvent extends Event {
-    args: object | undefined;
+export class AISVMessageEvent extends Event {
+    args;
 }
 
 export class Messenger extends EventTarget {
@@ -13,7 +13,7 @@ export class Messenger extends EventTarget {
         window.addEventListener("message", (event) => {
             if (event.origin !== this.targetOrigin) return;
             if (event.data?.action) {
-                const messageEvent = new MessageEvent(`${event.data.action}`);
+                const messageEvent = new AISVMessageEvent(`${event.data.action}`);
                 messageEvent.args = event.data.args;
                 this.dispatchEvent(messageEvent);
             }

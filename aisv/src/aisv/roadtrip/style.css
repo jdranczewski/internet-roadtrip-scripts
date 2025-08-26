@@ -32,6 +32,11 @@
         background: linear-gradient(81deg, rgb(112 204 247 / 60%) 0%, #5c89e9cc 27%, #668de1cc 46%, #5c89e9cc 58%, rgb(209 248 255 / 71%) 100%);
     }
 }
+
 .radio-body {
     border-bottom-left-radius: 0 !important;
+}
+
+.voted {
+    pointer-events: none;
 }

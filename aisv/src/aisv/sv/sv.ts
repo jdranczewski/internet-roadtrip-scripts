@@ -1,26 +1,41 @@
-import { waitForInstances } from "./api";
-import { Messenger, MessageEvent } from "../messaging";
-
-console.log("[AISV-sv] wait for instance...");
-const [instance, service] = await waitForInstances;
-console.log("[AISV-sv] instance got", instance, service);
-const messenger = new Messenger(window.parent, "https://neal.fun");
+import { instance, service, messenger } from "./api";
+import { AISVMessageEvent } from "../messaging";
+import globalCss from './style.css';
+import { handleSetPano, resetPov, toggleManualPause } from "./pano";
 
 // Send a message to the parent window to verify that it is neal.fun
 messenger.send("marco");
-messenger.addEventListener("polo", (event) => {
+messenger.addEventListener("polo", handleInitialResponse);
+function handleInitialResponse(event: AISVMessageEvent) {
     // We are an iframe inside the Internet Roadtrip.
     // Install all of the required hooks.
-    console.log("[AISV-sv] Roadtrip connection confirmed!");
+    console.log("[AISV-sv] Roadtrip connection confirmed!", instance, service);
+    messenger.removeEventListener("polo", handleInitialResponse);
+
+    // Inject styles and SV instance options
+    GM.addStyle(globalCss);
     instance.setOptions({ linksControl: false, clickToGo: false });
-    messenger.addEventListener("setPano", (event: MessageEvent) => {
-        const pov = {// @ts-ignore
-            heading: event.args.heading, // @ts-ignore
-            pitch: event.args.pitch,
-            zoom: 0
-        }
-        instance.setPov(pov);
-        // @ts-ignore
-        instance.setPano(event.args.pano);
-    })
-});
+
+    // Add message hooks
+    messenger.addEventListener("setPano", handleSetPano);
+    messenger.addEventListener("resetPov", resetPov);
+    messenger.addEventListener("togglePaused", toggleManualPause);
+
+    // Keyboard shortcuts
+    document.addEventListener("keydown", (event) => {
+        if (event.key === " ") toggleManualPause();
+        if (event.key === "Escape") resetPov();
+    });
+
+    // Let the parent frame know when the heading changes
+    {
+        let lastHeading = null;
+        instance.addListener('pov_changed', () => {
+            const heading = instance.getPov()?.heading;
+            if (!heading || heading === lastHeading) {
+                return;
+            }
+            messenger.send("setHeading", { heading });
+        })
+    }
+}

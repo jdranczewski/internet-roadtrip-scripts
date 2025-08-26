@@ -1,4 +1,4 @@
-// import { messenger } from "../messaging";
+import { Messenger } from "../messaging";
 
 // Waiting based on Netux's implementation in the Pathfinder
 declare global {
@@ -32,7 +32,7 @@ const waitForOnApiLoad = new Promise((resolve) => {
 });
 
 // Override the StreetViewPanorama function to get the embed's instance
-export const waitForInstances: Promise<[
+const waitForInstances: Promise<[
     google.maps.StreetViewPanorama,
     google.maps.StreetViewService
 ]> = new Promise(async (resolve) => {
@@ -54,3 +54,6 @@ export const waitForInstances: Promise<[
         return originalOnApiLoad(args);
     };
 });
+
+export const [instance, service] = await waitForInstances;
+export const messenger = new Messenger(window.parent, "https://neal.fun");
