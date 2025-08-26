@@ -130,8 +130,15 @@ async function changePano(args, instantJump) {
     if (prev_pano && instance.getPano() !== prev_pano) console.log("[AISV-sv] Prev pano not equal to current!", prev_pano, instance.getPano());
     if (prev_pano === args.pano) return;
 
-    // @ts-expect-error
-    let service_pano = await service.getPanoramaById(prev_pano);
+    let service_pano;
+    try {
+        // @ts-expect-error
+        service_pano = await service.getPanoramaById(prev_pano);
+    } catch {
+        // prev_pano may be invalid post-void
+        // @ts-expect-error
+        service_pano = await service.getPanoramaById(instance.getPano());
+    }
     let links = service_pano.data.links;
 
     // If the pano is linked, great, just go there
