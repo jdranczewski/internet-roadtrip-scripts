@@ -1,12 +1,13 @@
 import './meta.js?userscript-metadata';
 
 import * as IRF from 'internet-roadtrip-framework'
-import { setup_roadtrip } from './roadtrip/roadtrip';
-import { setup_sv } from './sv/sv';
+
 if (IRF.isInternetRoadtrip) {
     // We're inside Roadtrip, inject Roadtrip logic
-    setup_roadtrip();
+    console.log("[AISV-rt] Inside Roadtrip");
+    // @print ./dist/aisv_rt.user.js
 } else {
     // We're inside a Street View embed iframe, inject SV logic
-    setup_sv();
+    console.log("[AISV-sv] Inside Street View");
+    // @print ./dist/aisv_sv.user.js
 }

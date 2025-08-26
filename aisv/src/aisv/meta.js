@@ -9,6 +9,8 @@
 // @require     https://cdn.jsdelivr.net/npm/@violentmonkey/dom@2
 // @require     https://cdn.jsdelivr.net/npm/@violentmonkey/ui@0.7
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
+// @grant       GM.addStyle
+// @grant       unsafeWindow
 // ==/UserScript==
 
 /**
