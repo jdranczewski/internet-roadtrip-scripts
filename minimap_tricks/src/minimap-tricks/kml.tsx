@@ -41,66 +41,89 @@ if (!_stored_kml) {
 }
 const stored_kml = _stored_kml;
 async function loadKMLtext(text: string, storage_id?, source_url?) {
-    setKMLstatus("loading KML file...");
-    // Generate hash and check with the one already stored
-    const hash = generateHash(text);
-    if (storage_id && stored_kml[storage_id]?.hash === hash) {
-        setKMLstatus("no update found");
-        stored_kml[storage_id].lastChecked = Date.now();
+    try {
+        setKMLstatus("parsing KML file...");
+        // Generate hash and check with the one already stored
+        const hash = generateHash(text);
+        if (storage_id && stored_kml[storage_id]?.hash === hash) {
+            setKMLstatus("no update found");
+            stored_kml[storage_id].lastChecked = Date.now();
+            GM.setValues({kml: stored_kml});
+            setSolidKeys();
+            return;
+        };
+
+        // Check if this is a "keep up to date" KML
+        const dom = new DOMParser().parseFromString(text, "text/xml");
+        if (dom.querySelector('parsererror')) {
+            throw new Error("XML parse error");
+        }
+        const hrefNode = dom.querySelector("Document > NetworkLink > Link > href")
+        if (hrefNode) {
+            loadKMLurl(hrefNode.childNodes[0].nodeValue, storage_id);
+            return;
+        }
+
+        const features = kml(dom).features;
+
+        // Support for random opacity for areas
+        features.forEach((feature) => {
+            feature.properties.random = Math.random();
+        })
+
+        // Store the features in extension storage
+        if (!storage_id) {
+            storage_id = crypto.randomUUID();
+            stored_kml[storage_id] = {
+                name: dom.querySelector("Document > name").innerHTML,
+                enabled: true,
+                features: features,
+            };
+            setKMLstatus(`${stored_kml[storage_id].name} loaded`);
+        } else {
+            stored_kml[storage_id].name = dom.querySelector("Document > name").innerHTML;
+            stored_kml[storage_id].features = features;
+            setKMLstatus(`${stored_kml[storage_id].name} updated`);
+        }
+        stored_kml[storage_id].lastUpdated = Date.now();
+        stored_kml[storage_id].hash = hash;
+        if (source_url) {
+            stored_kml[storage_id].url = source_url;
+            stored_kml[storage_id].lastChecked = Date.now();
+        };
+        
         GM.setValues({kml: stored_kml});
         setSolidKeys();
-        return;
-    };
-
-    // Check if this is a "keep up to date" KML
-    const dom = new DOMParser().parseFromString(text, "text/xml");
-    const hrefNode = dom.querySelector("Document > NetworkLink > Link > href")
-    if (hrefNode) {
-        loadKMLurl(hrefNode.childNodes[0].nodeValue, storage_id);
-        return;
+    } catch (error) {
+        setKMLstatus(error);
+        console.error(error);
     }
-
-    const features = kml(dom).features;
-
-    // Support for random opacity for areas
-    features.forEach((feature) => {
-        feature.properties.random = Math.random();
-    })
-
-    // Store the features in extension storage
-    if (!storage_id) {
-        storage_id = crypto.randomUUID();
-        stored_kml[storage_id] = {
-            name: dom.querySelector("Document > name").innerHTML,
-            enabled: true,
-            features: features,
-        };
-        setKMLstatus(`${stored_kml[storage_id].name} loaded`);
-    } else {
-        stored_kml[storage_id].name = dom.querySelector("Document > name").innerHTML;
-        stored_kml[storage_id].features = features;
-        setKMLstatus(`${stored_kml[storage_id].name} updated`);
-    }
-    stored_kml[storage_id].lastUpdated = Date.now();
-    stored_kml[storage_id].hash = hash;
-    if (source_url) {
-        stored_kml[storage_id].url = source_url;
-        stored_kml[storage_id].lastChecked = Date.now();
-    };
-    
-    GM.setValues({kml: stored_kml});
-    setSolidKeys();
 }
 
 async function loadKMLurl(url: string, storage_id?) {
     setKMLstatus("downloading KML file...");
+    
+    // Handle Google My Maps links
+    if (
+        url.includes("https://www.google.com/maps/d/u/0/edit")
+        || url.includes("https://www.google.com/maps/d/u/0/viewer")
+    ) {
+        const urlObject = new URL(url);
+        const mid = urlObject.searchParams.get("mid");
+        url = `https://www.google.com/maps/d/u/0/kml?forcekml=1&mid=${mid}`;
+    }
+
     GM.xmlHttpRequest({
         method: "GET",
         url: url,
         onload: async (response) => {
+            if (response.status !== 200) {
+                setKMLstatus("Error retrieving URL");
+                return;
+            }
             const result = response.responseText;
             loadKMLtext(result, storage_id, url);
-        }
+        },
     });
 }
 
