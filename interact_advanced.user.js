@@ -28,6 +28,10 @@
 		const voptions = await IRF.vdom.options;
 
 		GM.addStyle(`
+			body.aisv-streetview-frame-hooked-successfully .pano.aisv-pano {
+				pointer-events: revert;
+			}
+
 			#aisv-buttons {
 				position: absolute;
 				left: 0;
@@ -59,6 +63,7 @@
     				background: linear-gradient(81deg, rgb(112 204 247 / 60%) 0%, #5c89e9cc 27%, #668de1cc 46%, #5c89e9cc 58%, rgb(209 248 255 / 71%) 100%);
 				}
 			}
+
 			.radio-body {
 				border-bottom-left-radius: 0 !important;
 			}
@@ -83,10 +88,9 @@
 		iframe.width = "100%";
 		iframe.height = "100%";
 		iframe.allowFullscreen = true;
-		iframe.classList.add("pano");
+		iframe.classList.add("pano", "aisv-pano");
 		iframe.style.border = "0px";
 		iframe.style.zIndex = -2;
-		iframe.style.pointerEvents = "auto";
 		iframe.dataset["v-5f07f20e"] = "";
 		pano1.parentNode.insertBefore(iframe, iframe.nextSibling);
 
@@ -141,10 +145,7 @@
 		function setPanoFromURL(urlString) {
 			const url = new URL(urlString);
 			if (!iframe.src) {
-				// url.searchParams.set(
-				// 	"key",
-				// 	"API_KEY"
-				// )
+				url.hash = "aisv-frame";
 				iframe.src = url.toString();
 				return;
 			};
@@ -171,10 +172,13 @@
 			}, "https://www.google.com");
 		});
 
+		let currentPanoramaHeading = 0;
+
 		// Listen and respond to messages from embeds
 		window.addEventListener("message", (event) => {
 			if (event.origin !== "https://www.google.com") return;
 			if (event.data === marco) {
+				setupAfterSuccessfulHook();
 				event.source.postMessage(polo, event.origin);
 			} else if (event.data.action === "setHeading") {
 				currentPanoramaHeading = event.data.args.heading;
@@ -189,16 +193,24 @@
 				element.classList.toggle("aisv-frosted", event.data.args.frosted);
 			}
 		});
-		let currentPanoramaHeading = 0;
-		voptions.state.getRotation = new Proxy(voptions.methods.getRotation, {
-			apply: (target, thisArg, args) => {
-				// Multiplication by 1.25 offsets the vanilla game's multiplication by 0.8.
-				// This way, the arrows actually point towards the road they correspond to.
-				const angle = Reflect.apply(target, thisArg, args) * 1.25;
-				return angle - (currentPanoramaHeading - vcontainer.state.currentHeading) % 360;
-			},
-		});
+
+		function setupAfterSuccessfulHook() {
+			document.body.classList.add("aisv-streetview-frame-hooked-successfully");
+
+			voptions.state.getRotation = new Proxy(voptions.methods.getRotation, {
+				apply: (target, thisArg, args) => {
+					// Multiplication by 1.25 offsets the vanilla game's multiplication by 0.8.
+					// This way, the arrows actually point towards the road they correspond to.
+					const angle = Reflect.apply(target, thisArg, args) * 1.25;
+					return angle - (currentPanoramaHeading - vcontainer.state.currentHeading) % 360;
+				},
+			});
+		}
 	} else {
+		if (location.hash !== "#aisv-frame") {
+			return;
+		}
+
 		// We're in Street View! Set the pano options here
 		// Waiting based on Netux's implementation in the Pathfinder
 		const waitForOnApiLoad = new Promise((resolve) => {
