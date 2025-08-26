@@ -351,6 +351,29 @@
 			// 	})
 			// })
 
+			let currentlyFadeTransitioning = false;
+			async function withFadeTransition(callback, filterClass) {
+				if (currentlyFadeTransitioning) {
+					// Fade transition inside fade transition
+					// Simply let the callback run through.
+					return callback();
+				}
+
+				if (filterClass != null) {
+					currentlyFadeTransitioning = true;
+					document.body.classList.toggle(filterClass, true);
+				}
+
+				const result = await callback();
+
+				if (filterClass != null) {
+					document.body.classList.toggle(filterClass, false);
+					currentlyFadeTransitioning = false;
+				}
+
+				return result;
+			}
+
 			let lastSetPanoMessageData = null;
 
 			let updatesPaused = false;
@@ -446,14 +469,28 @@
 					);
 					console.log("[AISV] userHeadingOffset", userHeadingOffset, instance.getPov().heading, internalHeading)
 					internalHeading = args.heading;
-					await animatePov(
-						instance,
-						{ heading: internalHeading - userHeadingOffset },
-						1000,
+					await withFadeTransition(
 						async () => {
+							const targetHeading = internalHeading - userHeadingOffset;
+							if (doInstantJump) {
+								instance.setPov({
+									... instance.getPov(),
+									heading: targetHeading
+								})
+							} else {
+								await animatePov(
+									instance,
+									{ heading: targetHeading },
+									1000
+								);
+							}
+
 							await changePano(args, doInstantJump);
 							prev_pano = args.pano;
-						}
+						},
+						doInstantJump
+							? "filtered"
+							: null
 					);
 				} else {
 					console.debug("[AISV] Keeping angle the same")
@@ -477,11 +514,12 @@
 				// If the pano is linked, great, just go there
 				if (links.some(({ pano }) => pano === args.pano)) {
 					console.debug("[AISV] Pano is linked, jumping directly");
-					await changePanoAsyncAbortController.signal.protect(async () => {
-						document.body.classList.toggle("aBitFiltered", true);
-						await setPanoAndWait(args.pano);
-						document.body.classList.toggle("aBitFiltered", false);
-					});
+					await changePanoAsyncAbortController.signal.protect(async () =>
+						await withFadeTransition(
+							async () => await setPanoAndWait(args.pano),
+							"aBitFiltered"
+						)
+					);
 					return;
 				} else if (!instantJump && args.optionsN === 1) { // Also filter by angle
 					// The pano is not linked. Sigh.
@@ -502,13 +540,13 @@
 						if (closestLink.pano == args.pano) {
 							// Congrats, we've found a path!
 							console.debug("[AISV] Further straight found, executing jumps", path);
-							document.body.classList.toggle("aBitFiltered", true);
-							for (let pano of path) {
-								await changePanoAsyncAbortController.signal.protect(
-									() => setPanoAndWait(pano)
-								);
-							}
-							document.body.classList.toggle("aBitFiltered", false);
+							await withFadeTransition(async () => {
+								for (let pano of path) {
+									await changePanoAsyncAbortController.signal.protect(
+										() => setPanoAndWait(pano)
+									);
+								}
+							}, "aBitFiltered");
 							return;
 						} else {
 							service_pano = await service.getPanoramaById(closestLink.pano);
@@ -523,13 +561,13 @@
 
 				// The pano is not linked, and we weren't able to find a further straight
 				console.debug("[AISV] Pano not linked, no further straight found");
-				await changePanoAsyncAbortController.signal.protect(async () => {
-					document.body.classList.toggle("filtered", true);
-					await asyncTimeout(300);
-					instance.setPano(args.pano);
-					await asyncTimeout(100);
-					document.body.classList.toggle("filtered", false);
-				});
+				await changePanoAsyncAbortController.signal.protect(async () =>
+					await withFadeTransition(async () => {
+						await asyncTimeout(300);
+						instance.setPano(args.pano);
+						await asyncTimeout(100);
+					}, "filtered")
+				);
 			}
 
 			async function setPanoAndWait(pano) {
@@ -667,50 +705,53 @@
 
 			let animatePovAsyncAbortController = new AsyncAbortController();
 			const easeInOutQuad = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-			async function animatePov(panorama, targetPov, speed, callback) {
-				await animatePovAsyncAbortController.refresh()
+			async function animatePov(panorama, targetPov, speed) {
+				await animatePovAsyncAbortController.refresh();
 
-				const startPov = panorama.getPov();
-				const startTime = performance.now();
-				const headingDiff = shortestAngleDist(startPov.heading, targetPov.heading);
-				const duration = Math.max(speed * Math.abs(headingDiff) / 180, 100);
+				return new Promise((resolve) => {
 
-				function step(now) {
-					if (animatePovAsyncAbortController.signal.aborted) {
-						return;
+					const startPov = panorama.getPov();
+					const startTime = performance.now();
+					const headingDiff = shortestAngleDist(startPov.heading, targetPov.heading);
+					const duration = Math.max(speed * Math.abs(headingDiff) / 180, 100);
+
+					function step(now) {
+						if (animatePovAsyncAbortController.signal.aborted) {
+							return;
+						}
+
+						const elapsed = now - startTime;
+						const t = Math.max(0, Math.min(elapsed / duration, 1)); // progress 0..1
+						const easedT = easeInOutQuad(t);
+
+						const newPov = { ... startPov };
+
+						// Interpolate heading with shortest path
+						newPov.heading = normalizeAngle(startPov.heading + headingDiff * easedT);
+
+						if (targetPov.pitch != null) {
+							// Interpolate pitch linearly
+							newPov.pitch = startPov.pitch + (targetPov.pitch - startPov.pitch) * easedT;
+						}
+
+						if (targetPov.zoom != null) {
+							// Interpolate zoom linearly if needed
+							newPov.zoom =
+								startPov.zoom !== undefined && targetPov.zoom !== undefined
+									? startPov.zoom + (targetPov.zoom - startPov.zoom) * easedT
+									: targetPov.zoom || 0;
+						}
+
+						panorama.setPov(newPov);
+
+						if (t < 1) {
+							requestAnimationFrame(step);
+						} else {
+							resolve();
+						}
 					}
-
-					const elapsed = now - startTime;
-					const t = Math.max(0, Math.min(elapsed / duration, 1)); // progress 0..1
-					const easedT = easeInOutQuad(t);
-
-					const newPov = { ... startPov };
-
-					// Interpolate heading with shortest path
-					newPov.heading = normalizeAngle(startPov.heading + headingDiff * easedT);
-
-					if (targetPov.pitch != null) {
-						// Interpolate pitch linearly
-						newPov.pitch = startPov.pitch + (targetPov.pitch - startPov.pitch) * easedT;
-					}
-
-					if (targetPov.zoom != null) {
-						// Interpolate zoom linearly if needed
-						newPov.zoom =
-							startPov.zoom !== undefined && targetPov.zoom !== undefined
-								? startPov.zoom + (targetPov.zoom - startPov.zoom) * easedT
-								: targetPov.zoom || 0;
-					}
-
-					panorama.setPov(newPov);
-
-					if (t < 1) {
-						requestAnimationFrame(step);
-					} else {
-						callback?.();
-					}
-				}
-				requestAnimationFrame(step);
+					requestAnimationFrame(step);
+				});
 			}
 		}
 	}
