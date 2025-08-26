@@ -1,3 +1,5 @@
+import './settings';
+
 import { type AISVMessageEvent } from '../messaging';
 import { vcontainer, voptions } from './awaits';
 import { messenger } from './iframe';
