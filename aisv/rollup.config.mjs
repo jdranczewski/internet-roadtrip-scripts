@@ -84,8 +84,8 @@ export default defineConfig([
       tla()
     ],
     external: defineExternal([
-      '@violentmonkey/ui',
-      '@violentmonkey/dom',
+      'solid-js',
+      'solid-js/web',
       'internet-roadtrip-framework',
     ]),
     output: {
@@ -93,8 +93,8 @@ export default defineConfig([
       name: name,
       file: `dist/${name}.user.js`,
       globals: {
-        '@violentmonkey/dom': 'VM',
-        '@violentmonkey/ui': 'VM',
+        'solid-js': 'VM.solid',
+        'solid-js/web': 'VM.solid.web',
         'internet-roadtrip-framework': 'IRF',
       },
       indent: false,

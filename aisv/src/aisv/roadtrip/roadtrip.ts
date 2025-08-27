@@ -11,11 +11,11 @@ import './ui';
 
 // Keyboard shortcuts
 document.addEventListener("keydown", (event) => {
-    if (event.key == " ") {
-        event.preventDefault();
+    if (event.key == "Escape") {
         messenger.send("togglePaused")
     };
-    if (event.key == "Escape") {
+    if (event.key == " ") {
+        event.preventDefault();
         messenger.send("resetPov");
     }
 });
