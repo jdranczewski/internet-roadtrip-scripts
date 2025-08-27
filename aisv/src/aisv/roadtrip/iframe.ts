@@ -4,10 +4,7 @@ import { Messenger } from '../messaging';
 const pano0 = document.getElementById("pano0") as HTMLIFrameElement;
 const pano1 = document.getElementById("pano1") as HTMLIFrameElement;
 
-// We don't need `switchFrameOrder` since we're
-// using our own iframe, but some mods may hook into it
-// so we should still call the original once we're done
-// with a transition
+// We don't need `switchFrameOrder` since we're using our own iframe
 const originalSwitchFrameOrder = vcontainer.methods.switchFrameOrder;
 vcontainer.state.switchFrameOrder = new Proxy(originalSwitchFrameOrder, {
     apply: () => { },
@@ -66,4 +63,20 @@ function setPanoFromURL(urlString: string) {
 messenger.addEventListener("marco", () => {
     messenger.send("polo");
     patchedSuccesfully = true;
+    unsafeWindow._AISV.patched = true;
 })
+
+// Expose an API
+interface AISVAPI {
+    messenger: Messenger;
+    patched: boolean;
+}
+declare global {
+    interface Window {
+        _AISV?: AISVAPI;
+    }
+}
+unsafeWindow._AISV = {
+    messenger,
+    patched: false
+}

@@ -23,8 +23,9 @@ function handleInitialResponse(event: AISVMessageEvent) {
 
     // Keyboard shortcuts
     document.addEventListener("keydown", (event) => {
-        if (event.key === " ") toggleManualPause();
-        if (event.key === "Escape") resetPov();
+        if (event.key === "Escape") toggleManualPause();
+        if (event.key === " ") resetPov();
+        messenger.send("keyDown", {key: event.key});
     });
 
     // Let the parent frame know when the heading changes

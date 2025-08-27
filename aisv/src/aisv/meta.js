@@ -11,6 +11,8 @@
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
 // @grant       GM.addStyle
 // @grant       unsafeWindow
+// @grant       GM.getValues
+// @grant       GM.setValues
 // ==/UserScript==
 
 /**

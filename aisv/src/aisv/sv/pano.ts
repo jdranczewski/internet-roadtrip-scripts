@@ -30,13 +30,10 @@ async function pauseUpdates(pause, source) {
     updatesPaused = pause;
     updatesPausedManually = pause && source === 'manual';
 
-    window.parent.postMessage({
-        action: "setFrosted",
-        args: {
-            thing: "togglePauseBtn",
-            frosted: updatesPaused
-        }
-    }, "https://neal.fun");
+    messenger.send("setFrosted",{
+        thing: "togglePauseBtn",
+        frosted: updatesPaused
+    });
 }
 
 document.addEventListener('visibilitychange', async () => {
@@ -119,7 +116,7 @@ async function handleSetPanoMessage(args, mode?) {
         await changePano(args, doInstantJump);
         prev_pano = args.pano;
     }
-    messenger.send("switchFrameOrder");
+    messenger.send("setPanoDone");
 }
 
 // Change the pano
