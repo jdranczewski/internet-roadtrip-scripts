@@ -21,7 +21,7 @@ let updatesPaused = false;
 let updatesPausedManually = false;
 async function pauseUpdates(pause, source) {
     if (!pause && lastSetPanoMessageData) {
-        await handleSetPanoMessage(
+        handleSetPanoMessage(
             lastSetPanoMessageData,
             updatesPausedManually ? 'smooth' : 'instant'
         );
