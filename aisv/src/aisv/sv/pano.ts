@@ -2,6 +2,7 @@ import { type AISVMessageEvent } from "../messaging";
 import { changePanoAsyncAbortController } from "./aborts";
 import { animatePov, withFadeTransition } from "./animation";
 import { instance, messenger, service } from "./api";
+import { settings } from "./sv_settings";
 import { asyncTimeout, closestLinkToHeading, fovToZoom, shortestAngleDist } from "./util";
 
 // State
@@ -150,14 +151,14 @@ async function changePano(args, instantJump) {
             )
         );
         return;
-    } else if (!instantJump && args.optionsN === 1) { // Also filter by angle
+    } else if (settings.animateFurtherStraights && !instantJump && args.optionsN === 1) { // Also filter by angle
         // The pano is not linked. Sigh.
         // We won't get a nice animation if we jump straight into it.
         // Since there was only one option, this could have been
         // a further straight, in which case we may be able to get there
         // in a couple of jumps.
         const path = [];
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < settings.turnThreshold; i++) {
             if (changePanoAsyncAbortController.signal.aborted) {
                 return;
             }
@@ -174,7 +175,7 @@ async function changePano(args, instantJump) {
                             () => setPanoAndWait(pano)
                         );
                         // Increase the wait time between these to reduce artefacts
-                        if (index < path.length-1) await asyncTimeout(120);
+                        if (index < path.length-1) await asyncTimeout(70);
                     }
                 }, "aBitFiltered");
                 return;
@@ -194,10 +195,10 @@ async function changePano(args, instantJump) {
     console.debug("[AISV-sv] Pano not linked, no further straight found");
     await changePanoAsyncAbortController.signal.protect(async () =>
         await withFadeTransition(async () => {
-            // Wait 150ms for the CSS transition to finish, then wait for
-            // the pano change to finish before fading back
-            await asyncTimeout(150);
+            // setPanoAndWait is not perfect, this seems like a decent heuristic
+            await asyncTimeout(50);
             await setPanoAndWait(args.pano);
+            await asyncTimeout(100);
         }, "filtered")
     );
 }
@@ -207,7 +208,7 @@ async function setPanoAndWait(pano) {
         let last_pov_changed = undefined;
         let status_changed = false;
         // Usually no more pov_change events after 50ms have elapsed, leave a bit of margin
-        const wait_time = 100;
+        const wait_time = 175;
         function checkAndResolve() {
             if (status_changed && last_pov_changed && Date.now() - last_pov_changed > wait_time) {
                 console.debug("[AISV-sv] Assuming done", Date.now() - last_pov_changed);

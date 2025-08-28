@@ -1,8 +1,20 @@
+import { type AISVMessageEvent } from "../messaging";
 import { animatePovAsyncAbortController } from "./aborts";
-import { instance } from "./api";
+import { instance, messenger } from "./api";
+import { settings } from "./sv_settings";
 import { normalizeAngle, shortestAngleDist } from "./util";
 
+// Get the main embed element
 const mapDiv = document.getElementById("mapDiv");
+
+// Enable the transitions
+mapDiv.classList.toggle("enable-filtered", settings.fadeFullTransitions);
+mapDiv.classList.toggle("enable-aBitFiltered", settings.fadeSlightTransitions);
+messenger.addEventListener("settingChanged", (event: AISVMessageEvent) => {
+    if (event.args.identifier === "fadeFullTransitions") mapDiv.classList.toggle("enable-filtered", event.args.value);
+    if (event.args.identifier === "fadeSlightTransitions") mapDiv.classList.toggle("enable-aBitFiltered", event.args.value);
+})
+
 let currentlyFadeTransitioning = false;
 export async function withFadeTransition(
     callback: CallableFunction,
@@ -15,6 +27,7 @@ export async function withFadeTransition(
     }
 
     if (filterClass != null) {
+        console.debug("[AISV-sv] Fade in", filterClass);
         currentlyFadeTransitioning = true;
         mapDiv.classList.toggle(filterClass, true);
     }
@@ -22,6 +35,7 @@ export async function withFadeTransition(
     const result = await callback();
 
     if (filterClass != null) {
+        console.debug("[AISV-sv] Fade out", filterClass);
         mapDiv.classList.toggle(filterClass, false);
         currentlyFadeTransitioning = false;
     }

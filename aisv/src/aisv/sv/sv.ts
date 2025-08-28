@@ -2,6 +2,7 @@ import { instance, service, messenger } from "./api";
 import { AISVMessageEvent } from "../messaging";
 import globalCss from './style.css';
 import { handleSetPano, resetPov, toggleManualPause } from "./pano";
+import { settings } from "./sv_settings";
 
 // Send a message to the parent window to verify that it is neal.fun
 messenger.send("marco");
@@ -23,8 +24,8 @@ function handleInitialResponse(event: AISVMessageEvent) {
 
     // Keyboard shortcuts
     document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") toggleManualPause();
-        if (event.key === " ") resetPov();
+        if (event.key === settings.pauseKey) toggleManualPause();
+        if (event.key === settings.resetViewKey) resetPov();
         messenger.send("keyDown", {key: event.key});
     });
 

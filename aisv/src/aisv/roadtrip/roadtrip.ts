@@ -8,13 +8,15 @@ import { messenger } from './iframe';
 import globalCss from './style.css';
 GM.addStyle(globalCss);
 import './ui';
+import { settings } from './settings';
 
 // Keyboard shortcuts
 document.addEventListener("keydown", (event) => {
-    if (event.key == "Escape") {
+    if (event.key == settings.pauseKey) {
+        event.preventDefault();
         messenger.send("togglePaused")
     };
-    if (event.key == " ") {
+    if (event.key == settings.resetViewKey) {
         event.preventDefault();
         messenger.send("resetPov");
     }

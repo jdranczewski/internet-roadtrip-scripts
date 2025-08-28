@@ -34,7 +34,8 @@ function printFiles() {
         for (let match of source.match(/\/\/ @print ([\/\\_\.a-zA-Z0-9]+)/g)) {
           const filenameToPaste = match.match(/\/\/ @print ([\/\\_\.a-zA-Z0-9]+)/)[1];
           let paste = await readFile(filenameToPaste, 'utf8');
-          sourcePasted = sourcePasted.replace(match, paste);
+          // Use a function to avoid `$$` being replaced by `$`
+          sourcePasted = sourcePasted.replace(match, () => paste);
         };
         await writeFile(`./dist/${filename}`, sourcePasted, {encoding: "utf-8"});
         resolve();
