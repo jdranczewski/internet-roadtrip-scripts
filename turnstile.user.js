@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Fix Cloudflare Turnstile
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.2.0
+// @version     0.3.1
 // @author      jdranczewski
 // @description Fix Cloudflare Turnstile performance
 // @license     MIT
@@ -47,7 +47,7 @@ if (!unsafeWindow.IRToken) {
         unsafeWindow.IRToken = stored_token;
     }
 }
-let _IRToken = unsafeWindow.IRToken;
+let _IRToken = unsafeWindow?.IRToken;
 Object.defineProperty(unsafeWindow, "IRToken", {
     get() {
         return _IRToken;
