@@ -40,3 +40,8 @@
 .voted {
     pointer-events: none;
 }
+
+#aisv-iframe {
+    height: 100%;
+    top: 0;
+}

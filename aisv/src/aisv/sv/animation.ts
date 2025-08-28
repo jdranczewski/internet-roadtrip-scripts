@@ -8,11 +8,18 @@ import { normalizeAngle, shortestAngleDist } from "./util";
 const mapDiv = document.getElementById("mapDiv");
 
 // Enable the transitions
+document.body.style.setProperty('--aisv-scale', settings.scale ? `${settings.scale}%` : "");
+document.body.style.transform = settings.fill ? `scale(${100/parseFloat(settings.scale)})` : "none";
 mapDiv.classList.toggle("enable-filtered", settings.fadeFullTransitions);
 mapDiv.classList.toggle("enable-aBitFiltered", settings.fadeSlightTransitions);
 messenger.addEventListener("settingChanged", (event: AISVMessageEvent) => {
     if (event.args.identifier === "fadeFullTransitions") mapDiv.classList.toggle("enable-filtered", event.args.value);
     if (event.args.identifier === "fadeSlightTransitions") mapDiv.classList.toggle("enable-aBitFiltered", event.args.value);
+    if (event.args.identifier === "scale") {
+        document.body.style.setProperty('--aisv-scale', `${event.args.value}%`);
+        document.body.style.transform = settings.fill ? `scale(${100/parseFloat(event.args.value)})` : "none";
+    }
+    if (event.args.identifier == "fill") document.body.style.transform = event.args.value ? `scale(${100/parseFloat(settings.scale)})` : "none";
 })
 
 let currentlyFadeTransitioning = false;

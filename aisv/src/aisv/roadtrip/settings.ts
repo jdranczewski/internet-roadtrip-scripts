@@ -55,3 +55,15 @@ section.add_input("Reset view key", "resetViewKey", "text", (value) => {
         value: value
     })
 }, " ");
+section.add_slider("Street View window render scale", "scale", (value) => {
+    messenger.send("settingChanged", {
+        identifier: "scale",
+        value: value
+    })
+}, [0, 100, 1]);
+section.add_checkbox("Fill window", "fill", (value) => {
+    messenger.send("settingChanged", {
+        identifier: "fill",
+        value: value
+    })
+});

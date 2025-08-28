@@ -7,11 +7,11 @@ html {
 }
 body {
     /* backdrop-filter: blur(10px); */
-    /* width: 80%;
-    height: 80%;
     position: relative;
-    top: 10%;
-    left: 10%; */
+    width: var(--aisv-scale, 100%) !important;
+    height: var(--aisv-scale, 100%) !important;
+    top: calc((100% - var(--aisv-scale, 100%)) / 2);
+    left: calc((100% - var(--aisv-scale, 100%)) / 2);
     /* transform: scale(1.25); */
 }
 #mapDiv {
@@ -32,4 +32,8 @@ body {
 }
 #mapDiv, .gm-style > div, .widget-scene, .mapsConsumerUiSceneCoreScene__canvas {
     background: none !important;
+}
+/* The Roadtrip website already displays attribution */
+.gmnoprint, .gm-style-cc {
+  display: none;
 }

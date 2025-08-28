@@ -15,7 +15,10 @@ function handleInitialResponse(event: AISVMessageEvent) {
 
     // Inject styles and SV instance options
     GM.addStyle(globalCss);
-    instance.setOptions({ linksControl: false, clickToGo: false });
+    instance.setOptions({
+        clickToGo: false,
+        disableDefaultUI: true
+    });
 
     // Add message hooks
     messenger.addEventListener("setPano", handleSetPano);

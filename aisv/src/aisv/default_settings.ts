@@ -6,4 +6,6 @@ export const default_settings = {
     turnThreshold: 5,
     pauseKey: "Escape",
     resetViewKey: " ",
+    scale: "100",
+    fill: false,
 }

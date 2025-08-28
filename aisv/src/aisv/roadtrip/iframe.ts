@@ -12,6 +12,7 @@ vcontainer.state.switchFrameOrder = new Proxy(originalSwitchFrameOrder, {
 
 // Add our own iframe
 const iframe = document.createElement("iframe");
+iframe.id = "aisv-iframe";
 iframe.width = "100%";
 iframe.height = "100%";
 iframe.allowFullscreen = true;
