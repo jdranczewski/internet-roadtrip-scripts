@@ -2,6 +2,7 @@ import { animatePovAsyncAbortController } from "./aborts";
 import { instance } from "./api";
 import { normalizeAngle, shortestAngleDist } from "./util";
 
+const mapDiv = document.getElementById("mapDiv");
 let currentlyFadeTransitioning = false;
 export async function withFadeTransition(
     callback: CallableFunction,
@@ -15,13 +16,13 @@ export async function withFadeTransition(
 
     if (filterClass != null) {
         currentlyFadeTransitioning = true;
-        document.body.classList.toggle(filterClass, true);
+        mapDiv.classList.toggle(filterClass, true);
     }
 
     const result = await callback();
 
     if (filterClass != null) {
-        document.body.classList.toggle(filterClass, false);
+        mapDiv.classList.toggle(filterClass, false);
         currentlyFadeTransitioning = false;
     }
 

@@ -1,8 +1,25 @@
-html {background-color: #46484f;}
+html {
+    background-color: #46484f;
+    /* background: linear-gradient(0deg,rgba(138, 129, 118, 1) 0%, rgba(128, 123, 107, 1) 23%, rgba(114, 128, 150, 1) 100%); */
+    /* background: linear-gradient(0deg,#b5b5b5,#b6c8a9 38%,#c6dcff); */
+    /* background: conic-gradient(at 50% 60%, #bad7f9 18%, #859e53, #8a878e 40%, #8a878e 60%, #859e53, #bad7f9 82%); */
+    background: linear-gradient(#bad7f9 34%, #859e53, #8a878e 90%);
+}
 body {
-    transition: filter 0.22s;
+    /* backdrop-filter: blur(10px); */
+    /* width: 80%;
+    height: 80%;
+    position: relative;
+    top: 10%;
+    left: 10%; */
+    /* transform: scale(1.25); */
+}
+#mapDiv {
+    transition: filter 0.15s;
+    filter: none;
+
     &.filtered {
-        filter: blur(15px) grayscale(1) opacity(0);
+        filter: blur(15px) grayscale(1) opacity(0.6);
         pointer-events: none;
     }
     &.aBitFiltered {
@@ -12,4 +29,7 @@ body {
     .widget-scene {
             cursor: move !important;
     }
+}
+#mapDiv, .gm-style > div, .widget-scene, .mapsConsumerUiSceneCoreScene__canvas {
+    background: none !important;
 }

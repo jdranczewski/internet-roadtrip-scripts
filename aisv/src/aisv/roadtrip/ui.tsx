@@ -36,3 +36,9 @@ messenger.addEventListener("setFrosted", (event: AISVMessageEvent) => {
     })[event.args.thing];
     element.classList.toggle("aisv-frosted", event.args.frosted);
 })
+messenger.addEventListener("marco", (event: AISVMessageEvent) => {
+    // Occasionally the pause button gets stuck in frosted state
+    // if the frame is loaded twice, so explictly unfreeze it once
+    // the SV frame says hello
+    pause.classList.toggle("aisv-frosted", false);
+})

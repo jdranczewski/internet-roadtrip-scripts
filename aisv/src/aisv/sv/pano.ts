@@ -65,7 +65,7 @@ export async function handleSetPano(event: AISVMessageEvent) {
 }
 
 async function handleSetPanoMessage(args, mode?) {
-    console.debug("[AISV-sv] Setting pano", args.pano);
+    console.debug("%c[AISV-sv] Setting pano", "font-size: 2em;", args.pano);
 
     // Store the canonical values
     canonicalPov = {
@@ -93,6 +93,8 @@ async function handleSetPanoMessage(args, mode?) {
             async () => {
                 const targetHeading = internalHeading - userHeadingOffset;
                 if (doInstantJump) {
+                    // Wait for CSS transition to finish before snapping Pov
+                    await asyncTimeout(150);
                     instance.setPov({
                         ... instance.getPov(),
                         heading: targetHeading
@@ -167,10 +169,12 @@ async function changePano(args, instantJump) {
                 // Congrats, we've found a path!
                 console.debug("[AISV-sv] Further straight found, executing jumps", path);
                 await withFadeTransition(async () => {
-                    for (let pano of path) {
+                    for (let [index, pano] of path.entries()) {
                         await changePanoAsyncAbortController.signal.protect(
                             () => setPanoAndWait(pano)
                         );
+                        // Increase the wait time between these to reduce artefacts
+                        if (index < path.length-1) await asyncTimeout(120);
                     }
                 }, "aBitFiltered");
                 return;
@@ -190,9 +194,10 @@ async function changePano(args, instantJump) {
     console.debug("[AISV-sv] Pano not linked, no further straight found");
     await changePanoAsyncAbortController.signal.protect(async () =>
         await withFadeTransition(async () => {
-            await asyncTimeout(220);
-            instance.setPano(args.pano);
-            await asyncTimeout(100);
+            // Wait 150ms for the CSS transition to finish, then wait for
+            // the pano change to finish before fading back
+            await asyncTimeout(150);
+            await setPanoAndWait(args.pano);
         }, "filtered")
     );
 }
@@ -200,19 +205,28 @@ async function changePano(args, instantJump) {
 async function setPanoAndWait(pano) {
     return new Promise<void>((resolve) => {
         let last_pov_changed = undefined;
-        const wait_time = 250;
+        let status_changed = false;
+        // Usually no more pov_change events after 50ms have elapsed, leave a bit of margin
+        const wait_time = 100;
         function checkAndResolve() {
-            if (last_pov_changed && Date.now() - last_pov_changed > wait_time) {
+            if (status_changed && last_pov_changed && Date.now() - last_pov_changed > wait_time) {
+                console.debug("[AISV-sv] Assuming done", Date.now() - last_pov_changed);
                 povChangedListener.remove();
                 resolve();
             } else {
-                setTimeout(checkAndResolve, 50);
+                setTimeout(checkAndResolve, 10);
             }
         }
         const povChangedListener = instance.addListener('pov_changed', () => {
             last_pov_changed = Date.now();
         });
+        const statusChangedListener = instance.addListener('status_changed', () => {
+            console.debug("[AISV-sv] Status changed");
+            status_changed = true;
+            statusChangedListener.remove();
+        });
 
+        console.debug("[AISV-sv] Setting pano and waiting", pano);
         instance.setPano(pano);
         setTimeout(checkAndResolve, wait_time);
     })

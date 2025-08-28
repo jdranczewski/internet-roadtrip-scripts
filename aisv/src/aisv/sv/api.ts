@@ -1,5 +1,18 @@
 import { Messenger } from "../messaging";
 
+// Override clearColor to make the SV canvas background transparent.
+// Override clear to preserve contents and avoid weird jumps during rendering.
+const originalGetContext = HTMLCanvasElement.prototype.getContext;
+HTMLCanvasElement.prototype.getContext = function(type, ...args) {
+    const ctx = originalGetContext.call(this, type, ...args);
+    if (type === 'webgl' || type === 'experimental-webgl') {
+        const originalClearColor = ctx.clearColor.bind(ctx);
+        ctx.clearColor = function() {};
+        ctx.clear = function () {}
+    }
+    return ctx;
+};
+
 // Waiting based on Netux's implementation in the Pathfinder
 declare global {
     interface google {
@@ -43,6 +56,36 @@ const waitForInstances: Promise<[
         unsafeWindow.google.maps.StreetViewPanorama = function (container, opts) {
             const instance: google.maps.StreetViewPanorama = new originalConstructor(container, opts);
             unsafeWindow._SVP = instance;
+            // Add all the event listeners for debugging
+            // [
+            //     "pano_changed",
+            //     "keydown",
+            //     "status_changed",
+            //     "visible_changed",
+            //     "resize",
+            //     "closeclick",
+            //     "addresscontrol_changed",
+            //     "clicktogo_changed",
+            //     "disabledefaultui_changed",
+            //     "disabledoubleclickzoom_changed",
+            //     "enableclosebutton_changed",
+            //     "imagedatecontrol_changed",
+            //     "linkscontrol_changed",
+            //     "pancontrol_changed",
+            //     "scrollwheel_changed",
+            //     "zoomcontrol_changed",
+            //     "addresscontroloptions_changed",
+            //     "pancontroloptions_changed",
+            //     "zoomcontroloptions_changed",
+            //     "panoprovider_changed",
+            //     "pov_changed",
+            //     "shouldUseRTLControlsChange",
+            //     "motiontrackingcontroloptions_changed"
+            // ].forEach((name) => {
+            //     instance.addListener(name, (event) => {
+            //         console.debug(name, event);
+            //     })
+            // })
 
             const service = new unsafeWindow.google.maps.StreetViewService();
             unsafeWindow._SVS = service;
