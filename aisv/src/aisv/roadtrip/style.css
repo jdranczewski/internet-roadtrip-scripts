@@ -42,6 +42,11 @@
 }
 
 #aisv-iframe {
-    height: 100%;
+    height: 100vh;
     top: 0;
+    position: absolute;
+}
+
+body {
+    overflow: hidden;
 }

@@ -46,6 +46,8 @@ function setPanoFromURL(urlString: string) {
     const url = new URL(urlString);
     if (!patchedSuccesfully) {
         url.hash = "aisv-frame";
+        // Correct for smaller iframe size
+        url.searchParams.set("pitch", (parseFloat(url.searchParams.get("pitch")) - 2).toString());
         iframe.src = url.toString();
         return;
     };
@@ -53,7 +55,7 @@ function setPanoFromURL(urlString: string) {
     messenger.send("setPano", {
         pano: url.searchParams.get("pano"),
         heading: parseFloat(url.searchParams.get("heading")),
-        pitch: parseFloat(url.searchParams.get("pitch")),
+        pitch: parseFloat(url.searchParams.get("pitch")) - 2,
         fov: parseFloat(url.searchParams.get("fov")),
         currentHeading: vcontainer.data.currentHeading,
         optionsN: vcontainer.data.currentOptions.length,
