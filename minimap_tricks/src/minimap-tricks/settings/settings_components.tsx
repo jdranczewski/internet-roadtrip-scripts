@@ -188,6 +188,11 @@ class Section {
         </div>
         render(() => item, this.container);
     }
+
+    add_wide_comment(text: string) {
+        const item = <p innerHTML={text} />
+        render(() => item, this.container);
+    }
 }
 
 export class Panel extends Section {
