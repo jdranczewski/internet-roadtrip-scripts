@@ -6,7 +6,7 @@
 // @author      jdranczewski
 // @description Play sound when turn options appear after a long stretch of straight road.
 // @license     MIT
-// @icon         https://files.catbox.moe/fdkl61.png
+// @icon         https://jdranczewski.dev/irt/images/turn_alert.png
 // @grant        GM.setValues
 // @grant        GM.getValues
 // @grant        GM.addStyle
@@ -34,7 +34,7 @@
         z-index: 1000000;
         transition: opacity 3s;
         opacity: 0;
-        background-image: url("https://files.catbox.moe/l0mcvt.png");
+        background-image: url("https://jdranczewski.dev/irt/images/warning.png");
         background-repeat: no-repeat;
         background-position: center;
         display: flex;
@@ -65,14 +65,14 @@
         "turn_alert_visual": true,
         "turn_alert_notif": false,
         "minutes": 5,
-        "sound": 'https://files.catbox.moe/04idsc.mp3',
+        "sound": 'https://jdranczewski.dev/irt/sounds/imposter.mp3',
         "volume": 0.3,
 
         "marker_alert_sound": true,
         "marker_alert_visual": true,
         "marker_alert_notif": false,
         "distance": 250,
-        "marker_sound": 'https://files.catbox.moe/83p4v5.mp3',
+        "marker_sound": 'https://jdranczewski.dev/irt/sounds/body.mp3',
         "marker_volume": 0.3,
     }
     const storedSettings = await GM.getValues(Object.keys(settings))
@@ -80,9 +80,16 @@
         settings,
         storedSettings
     );
-    if (settings.sound == 'https://files.catbox.moe/6beir6.mp3') {
+    // Replace catbox-hosted sounds with my server
+    if (
+        settings.sound == 'https://files.catbox.moe/6beir6.mp3'
+        || settings.sound == 'https://files.catbox.moe/04idsc.mp3'
+    ) {
         // Replace the default sound with a better version
-        settings.sound = "https://files.catbox.moe/04idsc.mp3";
+        settings.sound = 'https://jdranczewski.dev/irt/sounds/imposter.mp3';
+    }
+    if (settings.marker_sound == 'https://files.catbox.moe/83p4v5.mp3') {
+        settings.marker_sound = 'https://jdranczewski.dev/irt/sounds/body.mp3';
     }
     await GM.setValues(settings);
 

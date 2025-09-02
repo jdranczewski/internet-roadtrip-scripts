@@ -74,7 +74,7 @@ section.add_checkbox("Custom car marker", "car_marker_custom", (show) => {
 section.add_input(
     "Car marker image URL", "car_marker_url", "",
     () => custom_car.src = settings.car_marker_url,
-    "https://files.catbox.moe/a55qk5.png"
+    "https://jdranczewski.dev/irt/images/white_van.png"
 );
 
 section.add_comment(`Default white van picture:

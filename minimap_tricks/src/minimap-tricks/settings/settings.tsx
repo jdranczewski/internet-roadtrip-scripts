@@ -32,7 +32,7 @@ export const settings = {
 
     "car_marker_custom": false,
     "car_marker_size": 54,
-    "car_marker_url": "https://files.catbox.moe/a55qk5.png",
+    "car_marker_url": "https://jdranczewski.dev/irt/images/white_van.png",
     "car_marker_scale": 65,
     "car_marker_rotation": 90,
     "car_marker_flip": false,
@@ -65,6 +65,10 @@ Object.entries(settings.markers).forEach(([key, value]) => {
         settings.markers[key] = [value[0], value[1], {color: value[2]}]
     }
 });
+// Migrate van image from catbox to my server
+if (settings.car_marker_url === "https://files.catbox.moe/a55qk5.png") {
+    settings.car_marker_url = "https://jdranczewski.dev/irt/images/white_van.png"
+}
 GM.setValues(settings);
 
 // Update script name so it takes up less space
