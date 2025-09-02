@@ -22,6 +22,10 @@ body {
         filter: blur(15px) grayscale(1) opacity(0.);
         pointer-events: none;
     }
+    &.enable-filtered.better.filtered {
+        filter: opacity(0.);
+        pointer-events: none;
+    }
     &.enable-aBitFiltered.aBitFiltered {
         filter: blur(5px) grayscale(.1) opacity(.9);
         pointer-events: none;
@@ -36,4 +40,11 @@ body {
 /* The Roadtrip website already displays attribution */
 .gmnoprint, .gm-style-cc {
   display: none;
+}
+
+#second-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
 }

@@ -22,6 +22,26 @@ messenger.addEventListener("settingChanged", (event: AISVMessageEvent) => {
     if (event.args.identifier == "fill") document.body.style.transform = event.args.value ? `scale(${100/parseFloat(settings.scale)})` : "none";
 })
 
+// Better fades with another canvas
+let copyCanvas = () => {};
+if (settings.betterFades) {
+    mapDiv.classList.add("better");
+    const second_canvas = document.createElement("canvas");
+    const ctx = second_canvas.getContext("2d");
+    second_canvas.id = "second-canvas";
+    document.body.append(second_canvas);
+    copyCanvas = () => {
+        const first_canvas = document.getElementsByClassName("mapsConsumerUiSceneCoreScene__canvas widget-scene-canvas")[0] as HTMLCanvasElement;
+        second_canvas.width = first_canvas.width;
+        second_canvas.height = first_canvas.height;
+        ctx.drawImage(
+            first_canvas,
+            0, 0
+        );
+    }
+}
+
+
 let currentlyFadeTransitioning = false;
 export async function withFadeTransition(
     callback: CallableFunction,
@@ -33,15 +53,16 @@ export async function withFadeTransition(
         return callback();
     }
 
-    if (filterClass != null) {
+    if (filterClass != null && filterClass !== "") {
         console.debug("[AISV-sv] Fade in", filterClass);
         currentlyFadeTransitioning = true;
         mapDiv.classList.toggle(filterClass, true);
+        if (filterClass === "filtered") copyCanvas();
     }
 
     const result = await callback();
 
-    if (filterClass != null) {
+    if (filterClass != null && filterClass !== "") {
         console.debug("[AISV-sv] Fade out", filterClass);
         mapDiv.classList.toggle(filterClass, false);
         currentlyFadeTransitioning = false;

@@ -24,6 +24,9 @@ function handleInitialResponse(event: AISVMessageEvent) {
     messenger.addEventListener("setPano", handleSetPano);
     messenger.addEventListener("resetPov", resetPov);
     messenger.addEventListener("togglePaused", toggleManualPause);
+    messenger.addEventListener("settingChanged", (event: AISVMessageEvent) => {
+        settings[event.args.identifier] = event.args.value;
+    })
 
     // Keyboard shortcuts
     document.addEventListener("keydown", (event) => {

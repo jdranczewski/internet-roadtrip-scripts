@@ -1,16 +1,20 @@
 import { Messenger } from "../messaging";
+import { settings } from "./sv_settings";
 
 // Override clearColor to make the SV canvas background transparent.
 // Override clear to preserve contents and avoid weird jumps during rendering.
 const originalGetContext = HTMLCanvasElement.prototype.getContext;
-HTMLCanvasElement.prototype.getContext = function(type, ...args) {
-    const ctx = originalGetContext.call(this, type, ...args);
+HTMLCanvasElement.prototype.getContext = function(type, args) {
     if (type === 'webgl' || type === 'experimental-webgl') {
+        args = Object.assign({}, args, { preserveDrawingBuffer: settings.betterFades });
+        const ctx = originalGetContext.call(this, type, args);
         const originalClearColor = ctx.clearColor.bind(ctx);
         ctx.clearColor = function() {};
-        ctx.clear = function () {}
+        if (!settings.betterFades) ctx.clear = function () {}
+        return ctx;
+    } else {
+        return originalGetContext.call(this, type, args);
     }
-    return ctx;
 };
 
 // Waiting based on Netux's implementation in the Pathfinder
