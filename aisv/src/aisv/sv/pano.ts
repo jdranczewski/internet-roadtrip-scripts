@@ -1,7 +1,7 @@
 import { type AISVMessageEvent } from "../messaging";
 import { changePanoAsyncAbortController } from "./aborts";
 import { animatePov, withFadeTransition } from "./animation";
-import { instance, messenger, service } from "./api";
+import { instance, messenger, service, setOverrideCanvasClear } from "./api";
 import { settings } from "./sv_settings";
 import { asyncTimeout, closestLinkToHeading, fovToZoom, shortestAngleDist } from "./util";
 
@@ -146,7 +146,18 @@ async function changePano(args, instantJump) {
         console.debug("[AISV-sv] Pano is linked, jumping directly");
         await changePanoAsyncAbortController.signal.protect(async () =>
             await withFadeTransition(
-                async () => await setPanoAndWait(args.pano),
+                async () => {
+                    // Generally, overriding the clear is a good trade-off as it
+                    // prevents the worst kind of artefact - the canvas going fully blank.
+                    // Unfortunately, sometimes this leads to "glittery" artefacts on coverage
+                    // with no LIDAR data (I think), where the two image planes intersect.
+                    // This is most visible on single jumps, so for single jumps I let the canvas
+                    // clear, and for all other transition types I accept the risk of jitter
+                    // to remove the risk of the canvas blanking entirely.
+                    setOverrideCanvasClear(false);
+                    await setPanoAndWait(args.pano)
+                    setOverrideCanvasClear(true);
+                },
                 settings.fadeSmoothTransitions
             )
         );
