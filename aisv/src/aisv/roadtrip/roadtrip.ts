@@ -3,6 +3,7 @@ import './settings';
 import { type AISVMessageEvent } from '../messaging';
 import { vcontainer, voptions } from './awaits';
 import { messenger } from './iframe';
+import './populate_settings';
 
 // Styles and UI
 import globalCss from './style.css';

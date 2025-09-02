@@ -18,15 +18,15 @@ body {
     transition: filter 0.15s;
     filter: none;
 
-    &.enable-filtered.filtered {
+    &.filtered {
         filter: blur(15px) grayscale(1) opacity(0.);
         pointer-events: none;
     }
-    &.enable-filtered.better.filtered {
+    &.better.filtered {
         filter: opacity(0.);
         pointer-events: none;
     }
-    &.enable-aBitFiltered.aBitFiltered {
+    &.aBitFiltered {
         filter: blur(5px) grayscale(.1) opacity(.9);
         pointer-events: none;
     }

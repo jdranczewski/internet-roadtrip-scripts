@@ -1,7 +1,7 @@
 import * as IRF from 'internet-roadtrip-framework'
 import styles, {stylesheet} from './settings.module.css'
 import { render, Show } from "solid-js/web";
-import { createEffect, createSignal, on } from "solid-js";
+import { createEffect, createSignal, For, on } from "solid-js";
 
 // Wrapper around IRF panel
 class Section {
@@ -126,6 +126,48 @@ class Section {
                 value={value()}
                 onchange={(e) => setValue(e.target.value)}
             />
+            <Show when={default_value}>
+                <button
+                    class={styles['setting']}
+                    onclick={() => setValue(default_value)}
+                >Reset</button>
+            </Show>
+        </div>
+        render(() => item, this.container);
+    }
+
+    add_dropdown(
+        name:string, identifier: string,
+        values: [string, string][],
+        callback?: CallableFunction,
+        default_value?: unknown
+    ) {
+        const [value, setValue] = createSignal(this.settings[identifier]);
+
+        // We use on with defer here so the effect only runs when value changes
+        // and not when the effect is initially created
+        createEffect(on(value, () => {
+            this.settings[identifier] = value();
+            GM.setValues(this.settings);
+            if (callback) callback(value());
+        }, {defer: true}));
+
+        const item =
+        <div class={styles['settings-item']}>
+            <span class={styles['setting']}>{name}:</span>
+            <select
+                style="width: 100%;"
+                onchange={(e) => setValue(e.target.value)}
+            >
+                <For each={values}>
+                    {(item, index) => (
+                        <option
+                            value={item[1]}
+                            selected={item[1] == this.settings[identifier]}
+                        >{ item[0] }</option>
+                    )}
+                </For>
+            </select>
             <Show when={default_value}>
                 <button
                     class={styles['setting']}

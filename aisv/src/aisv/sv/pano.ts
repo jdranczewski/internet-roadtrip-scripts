@@ -111,7 +111,7 @@ async function handleSetPanoMessage(args, mode?) {
                 prev_pano = args.pano;
             },
             doInstantJump
-                ? "filtered"
+                ? settings.fadeSharpTransitions
                 : null
         );
     } else {
@@ -147,7 +147,7 @@ async function changePano(args, instantJump) {
         await changePanoAsyncAbortController.signal.protect(async () =>
             await withFadeTransition(
                 async () => await setPanoAndWait(args.pano),
-                "aBitFiltered"
+                settings.fadeSmoothTransitions
             )
         );
         return;
@@ -177,7 +177,7 @@ async function changePano(args, instantJump) {
                         // Increase the wait time between these to reduce artefacts
                         if (index < path.length-1) await asyncTimeout(70);
                     }
-                }, "aBitFiltered");
+                }, settings.fadeSmoothTransitions);
                 return;
             } else {
                 // @ts-expect-error
@@ -199,7 +199,7 @@ async function changePano(args, instantJump) {
             await asyncTimeout(50);
             await setPanoAndWait(args.pano);
             await asyncTimeout(100);
-        }, "filtered")
+        }, settings.fadeSharpTransitions)
     );
 }
 
@@ -210,7 +210,11 @@ async function setPanoAndWait(pano) {
         // Usually no more pov_change events after 50ms have elapsed, leave a bit of margin
         const wait_time = 175;
         function checkAndResolve() {
-            if (status_changed && last_pov_changed && Date.now() - last_pov_changed > wait_time) {
+            if (
+                (status_changed
+                && last_pov_changed && Date.now() - last_pov_changed > wait_time)
+                || last_pov_changed && Date.now() - last_pov_changed > 600 // timeout
+            ) {
                 console.debug("[AISV-sv] Assuming done", Date.now() - last_pov_changed);
                 povChangedListener.remove();
                 resolve();
