@@ -1,7 +1,7 @@
 // Default settings
 export const default_settings = {
     fadeSmoothTransitions: "aBitFiltered",
-    fadeSharpTransitions: "aBitMoreFiltered",
+    fadeSharpTransitions: "aBitFiltered",
     animateFurtherStraights: true,
     betterFades: false,
     turnThreshold: 5,

@@ -27,7 +27,7 @@ fade_section.add_dropdown("Fade during sharp transitions", "fadeSharpTransitions
         identifier: "fadeSharpTransitions",
         value: value
     })
-}, "aBitMoreFiltered")
+}, "aBitFiltered")
 fade_section.add_wide_comment(`When we are going along a straight road, the game will often jump multiple
 panoramas at a time, which creates a sharp transition. We make this into a smooth transition by executing
 multiple jumps between the two panoramas, which creates smoother, but longer animation.`)

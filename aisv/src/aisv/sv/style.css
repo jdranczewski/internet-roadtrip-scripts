@@ -31,7 +31,7 @@ body {
         pointer-events: none;
     }
     &.aBitMoreFiltered {
-        filter: blur(5px) grayscale(.1) opacity(.5);
+        filter: blur(8px) grayscale(.1) opacity(.7);
         pointer-events: none;
     }
     .widget-scene {
