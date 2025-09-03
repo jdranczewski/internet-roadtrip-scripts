@@ -22,8 +22,8 @@
     & .aisv-button+.aisv-button {
         border-top-left-radius: 0;
     }
-    & .aisv-button span {
-        transform: rotate(-90deg);
+    & .aisv-button svg {
+        transform: rotate(90deg);
     }
 
     & .aisv-button.aisv-frosted {

@@ -43,7 +43,6 @@ export async function withFadeTransition(
     callback: CallableFunction,
     filterClass: string
 ) {
-    console.log("withFadeTransition", filterClass);
     if (currentlyFadeTransitioning) {
         // Fade transition inside fade transition
         // Simply let the callback run through.

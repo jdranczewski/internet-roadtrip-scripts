@@ -111,7 +111,7 @@ async function handleSetPanoMessage(args, mode?) {
                 prev_pano = args.pano;
             },
             doInstantJump
-                ? settings.fadeSharpTransitions
+                ? "filtered"
                 : null
         );
     } else {

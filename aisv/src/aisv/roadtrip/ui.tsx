@@ -9,7 +9,7 @@ buttons.id = "aisv-buttons";
 radio.appendChild(buttons);
 
 const reset = document.createElement("div");
-reset.innerText = "↺";
+reset.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="20" height="20" viewBox="0 0 5.56 5.56"><path d="M26 13.7a1.34 1.34 0 0 1 1.45-.56 1.34 1.34 0 0 1 1 1.18 1.34 1.34 0 0 1-.76 1.34 1.34 1.34 0 0 1-1.53-.28" style="fill:none;stroke:#fff;stroke-width:.5;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill" transform="translate(-24.43 -11.67)"/><path d="M25.9 12.97v.85h.87" style="fill:none;stroke:#fff;stroke-width:.4;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill" transform="translate(-24.43 -11.67)"/></svg>';
 reset.classList.add("odometer-container");
 reset.classList.add("aisv-button");
 reset.dataset["v-259ab0e2"] = "";
@@ -19,7 +19,7 @@ reset.addEventListener("click", () => {
 })
 
 const pause = document.createElement("div");
-pause.innerHTML = "<span>❚❚</span>";
+pause.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="20" height="20" viewBox="0 0 5.56 5.56"><path d="M26.06 4.29V.86M28.36 4.29V.86" style="fill:none;stroke:#fff;stroke-width:1.2;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill" transform="translate(-24.43 .2)"/></svg>';
 pause.classList.add("odometer-container");
 pause.classList.add("aisv-button");
 pause.dataset["v-259ab0e2"] = "";
