@@ -2,11 +2,11 @@
 // @name        Internet Roadtrip - Remember radio volume
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.0.1
+// @version     0.0.2
 // @author      jdranczewski
 // @description Preserve the volume of the Internet Roadtrip radio
 // @license     MIT
-// @icon         https://neal.fun/favicons/internet-roadtrip.png
+// @icon         https://jdranczewski.dev/irt/images/radio.png
 // @grant        GM.setValue
 // @grant        GM.getValue
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta

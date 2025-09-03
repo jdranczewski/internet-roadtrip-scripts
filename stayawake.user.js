@@ -2,12 +2,12 @@
 // @name        Internet Roadtrip Stay Awake
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.1.0
+// @version     0.1.1
 // @author      jdranczewski
 // @description Keeps your computer awake if you right click the coffee cup.
 // @license     MIT
 // @grant       GM.addStyle
-// @icon        https://neal.fun/favicons/internet-roadtrip.png
+// @icon        https://jdranczewski.dev/irt/images/stay_awake.png
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
 // ==/UserScript==
 

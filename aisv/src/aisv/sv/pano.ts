@@ -224,7 +224,7 @@ async function setPanoAndWait(pano) {
             if (
                 (status_changed
                 && last_pov_changed && Date.now() - last_pov_changed > wait_time)
-                || last_pov_changed && Date.now() - last_pov_changed > 600 // timeout
+                || (last_pov_changed && Date.now() - last_pov_changed > 600) // timeout
             ) {
                 console.debug("[AISV-sv] Assuming done", Date.now() - last_pov_changed);
                 povChangedListener.remove();

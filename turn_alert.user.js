@@ -2,7 +2,7 @@
 // @name        Internet Roadtrip Turn Alert
 // @namespace   jdranczewski.github.io
 // @match       https://neal.fun/internet-roadtrip/*
-// @version     0.2.2
+// @version     0.2.3
 // @author      jdranczewski
 // @description Play sound when turn options appear after a long stretch of straight road.
 // @license     MIT

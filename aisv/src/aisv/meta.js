@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name        Internet Roadtrip Advanced Interactive Street View
 // @namespace   jdranczewski.github.io
-// @description Make the ebedded Street View in the Internet Roadtrip interactive.
+// @description Make the embedded Internet Roadtrip Street View fully interactive.
 // @match       https://neal.fun/*
 // @match       https://www.google.com/maps/embed/v1/streetview*
+// @icon        https://jdranczewski.dev/irt/images/aisv.png
 // @version     process.env.VERSION
 // @author      process.env.AUTHOR
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
