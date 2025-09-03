@@ -7,8 +7,8 @@ If the new location is nearby, there will be a "whoosh" animation between the tw
 which we call a "smooth" transition. By default, we blur these slightly to obscure any artefacts.
 <br><br>
 If the new location is not connected or further away, there will be a sharp jump between the two,
-which we call a "sharp" transition. By default, we fade the pano out fully, and then back in, to
-obscure the sharp changeover.
+which we call a "sharp" transition. By default, we fade the pano out slightly, but you may choose to
+fade it out fully, obscuring the sharp changeover.
 `)
 const fadeOptions: [string, string][] = [
     ["No fade", ""],
@@ -26,7 +26,7 @@ fade_section.add_dropdown("Fade during sharp transitions", "fadeSharpTransitions
         identifier: "fadeSharpTransitions",
         value: value
     })
-}, "filtered")
+}, "aBitFiltered")
 fade_section.add_wide_comment(`When we are going along a straight road, the game will often jump multiple
 panoramas at a time, which creates a sharp transition. We make this into a smooth transition by executing
 multiple jumps between the two panoramas, which creates smoother, but longer animation.`)

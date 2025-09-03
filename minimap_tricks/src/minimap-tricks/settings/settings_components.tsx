@@ -158,12 +158,12 @@ class Section {
             <select
                 style="width: 100%;"
                 onchange={(e) => setValue(e.target.value)}
+                value={value()}
             >
                 <For each={values}>
                     {(item, index) => (
                         <option
                             value={item[1]}
-                            selected={item[1] == this.settings[identifier]}
                         >{ item[0] }</option>
                     )}
                 </For>
