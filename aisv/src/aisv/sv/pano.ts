@@ -132,11 +132,11 @@ async function changePano(args, instantJump) {
 
     let service_pano;
     try {
-        // @ts-expect-error
+        // @ts-expect-error For some reason getPanoramaById is not included in the types
         service_pano = await service.getPanoramaById(prev_pano);
     } catch {
         // prev_pano may be invalid post-void
-        // @ts-expect-error
+        // @ts-expect-error For some reason getPanoramaById is not included in the types
         service_pano = await service.getPanoramaById(instance.getPano());
     }
     let links = service_pano.data.links;
@@ -174,14 +174,14 @@ async function changePano(args, instantJump) {
                 return;
             }
 
-            let closestLink = closestLinkToHeading(links, args.currentHeading);
+            const closestLink = closestLinkToHeading(links, args.currentHeading);
             if (!closestLink) break;
             path.push(closestLink.pano);
             if (closestLink.pano == args.pano) {
                 // Congrats, we've found a path!
                 console.debug("[AISV-sv] Further straight found, executing jumps", path);
                 await withFadeTransition(async () => {
-                    for (let [index, pano] of path.entries()) {
+                    for (const [index, pano] of path.entries()) {
                         await changePanoAsyncAbortController.signal.protect(
                             () => setPanoAndWait(pano)
                         );
@@ -191,7 +191,7 @@ async function changePano(args, instantJump) {
                 }, settings.fadeSmoothTransitions);
                 return;
             } else {
-                // @ts-expect-error
+                // @ts-expect-error For some reason getPanoramaById is not included in the types
                 service_pano = await service.getPanoramaById(closestLink.pano);
                 links = service_pano.data.links;
             }

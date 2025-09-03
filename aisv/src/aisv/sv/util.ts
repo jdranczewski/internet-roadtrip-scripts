@@ -19,13 +19,9 @@ export function shortestAngleDist(a: number, b: number) {
     return diff;
 }
 
-interface BestLink {
-    link: google.maps.StreetViewLink;
-    diff: number;
-}
 export function closestLinkToHeading(links: [google.maps.StreetViewLink], heading: number) {
     let best = null;
-    links.forEach((link, index) => {
+    links.forEach((link,) => {
         const diff = Math.abs(shortestAngleDist(heading, link.heading));
         if (best == null || diff < best.diff) {
             best = { link, diff };

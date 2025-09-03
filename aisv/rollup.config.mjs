@@ -21,6 +21,7 @@ function printFiles() {
     async buildStart(options) {
       for (let filename of options.input) {
         const source = await readFile(filename, 'utf8');
+        /* eslint-disable no-useless-escape */
         for (let match of source.match(/\/\/ @print ([\/\\_\.a-zA-Z0-9]+)/g)) {
           const filenameToPaste = match.match(/\/\/ @print ([\/\\_\.a-zA-Z0-9]+)/)[1];
           this.addWatchFile(filenameToPaste)

@@ -32,7 +32,7 @@ messenger.addEventListener("setHeading", (event: AISVMessageEvent) => {
     });
 })
 messenger.addEventListener("marco", patchHeading);
-function patchHeading(event: AISVMessageEvent) {
+function patchHeading() {
     voptions.state.getRotation = new Proxy(voptions.methods.getRotation, {
         apply: (target, thisArg, args) => {
             // Multiplication by 1.25 offsets the vanilla game's multiplication by 0.8.

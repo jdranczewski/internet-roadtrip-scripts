@@ -7,7 +7,7 @@ import { settings } from "./sv_settings";
 // Send a message to the parent window to verify that it is neal.fun
 messenger.send("marco");
 messenger.addEventListener("polo", handleInitialResponse);
-function handleInitialResponse(event: AISVMessageEvent) {
+function handleInitialResponse() {
     // We are an iframe inside the Internet Roadtrip.
     // Install all of the required hooks.
     console.log("[AISV-sv] Roadtrip connection confirmed!", instance, service);
@@ -43,6 +43,7 @@ function handleInitialResponse(event: AISVMessageEvent) {
             if (!heading || heading === lastHeading) {
                 return;
             }
+            lastHeading = heading;
             messenger.send("setHeading", { heading });
         })
     }

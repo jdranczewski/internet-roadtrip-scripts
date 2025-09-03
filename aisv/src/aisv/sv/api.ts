@@ -14,7 +14,7 @@ HTMLCanvasElement.prototype.getContext = function(type, args) {
         const ctx = originalGetContext.call(this, type, args);
 
         // Override clearColor to make the canvas always transparent
-        const originalClearColor = ctx.clearColor.bind(ctx);
+        // const originalClearColor = ctx.clearColor.bind(ctx);
         ctx.clearColor = function() {};
 
         // Override clear to avoid the canvas blinking to nothing
@@ -64,54 +64,59 @@ const waitForOnApiLoad = new Promise((resolve) => {
 const waitForInstances: Promise<[
     google.maps.StreetViewPanorama,
     google.maps.StreetViewService
-]> = new Promise(async (resolve) => {
-    const originalOnApiLoad = await waitForOnApiLoad;
-    unsafeWindow.onApiLoad = function (args) {
-        const originalConstructor = unsafeWindow.google.maps.StreetViewPanorama;
-        // @ts-ignore
-        unsafeWindow.google.maps.StreetViewPanorama = function (container, opts) {
-            const instance: google.maps.StreetViewPanorama = new originalConstructor(container, opts);
-            unsafeWindow._SVP = instance;
-            // Add all the event listeners for debugging
-            // [
-            //     "pano_changed",
-            //     "keydown",
-            //     "status_changed",
-            //     "visible_changed",
-            //     "resize",
-            //     "closeclick",
-            //     "addresscontrol_changed",
-            //     "clicktogo_changed",
-            //     "disabledefaultui_changed",
-            //     "disabledoubleclickzoom_changed",
-            //     "enableclosebutton_changed",
-            //     "imagedatecontrol_changed",
-            //     "linkscontrol_changed",
-            //     "pancontrol_changed",
-            //     "scrollwheel_changed",
-            //     "zoomcontrol_changed",
-            //     "addresscontroloptions_changed",
-            //     "pancontroloptions_changed",
-            //     "zoomcontroloptions_changed",
-            //     "panoprovider_changed",
-            //     "pov_changed",
-            //     "shouldUseRTLControlsChange",
-            //     "motiontrackingcontroloptions_changed"
-            // ].forEach((name) => {
-            //     instance.addListener(name, (event) => {
-            //         console.debug(name, event);
-            //     })
-            // })
+]> = new Promise((resolve) => {
+    waitForOnApiLoad.then((originalOnApiLoad: CallableFunction) => {
+        unsafeWindow.onApiLoad = function (args) {
+            const originalConstructor = unsafeWindow.google.maps.StreetViewPanorama;
+            
+            // @ts-expect-error We are overriding a constructor in a slightly silly way here
+            unsafeWindow.google.maps.StreetViewPanorama = function (
+                container: HTMLElement,
+                opts: google.maps.StreetViewPanoramaOptions
+            ): google.maps.StreetViewPanorama {
+                const instance: google.maps.StreetViewPanorama = new originalConstructor(container, opts);
+                unsafeWindow._SVP = instance;
+                // Add all the event listeners for debugging
+                // [
+                //     "pano_changed",
+                //     "keydown",
+                //     "status_changed",
+                //     "visible_changed",
+                //     "resize",
+                //     "closeclick",
+                //     "addresscontrol_changed",
+                //     "clicktogo_changed",
+                //     "disabledefaultui_changed",
+                //     "disabledoubleclickzoom_changed",
+                //     "enableclosebutton_changed",
+                //     "imagedatecontrol_changed",
+                //     "linkscontrol_changed",
+                //     "pancontrol_changed",
+                //     "scrollwheel_changed",
+                //     "zoomcontrol_changed",
+                //     "addresscontroloptions_changed",
+                //     "pancontroloptions_changed",
+                //     "zoomcontroloptions_changed",
+                //     "panoprovider_changed",
+                //     "pov_changed",
+                //     "shouldUseRTLControlsChange",
+                //     "motiontrackingcontroloptions_changed"
+                // ].forEach((name) => {
+                //     instance.addListener(name, (event) => {
+                //         console.debug(name, event);
+                //     })
+                // })
 
-            const service = new unsafeWindow.google.maps.StreetViewService();
-            unsafeWindow._SVS = service;
+                const service = new unsafeWindow.google.maps.StreetViewService();
+                unsafeWindow._SVS = service;
 
-            resolve([instance, service]);
-            return instance;
+                resolve([instance, service]);
+                return instance;
+            };
+            
+            return originalOnApiLoad(args);
         };
-        // @ts-ignore
-        return originalOnApiLoad(args);
-    };
+    });
 });
 
 export const [instance, service] = await waitForInstances;
