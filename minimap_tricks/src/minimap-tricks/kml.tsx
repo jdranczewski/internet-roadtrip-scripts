@@ -111,8 +111,10 @@ async function loadKMLurl(url: string, storage_id?) {
     
     // Handle Google My Maps links
     if (
-        url.includes("https://www.google.com/maps/d/u/0/edit")
-        || url.includes("https://www.google.com/maps/d/u/0/viewer")
+        url.includes("https://www.google.com/maps/d/edit")
+        || url.includes("https://www.google.com/maps/d/viewer")
+        || url.match("https://www.google.com/maps/d/u/[0-9]/edit")
+        || url.match("https://www.google.com/maps/d/u/[0-9]/viewer")
     ) {
         const urlObject = new URL(url);
         const mid = urlObject.searchParams.get("mid");
@@ -288,7 +290,8 @@ const section = marker_panel.add_section("KML layers", `For more complex maps,
     or another map creation tool to create KML files with many markers. You can then
     add your KML files here to show them on the in-game map!<br><br>
     Make sure you download as KML and not KMZ, and do select "keep data up to date" if
-    you would like the option to automatically update the layer when the source map changes.`)
+    you would like the option to automatically update the layer when the source map changes.<br><br>
+    You can also add a map using a link to a KML file or to a Google My Maps map.`)
 
 const import_item =
     <div class={styles['settings-item']}>
