@@ -25,11 +25,29 @@
             opacity: 1;
             pointer-events: revert;
         }
+        #logo {
+            background-color: #21212178;
+            border-top-right-radius: 6px;
+            position: absolute;
+            padding: 8px;
+            bottom: 0;
+            left: 0;
+            height: 56px;
+            box-sizing: border-box;
+        }
+        #logo img {
+            height: 40px;
+        }
         </style>
     </head>
     <body>
         <iframe id="frame0"></iframe>
         <iframe id="frame1"></iframe>
+        <div id="logo">
+            <a href="https://neal.fun/internet-roadtrip">
+                <img src="https://neal.fun/favicons/internet-roadtrip.png" alt="Internet Roadtrip logo"></img>
+            </a>
+        </div>
         <script type="text/javascript">
         const socket = new WebSocket(
             "wss://internet-roadtrip-listen-eqzms.ondigitalocean.app",
