@@ -81,7 +81,7 @@ async function handleSetPanoMessage(args, mode?) {
         || Math.abs(shortestAngleDist(
             internalHeading,
             args.heading
-        )) > 5
+        )) > settings.turnThreshold
     ) {
         // Only animate the heading if it's a
         // significant change or the pano hasn't changed
@@ -169,7 +169,7 @@ async function changePano(args, instantJump) {
         // a further straight, in which case we may be able to get there
         // in a couple of jumps.
         const path = [];
-        for (let i = 0; i < settings.turnThreshold; i++) {
+        for (let i = 0; i < 5; i++) {
             if (changePanoAsyncAbortController.signal.aborted) {
                 return;
             }

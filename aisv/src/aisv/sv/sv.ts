@@ -3,6 +3,7 @@ import { AISVMessageEvent } from "../messaging";
 import globalCss from './style.css';
 import { handleSetPano, resetPov, toggleManualPause } from "./pano";
 import { settings } from "./sv_settings";
+import { type realPov } from "./animation";
 
 // Send a message to the parent window to verify that it is neal.fun
 messenger.send("marco");
@@ -38,13 +39,20 @@ function handleInitialResponse() {
     // Let the parent frame know when the heading changes
     {
         let lastHeading = null;
+        let lastZoom = null;
         instance.addListener('pov_changed', () => {
             const heading = instance.getPov()?.heading;
-            if (!heading || heading === lastHeading) {
-                return;
+            if (heading && heading !== lastHeading) {
+                lastHeading = heading;
+                messenger.send("setHeading", { heading });
             }
-            lastHeading = heading;
-            messenger.send("setHeading", { heading });
+
+            // The types don't include zoom, but it's always returned
+            const zoom = (instance.getPov() as realPov)?.zoom;
+            if (zoom && zoom !== lastZoom) {
+                lastZoom = zoom;
+                messenger.send("zoomChanged", { zoom });
+            }
         })
     }
 }
