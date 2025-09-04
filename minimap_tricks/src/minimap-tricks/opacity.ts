@@ -75,6 +75,8 @@ const old_route_subscription = ml_map.on("data", (e: MapSourceDataEvent) => {
         ml_map.setPaintProperty("old-route-layer", "line-opacity", parseFloat(settings.route_opacity));
         ml_map.moveLayer("route", "boundary_3");
         ml_map.moveLayer("old-route-layer", "route");
+        // Move map history honks below town names, so that the names are shown with priority
+        if (ml_map.getLayer("points")) ml_map.moveLayer("points", "label_village");
         old_route_subscription.unsubscribe();
     }
 })

@@ -58,8 +58,8 @@ vcontainer.state.updateData = new Proxy(
         // debugger;
         let distance = args[0]["distance"]
         if (vodometer.data.isKilometers) {distance *= vodometer.data.conversionFactor}
-        const decimals = (distance % 1).toFixed(2);
-        decimal_el.innerHTML = `<br>${decimals.substring(1)}`;
+        const decimals = ((distance % 1) * 100).toString().substring(0, 2);
+        decimal_el.innerHTML = `<br>.${decimals}`;
         return Reflect.apply(target, thisArg, args);
     },
 });

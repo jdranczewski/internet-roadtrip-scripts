@@ -161,7 +161,7 @@ class Section {
                 value={value()}
             >
                 <For each={values}>
-                    {(item, index) => (
+                    {(item,) => (
                         <option
                             value={item[1]}
                         >{ item[0] }</option>

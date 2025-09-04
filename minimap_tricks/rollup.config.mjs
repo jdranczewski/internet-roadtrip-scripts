@@ -48,7 +48,7 @@ export default defineConfig(
       commonjsPlugin(),
       jsonPlugin(),
       userscript((meta) =>
-        meta.replace('process.env.AUTHOR', packageJson.author.name),
+        meta.replace('process.env.VERSION', packageJson.version),
       ),
       tla()
     ],

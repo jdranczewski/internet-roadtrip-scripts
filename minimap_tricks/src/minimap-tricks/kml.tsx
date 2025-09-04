@@ -63,6 +63,7 @@ async function loadKMLtext(text: string, storage_id?, source_url?) {
             loadKMLurl(hrefNode.childNodes[0].nodeValue, storage_id);
             return;
         }
+        let name = dom.querySelector("Document > name")?.innerHTML;
 
         const features = kml(dom).features;
 
@@ -73,15 +74,20 @@ async function loadKMLtext(text: string, storage_id?, source_url?) {
 
         // Store the features in extension storage
         if (!storage_id) {
+            if (!name) {
+                name = (
+                    marker_panel.container.getElementsByClassName("mmt-kml-file-selector")[0] as HTMLInputElement
+                ).files[0].name;
+            }
             storage_id = crypto.randomUUID();
             stored_kml[storage_id] = {
-                name: dom.querySelector("Document > name").innerHTML,
+                name,
                 enabled: true,
                 features: features,
             };
             setKMLstatus(`${stored_kml[storage_id].name} loaded`);
         } else {
-            stored_kml[storage_id].name = dom.querySelector("Document > name").innerHTML;
+            if (name) stored_kml[storage_id].name = name;
             stored_kml[storage_id].features = features;
             setKMLstatus(`${stored_kml[storage_id].name} updated`);
         }
@@ -292,6 +298,7 @@ const import_item =
             <input
                 type="file"
                 accept=".kml"
+                class="mmt-kml-file-selector"
                 onchange={(event) => {
                     // Adapted from https://developer.mozilla.org/en-US/docs/Web/API/FileReader#examples
                     const file = event.target.files[0];

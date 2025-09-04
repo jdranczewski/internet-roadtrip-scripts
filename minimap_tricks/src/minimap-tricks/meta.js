@@ -4,7 +4,7 @@
 // @description Provide many bonus options for the Internet Roadtrip minimap.
 // @match       https://neal.fun/internet-roadtrip/*
 // @icon        https://jdranczewski.dev/irt/images/minimap_tricks.png
-// @version     1.3.2
+// @version     process.env.VERSION
 // @author      jdranczewski (+netux +GameRoMan)
 // @license     MIT
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
