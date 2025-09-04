@@ -60,6 +60,9 @@
         function switchFrames() {
             document.getElementById(`frame1`).classList.toggle("active", frame);
         }
+        document.getElementById("frame0").addEventListener("load", () => {setTimeout(switchFrames, 1000)});
+        document.getElementById("frame1").addEventListener("load", () => {setTimeout(switchFrames, 1000)});
+
         socket.onmessage = async (event) => {
             const msg = JSON.parse(event.data);
             if (pano === msg.pano || heading === msg.heading) return;
@@ -68,7 +71,6 @@
             heading = msg.heading;
             frame = (frame + 1) % 2;
             document.getElementById(`frame${frame}`).src = `https://www.google.com/maps/embed/v1/streetview?key=${key}&pano=${pano}&heading=${heading}&pitch=10&fov=90`
-            setTimeout(switchFrames, 1000);
         }
         </script>
     </body>
