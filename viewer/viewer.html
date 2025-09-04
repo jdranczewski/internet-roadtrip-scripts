@@ -4,32 +4,53 @@
         <meta charset="utf-8">
         <title>Viewer for the Internet Roadtrip</title>
         <style>
-        html, body, #main_frame {
+        html, body, iframe {
             width: 100%;
             height: 100%;
             margin: 0;
-            border: none;
             overflow: hidden;
+        }
+        iframe {
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #frame1 {
+            opacity: 0;
+            transition: opacity 1s;
+            pointer-events: none;
+        }
+        #frame1.active {
+            opacity: 1;
+            pointer-events: revert;
         }
         </style>
     </head>
     <body>
-        <iframe id="main_frame"></iframe>
+        <iframe id="frame0"></iframe>
+        <iframe id="frame1"></iframe>
         <script type="text/javascript">
         const socket = new WebSocket(
             "wss://internet-roadtrip-listen-eqzms.ondigitalocean.app",
         );
         let pano;
         let heading;
-        const iframe = document.getElementById("main_frame");
+        let frame = 1;
         const key = "API_KEY";
+
+        function switchFrames() {
+            document.getElementById(`frame1`).classList.toggle("active", frame);
+        }
         socket.onmessage = async (event) => {
             const msg = JSON.parse(event.data);
             if (pano === msg.pano || heading === msg.heading) return;
             console.log(msg);
             pano = msg.pano;
             heading = msg.heading;
-            iframe.src = `https://www.google.com/maps/embed/v1/streetview?key=${key}&pano=${pano}&heading=${heading}&pitch=10&fov=90`
+            frame = (frame + 1) % 2;
+            document.getElementById(`frame${frame}`).src = `https://www.google.com/maps/embed/v1/streetview?key=${key}&pano=${pano}&heading=${heading}&pitch=10&fov=90`
+            setTimeout(switchFrames, 1000);
         }
         </script>
     </body>
