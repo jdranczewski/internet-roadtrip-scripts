@@ -1,4 +1,4 @@
-import { vcontainer, vmap } from './awaits';
+import { maplibre, vcontainer, vmap } from './awaits';
 import { settings, panel } from './settings/settings'
 import { checkUpdateMap, flyTo } from './flying'
 
@@ -20,25 +20,67 @@ marker_el.style.height = `${settings.car_marker_size}px`;
 marker_el.style.setProperty('--marker-opacity', settings.marker_opacity.toString());
 
 // Custom car marker
+const custom_car_marker = new maplibre.Marker({
+    element: marker_el.cloneNode() as typeof marker_el,
+    rotationAlignment: "map",
+    anchor: "center"
+});
+custom_car_marker.getElement().classList.add("mmt-car-marker");
+custom_car_marker.getElement().style.backgroundImage = 'none';
+custom_car_marker.setLngLat(car_marker.getLngLat() || [0, 0]);
+custom_car_marker.setRotation(car_marker.getRotation());
+custom_car_marker.addTo(ml_map);
+
 const custom_car = document.createElement("img");
 custom_car.src = settings.car_marker_url;
 custom_car.style.maxWidth = `${settings.car_marker_scale}%`;
 custom_car.style.maxHeight = `${settings.car_marker_scale}%`;
 custom_car.style.rotate = `${settings.car_marker_rotation}deg`;
 custom_car.style.display = settings.car_marker_custom ? "block" : "none";
-marker_el.appendChild(custom_car);
+custom_car_marker.getElement().appendChild(custom_car);
 
-// Set the marker rotation when the car moves
-const changeStop = vcontainer.methods.changeStop;
-vcontainer.state.changeStop = new Proxy(changeStop, {
+// IRT likes to call car_marker.addTo(ml_map) every time the marker updates.
+// Every call to addTo() puts the marker at the end of the container, so our
+// custom car marker may end up behind the original car marker, which isn't
+// ideal.
+// To compensate for this, call addTo()
+car_marker.addTo = new Proxy(car_marker.addTo, {
     apply: (target, thisArg, args) => {
         const returnValue = Reflect.apply(target, thisArg, args);
-        car_marker.setRotation(args[3]);
+        custom_car_marker.addTo(args[0]);
+        return returnValue;
+    },
+})
+
+
+// Set the custom car marker's position and rotation when the car moves
+vmap.state.setMarkerPosition = new Proxy(vmap.methods.setMarkerPosition, {
+    apply: (target, thisArg, args) => {
+        const returnValue = Reflect.apply(target, thisArg, args);
+        custom_car_marker.setLngLat({ lat: args[0], lng: args[1] });
+        return returnValue;
+    }
+});
+vmap.state.setMarkerRotation = new Proxy(vmap.methods.setMarkerRotation, {
+    apply: (target, thisArg, args) => {
+        const returnValue = Reflect.apply(target, thisArg, args);
+        custom_car_marker.setRotation(args[0]);
+        return returnValue;
+    }
+});
+
+vcontainer.state.changeStop = new Proxy(vcontainer.methods.changeStop, {
+    apply: (target, thisArg, args) => {
+        const returnValue = Reflect.apply(target, thisArg, args);
+
+        // Reimplement flyTo() with our own logic
         if (
             checkUpdateMap()
             && settings.align_orientation
             && (Math.abs(ml_map.getBearing() - args[3]) % 360) > 1
         ) flyTo(undefined, args[3]);
+
+        // Flip custom car marker image when the heading is over 180 degrees
         const x_flip = settings.car_marker_flip ? "-1" : "1";
         if (settings.car_marker_flip_x && args[3] > 180) {
             custom_car.style.transform = `scale(${x_flip}, -1)`;
@@ -48,10 +90,6 @@ vcontainer.state.changeStop = new Proxy(changeStop, {
         return returnValue;
     },
 });
-// Override the normal marker rotation setting method, we do it above!
-vmap.state.setMarkerRotation = new Proxy(vmap.methods.setMarkerRotation, {
-    apply: () => {}
-});
 
 // Settings
 const section = panel.add_section("Car marker", `You can set the car marker on the map to be
@@ -59,11 +97,12 @@ const section = panel.add_section("Car marker", `You can set the car marker on t
 
 section.add_slider("Car marker opacity", "marker_opacity", (value) => {
     marker_el.style.setProperty('--marker-opacity', value);
+    custom_car_marker.getElement().style.setProperty('--marker-opacity', value);
 }, [0, 1, 0.05]);
 
 section.add_slider("Car marker size (px)", "car_marker_size", (value) => {
-    marker_el.style.width = `${value}px`;
-    marker_el.style.height = `${value}px`;
+    marker_el.style.width = custom_car_marker.getElement().style.width = `${value}px`;
+    marker_el.style.height = custom_car_marker.getElement().style.height = `${value}px`;
 }, [20, 100, 1]);
 
 section.add_checkbox("Custom car marker", "car_marker_custom", (show) => {
