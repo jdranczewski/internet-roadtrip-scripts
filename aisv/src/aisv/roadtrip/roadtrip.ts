@@ -1,7 +1,7 @@
 import './settings';
 
 import { type AISVMessageEvent } from '../messaging';
-import { vcontainer, voptions } from './awaits';
+import { vcontainer, vmap, voptions } from './awaits';
 import { messenger } from './iframe';
 import './populate_settings';
 
@@ -30,7 +30,9 @@ messenger.addEventListener("setHeading", (event: AISVMessageEvent) => {
     document.querySelectorAll('.option').forEach(async (option: HTMLElement, index) => {
         option.style.rotate = `${voptions.methods.getRotation(index)}deg`;
     });
-})
+
+    vmap.data.marker.setRotation(currentPanoramaHeading);
+});
 messenger.addEventListener("marco", patchHeading);
 function patchHeading() {
     voptions.state.getRotation = new Proxy(voptions.methods.getRotation, {
@@ -39,6 +41,14 @@ function patchHeading() {
             // This way, the arrows actually point towards the road they correspond to.
             const angle = Reflect.apply(target, thisArg, args) * 1.25;
             return angle - (currentPanoramaHeading - vcontainer.data.currentHeading) % 360;
+        },
+    });
+
+    vmap.state.setMarkerRotation = new Proxy(vmap.methods.setMarkerRotation, {
+        apply: (target, thisArg, args) => {
+            const returnValue = Reflect.apply(target, thisArg, args);
+            vmap.data.marker.setRotation(currentPanoramaHeading);
+            return returnValue;
         },
     });
 
