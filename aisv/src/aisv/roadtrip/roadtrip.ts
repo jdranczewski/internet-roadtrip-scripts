@@ -38,6 +38,9 @@ function patchHeading() {
             // Multiplication by 1.25 offsets the vanilla game's multiplication by 0.8.
             // This way, the arrows actually point towards the road they correspond to.
             const angle = Reflect.apply(target, thisArg, args) * 1.25;
+            if (!settings.rotateArrowsWithHeading) {
+                return angle;
+            }
             return angle - (currentPanoramaHeading - vcontainer.data.currentHeading) % 360;
         },
     });

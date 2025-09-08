@@ -83,3 +83,11 @@ performance_section.add_checkbox("Fill window", "fill", (value) => {
         value: value
     })
 });
+
+const ui_section = panel.add_section("UI", ``);
+ui_section.add_checkbox("Rotate arrows as you pan", "rotateArrowsWithHeading", (value) => {
+    messenger.send("settingChanged", {
+        identifier: "rotateArrowsWithHeading",
+        value: value
+    })
+});
