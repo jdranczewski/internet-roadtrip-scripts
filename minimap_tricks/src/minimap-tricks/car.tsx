@@ -48,6 +48,8 @@ vcontainer.state.changeStop = new Proxy(changeStop, {
         return returnValue;
     },
 });
+// Set the rotation on load
+if (vcontainer.data.currentHeading) car_marker.setRotation(vcontainer.data.currentHeading);
 // Override the normal marker rotation setting method, we do it above!
 vmap.state.setMarkerRotation = new Proxy(vmap.methods.setMarkerRotation, {
     apply: () => {}
