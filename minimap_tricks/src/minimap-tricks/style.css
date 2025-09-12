@@ -1,8 +1,6 @@
 /* Fix fullscreen map touch event for narrow windows */
 /* I don't really understand why this is needed */
-@media (max-width: 768px) {
-    body {height: auto !important;}
-}
+body {height: auto !important;}
 @media (min-width: 900px) {
     .map-container {
         & .expand-button {

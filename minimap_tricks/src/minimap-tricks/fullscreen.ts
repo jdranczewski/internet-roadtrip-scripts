@@ -1,9 +1,8 @@
 import * as IRF from 'internet-roadtrip-framework'
-import { vcontainer, vmap } from './awaits';
+import { vcontainer } from './awaits';
 import { control } from './controlmenu'
 
 const mapContainerEl = await IRF.dom.map;
-const ml_map = vmap.data.map;
 
 const event = new CustomEvent("toggleFullscreenMap");
 
@@ -48,6 +47,4 @@ control.addButton(
 )
 
 // Go into fullscreen if #map is the window hash
-ml_map.once("load", () => {
-    if (window.location.hash == "#map") toggleMapFullscreen(true);
-})
+if (window.location.hash === "#map") toggleMapFullscreen(true);
