@@ -217,7 +217,13 @@ ml_map.on("touchmove", () => {
     longTouch = undefined;
 });
 ml_map.on("touchend", (e) => {
-    if (longTouch && Date.now() - longTouch > 300) {
+    if (
+        longTouch &&
+        Date.now() - longTouch > 300 &&
+        (e.originalEvent.target as Element).classList.contains("maplibregl-canvas")
+    ) {
+        console.log(e)
+        e.originalEvent.stopPropagation();
         e.preventDefault();
         control.openMenu(
             "Map", e.lngLat.lat, e.lngLat.lng,
