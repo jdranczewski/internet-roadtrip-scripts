@@ -209,21 +209,22 @@ ml_map.on("contextmenu", (e) => {
     )
 });
 
-let long_touch = false;
+let longTouch = undefined;
 ml_map.on("touchstart", () => {
-    long_touch = true;
+    longTouch = Date.now();
 });
 ml_map.on("touchmove", () => {
-    long_touch = false;
+    longTouch = undefined;
 });
 ml_map.on("touchend", (e) => {
-    if (long_touch) {
+    if (longTouch && Date.now() - longTouch > 300) {
         e.preventDefault();
         control.openMenu(
             "Map", e.lngLat.lat, e.lngLat.lng,
             e.originalEvent.changedTouches[0].clientX, e.originalEvent.changedTouches[0].clientY
         )
     }
+    longTouch = undefined;
 });
 
 vmap.data.marker.getElement().oncontextmenu = (e) => {
