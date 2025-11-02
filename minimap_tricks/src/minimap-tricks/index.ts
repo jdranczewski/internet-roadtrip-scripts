@@ -1,7 +1,9 @@
 import './meta.js?userscript-metadata';
 
 import globalCss from './style.css';
-import './settings/settings'
+import { error_section } from './settings/settings';
+import './awaits'
+error_section.add_comment("(the awaits have resolved correctly)");
 
 GM.addStyle(globalCss);
 import { control, addContext } from './controlmenu';
@@ -30,3 +32,5 @@ unsafeWindow._MMT_addContext = addContext;
 unsafeWindow._MMT_getMarkers = () => {
     return markers;
 }
+
+error_section.container.remove();
