@@ -81,5 +81,5 @@ export const marker_panel = new Panel("Map markers", settings, gm_info);
 
 export const error_section = panel.add_section("Minimap Tricks failed to load fully")
 error_section.add_comment(`You may encounter problems when running this mod under Tampermonkey or on the Chrome browser.
-I recommend using Violentmonkey on any browser other than Chrome.
+I recommend using Violentmonkey on any browser other than Chrome. Other Chromium-based browsers should work fine!
 `)

@@ -25,6 +25,14 @@ body {height: auto !important;}
         opacity: var(--map-opacity-expanded, 1) !important;
     }
 }
+@media (max-width: 900px) {
+    .map-container:not(.fullscreen) {
+        #mmt-menu {
+        margin-top: -50vh;
+        transform: translateY(calc(-100% + 115px)) !important;
+    }
+    }
+}
 .map-container {
     transition: opacity .5s;
     &:hover {
@@ -58,6 +66,30 @@ body {height: auto !important;}
                 margin-right: 11px !important;
             }
         }
+        @media (max-width: 900px) {
+            & .maplibregl-ctrl-bottom-right {
+                margin-bottom: 37px;
+            }
+            & .maplibregl-ctrl-bottom-left {
+                margin-bottom: 19px;
+            }
+            .maplibregl-ctrl-top-left {
+                margin-left: -3px;
+                margin-top: 47px;
+            }
+        }
+        /* Always show the exit button when in fullscreen */
+        .mmt-side-control button[title="Fullscreen map"] {
+            display: block !important;
+        }
+    }
+
+    & #mmt-mobile-fs {
+        background-size: contain;
+        height: 27px;
+        width: 27px;
+        top: 156px;
+        right: -25px;
     }
 }
 .lotwv1-overlay:has(~ .fullscreen) {
@@ -141,7 +173,7 @@ body {height: auto !important;}
             border-right: 1px solid #ddd;
         }
     }
-    
+
     .maplibregl-ctrl-compass {
         cursor: pointer;
     }
@@ -161,13 +193,5 @@ body {height: auto !important;}
 @media (display-mode: picture-in-picture) {
     .maplibregl-ctrl-scale {
         margin: 0px 5px 5px 0px !important;
-    }
-    #mini-map {
-        #mmt-menu {
-            transform: translate(0, 0px) !important;
-            top: 10px !important;
-            right: 10px !important;
-            left: auto !important;
-        }
     }
 }

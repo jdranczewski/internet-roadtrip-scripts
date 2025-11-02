@@ -32,7 +32,7 @@ let isResizing: boolean = false; // Resizing determines if the expanded state sh
 let lastX: number, lastY: number;
 
 // Start the drag
-expandButtonEl.addEventListener('mousedown', (e) => {
+expandButtonEl.addEventListener('pointerdown', (e) => {
     isClicked = true;
     lastX = e.clientX;
     lastY = e.clientY;
@@ -40,7 +40,7 @@ expandButtonEl.addEventListener('mousedown', (e) => {
 });
 
 // Continue the drag
-document.addEventListener('mousemove', (e) => {
+document.addEventListener('pointermove', (e) => {
     if (!isClicked) return;
     if (e.buttons == 0) {
         isClicked = false;
@@ -72,7 +72,7 @@ document.addEventListener('mousemove', (e) => {
 });
 
 // End drag
-document.addEventListener('mouseup', () => {
+document.addEventListener('pointerup', () => {
     isClicked = false;
 });
 

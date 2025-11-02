@@ -26,7 +26,7 @@ export class TricksControl implements IControl {
 
         this._m_cont = document.createElement('div'); // Menu container
         this._m_cont.id = "mmt-menu";
-        this._m_cont.style.display = "none";
+        this._hide_menu();
         mapContainerEl.querySelector('#mini-map').appendChild(this._m_cont);
         document.addEventListener("click", () => {
             this._hide_menu();
@@ -58,11 +58,10 @@ export class TricksControl implements IControl {
     }
 
     _show_menu(): void {
-        control._m_cont.style.display = "block";
         mapContainerEl.classList.add("mmt-map-menu-opened");
     }
     _hide_menu(): void {
-        this._m_cont.style.display = "none";
+        this._m_cont.style.top = "-10px";
         mapContainerEl.classList.remove("mmt-map-menu-opened");
     }
     openMenu(context: string, lat: number, lng: number, left: number, top: number, data: unknown=undefined) {
@@ -70,6 +69,10 @@ export class TricksControl implements IControl {
         this.lat = lat;
         this.lng = lng;
         this.data = data;
+
+        top = Math.max(top, this._m_cont.offsetHeight + 10);
+        // Not using "window" directly here to support the PIP case
+        left = Math.min(left, this._m_cont.ownerDocument.defaultView.innerWidth - this._m_cont.offsetWidth - 10);
 
         this._m_cont.style.top = `${top}px`;
         this._m_cont.style.left = `${left}px`;
@@ -145,7 +148,7 @@ export class TricksControl implements IControl {
             returnValue.side_icon = button_icon;
             returnValue.side_checkbox = checkbox;
         }
-        
+
         const button = document.createElement("button");
         if (context !== undefined) {
             contexts.forEach((v) => {
@@ -204,6 +207,23 @@ ml_map.on("contextmenu", (e) => {
         "Map", e.lngLat.lat, e.lngLat.lng,
         e.originalEvent.clientX, e.originalEvent.clientY
     )
+});
+
+let long_touch = false;
+ml_map.on("touchstart", () => {
+    long_touch = true;
+});
+ml_map.on("touchmove", () => {
+    long_touch = false;
+});
+ml_map.on("touchend", (e) => {
+    if (long_touch) {
+        e.preventDefault();
+        control.openMenu(
+            "Map", e.lngLat.lat, e.lngLat.lng,
+            e.originalEvent.changedTouches[0].clientX, e.originalEvent.changedTouches[0].clientY
+        )
+    }
 });
 
 vmap.data.marker.getElement().oncontextmenu = (e) => {

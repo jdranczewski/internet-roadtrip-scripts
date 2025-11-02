@@ -33,6 +33,18 @@
     }
 }
 
+@media (max-width: 900px) {
+    .car-radio.hide-mobile #aisv-buttons {
+        bottom: -38px;
+    }
+    .car-radio:not(.hide-mobile) #aisv-buttons {
+        right: 0;
+        left: auto;
+        transform-origin: bottom right;
+        bottom: -10px;
+    }
+}
+
 .radio-body {
     border-bottom-left-radius: 0 !important;
 }
