@@ -43,6 +43,13 @@ export const settings = {
     "coverage": true,
     "coverage_opacity": "0.75",
 
+    "show_custom_tiles": false,
+    "custom_tile_source_url": "",
+    "custom_tile_opactity": "0.7",
+    "custom_tile_contrast": "0.1",
+    "custom_tile_saturation": "0.15",
+    "custom_tile_building_opacity": "0.2",
+
     "kml_points_opacity": "1",
     "kml_lines_opacity": "1",
     "kml_lines_dashed": true,

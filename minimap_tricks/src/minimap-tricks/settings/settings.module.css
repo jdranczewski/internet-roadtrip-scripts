@@ -33,6 +33,10 @@ a {color: #aaa}
         @apply text-transparent bg-transparent;
         @apply border-1 border-dashed border-[#41474b];
     }
+
+    & input {
+        box-sizing: border-box;
+    }
 }
 
 .setting {

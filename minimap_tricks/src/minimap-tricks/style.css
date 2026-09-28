@@ -13,6 +13,10 @@ body {height: auto !important;}
             width: var(--map-width, 250px) !important;
             height: var(--map-height, 170px) !important;
         }
+
+        & #mmt-mobile-fs {
+            display: none !important;
+        }
     }
     .expanded #mini-map {
         width: var(--map-width-expanded, 450px) !important;
@@ -85,11 +89,19 @@ body {height: auto !important;}
     }
 
     & #mmt-mobile-fs {
-        background-size: contain;
         height: 27px;
-        width: 27px;
-        top: 156px;
         right: -25px;
+        top: 156px;
+        width: 27px;
+        display: inline-block;
+        cursor: pointer;
+        position: absolute;
+        z-index: 2;
+        background: #fffdf0;
+        border-radius: 5px;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        transform: rotate(90deg);
     }
 }
 .lotwv1-overlay:has(~ .fullscreen) {

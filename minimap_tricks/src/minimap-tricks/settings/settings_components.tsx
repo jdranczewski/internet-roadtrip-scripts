@@ -126,7 +126,7 @@ class Section {
                 value={value()}
                 onchange={(e) => setValue(e.target.value)}
             />
-            <Show when={default_value}>
+            <Show when={default_value !== undefined}>
                 <button
                     class={styles['setting']}
                     onclick={() => setValue(default_value)}

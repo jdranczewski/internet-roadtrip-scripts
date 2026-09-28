@@ -52,7 +52,6 @@ const fs_mobile = document.createElement("div");
 mapContainerEl.appendChild(fs_mobile);
 fs_mobile.id = "mmt-mobile-fs";
 fs_mobile.classList.add("mobile-expand-button");
-fs_mobile.dataset["v-89a7e684"] = "";
 fs_mobile.style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(fullscreen_icon)}")`;
 fs_mobile.addEventListener("click", () => toggleMapFullscreen());
 

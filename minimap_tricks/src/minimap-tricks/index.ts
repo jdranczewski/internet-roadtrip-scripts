@@ -16,6 +16,7 @@ import './resize';
 import './opacity';
 import './distance';
 import './coverage';
+import './custom_tiles';
 import './kml';
 
 // Export some APIs
