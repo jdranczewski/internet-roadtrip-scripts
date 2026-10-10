@@ -3,18 +3,24 @@ import { panel } from "./settings";
 
 const fade_section = panel.add_section("Animations between locations", `When the car location changes,
 we try to make the transition smooth by applying a slight or full fade.<br><br>
+
 If the new location is nearby, there will be a "whoosh" animation between the two panoramas,
-which we call a "smooth" transition. By default, we blur these slightly to obscure any artefacts.
-<br><br>
-If the new location is not connected or further away, there will be a sharp jump between the two,
-which we call a "sharp" transition. By default, we fade the pano out slightly, but you may choose to
-fade it out fully, obscuring the sharp changeover.
+which we call a <strong>"smooth"</strong> transition. If the new location is not connected or further away,
+there will be a sharp jump between the two, which we call a <strong>"sharp"</strong> transition.<br><br>
+
+By default, we blur these transitions slightly to obscure any artefacts and sharp changeovers.
+You may choose to fade it out fully too, obscuring the change completely.<br><br>
+
+<strong>Now in beta: the cross-fade option!</strong> This changes a couple rendering things, and allows
+beautiful fades between panos instead of jumps. I recommend enabling it for sharp transitions. You have to reload the
+page for the change to take effect. Let me know on Discord if you spot any issues or decreased performance!
 `)
 const fadeOptions: [string, string][] = [
     ["No fade", ""],
     ["Slightly", "aBitFiltered"],
     ["Medium", "aBitMoreFiltered"],
-    ["Fully", "filtered"]
+    ["Fully", "filtered"],
+    ["Cross-fade (requires reload)", "cross"],
 ]
 fade_section.add_dropdown("Fade during smooth transitions", "fadeSmoothTransitions", fadeOptions, (value) => {
     messenger.send("settingChanged", {

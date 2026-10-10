@@ -34,8 +34,12 @@ body {
         filter: blur(8px) grayscale(.1) opacity(.7);
         pointer-events: none;
     }
+    &.cross ~ #second-canvas {
+        opacity: 1;
+        transition: opacity 0s;
+    }
     .widget-scene {
-            cursor: move !important;
+        cursor: move !important;
     }
 }
 #mapDiv, .gm-style > div, .widget-scene, .mapsConsumerUiSceneCoreScene__canvas {
@@ -50,5 +54,9 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: -1;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+    /* filter: hue-rotate(90deg); */
 }

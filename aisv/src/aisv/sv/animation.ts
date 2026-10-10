@@ -20,14 +20,14 @@ messenger.addEventListener("settingChanged", (event: AISVMessageEvent) => {
 
 // Better fades with another canvas
 let copyCanvas = () => {};
-if (settings.betterFades) {
+if ((settings.fadeSharpTransitions == "cross") || (settings.fadeSmoothTransitions == "cross")) {
     mapDiv.classList.add("better");
     const second_canvas = document.createElement("canvas");
     const ctx = second_canvas.getContext("2d");
     second_canvas.id = "second-canvas";
     document.body.append(second_canvas);
     copyCanvas = () => {
-        const first_canvas = document.getElementsByClassName("mapsConsumerUiSceneCoreScene__canvas widget-scene-canvas")[0] as HTMLCanvasElement;
+        const first_canvas = document.getElementsByClassName("mapsImagerySceneScene__canvas widget-scene-canvas")[0] as HTMLCanvasElement;
         second_canvas.width = first_canvas.width;
         second_canvas.height = first_canvas.height;
         ctx.drawImage(
@@ -52,8 +52,8 @@ export async function withFadeTransition(
     if (filterClass != null && filterClass !== "") {
         console.debug("[AISV-sv] Fade in", filterClass);
         currentlyFadeTransitioning = true;
+        if (filterClass === "cross") copyCanvas();
         mapDiv.classList.toggle(filterClass, true);
-        if (filterClass === "filtered") copyCanvas();
     }
 
     const result = await callback();

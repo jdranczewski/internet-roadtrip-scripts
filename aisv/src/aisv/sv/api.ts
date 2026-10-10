@@ -10,7 +10,8 @@ export function setOverrideCanvasClear(value: boolean) {
 }
 HTMLCanvasElement.prototype.getContext = function(type, args) {
     if (type === 'webgl' || type === 'experimental-webgl') {
-        args = Object.assign({}, args, { preserveDrawingBuffer: settings.betterFades });
+        const betterFades = (settings.fadeSharpTransitions == "cross") || (settings.fadeSmoothTransitions == "cross");
+        args = Object.assign({}, args, { preserveDrawingBuffer: betterFades });
         const ctx = originalGetContext.call(this, type, args);
 
         // Override clearColor to make the canvas always transparent
@@ -19,7 +20,7 @@ HTMLCanvasElement.prototype.getContext = function(type, args) {
 
         // Override clear to avoid the canvas blinking to nothing
         const originalClear = ctx.clear.bind(ctx);
-        if (!settings.betterFades) ctx.clear = function (mask) {
+        if (!betterFades) ctx.clear = function (mask) {
             if (overrideCanvasClear) return;
             originalClear(mask);
         }

@@ -66,14 +66,16 @@ section.add_input("Tile source URL (XYZ format)", "custom_tile_source_url", "tex
 section.add_wide_comment(`I can't directly provide an URL for you to use here, sorry! Here are some instructions
     on how to get your own though:
     <ul>
-        <li>Sign into https://cloud.maptiler.com/ (easiest with Google).</li>
+        <li>Sign into <a href="https://cloud.maptiler.com/" target="_blank">https://cloud.maptiler.com/</a> (easiest with Google).</li>
         <li>Under "API Keys" select "New key", include "neal.fun" under "Allowed HTTP Origins" and press "Create".</li>
-        <li>My recommended satellite tiles are https://cloud.maptiler.com/tiles/satellite-v2/ (in the "Tiles" section).</li>
+        <li>My recommended satellite tiles are <a href="https://cloud.maptiler.com/tiles/satellite-v2/" target="_blank">
+        https://cloud.maptiler.com/tiles/satellite-v2/</a> (in the "Tiles" section).</li>
         <li>On the tile page click the copy icon to the left of the XYZ tile URL field (the one that includes "{z}/{x}/{y}"),
         and choose your API key. The URL should now be in your clipboard.</li>
         <li>Paste the URL into the text field above!</li>
     </ul>
-    You can also peruse https://cloud.maptiler.com/tiles/ or <a href="https://madewithmaplibre.com/basemaps/gallery/" target="_blank">
+    You can also peruse <a href="https://cloud.maptiler.com/tiles/" target="_blank">https://cloud.maptiler.com/tiles/</a>
+    or <a href="https://madewithmaplibre.com/basemaps/gallery/" target="_blank">
     https://madewithmaplibre.com/basemaps/gallery/</a> for other raster tile sources that may tickle your fancy!
     The tiles should not contain text or streets, as they will be shown as a background for the usual OpenStreetMap data.`);
 

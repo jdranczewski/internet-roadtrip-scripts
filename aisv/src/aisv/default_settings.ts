@@ -3,7 +3,6 @@ export const default_settings = {
     fadeSmoothTransitions: "aBitFiltered",
     fadeSharpTransitions: "aBitFiltered",
     animateFurtherStraights: true,
-    betterFades: false,
     turnThreshold: 5,
     pauseKey: "Escape",
     resetViewKey: " ",

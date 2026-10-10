@@ -13,6 +13,7 @@ import { settings } from './settings';
 
 // Keyboard shortcuts
 document.addEventListener("keydown", (event) => {
+    if (event.target !== null && event.target?.nodeName.substring(0, 3) === "IRF") return;
     if (event.key == settings.pauseKey) {
         event.preventDefault();
         messenger.send("togglePaused")
