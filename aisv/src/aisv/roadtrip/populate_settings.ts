@@ -2,18 +2,20 @@ import { messenger } from "./iframe";
 import { panel } from "./settings";
 
 const fade_section = panel.add_section("Animations between locations", `When the car location changes,
-we try to make the transition smooth by applying a slight or full fade.<br><br>
+two kinds of transitions can occur:
+<ul>
+    <li>If the new location is nearby, there will be a "whoosh" animation between the two panoramas,
+which we call a <strong>"smooth"</strong> transition.</li>
+    <li>If the new location is not connected or further away, there will be a sharp jump between the two,
+    which we call a <strong>"sharp"</strong> transition.</li>
+</ul>
 
-If the new location is nearby, there will be a "whoosh" animation between the two panoramas,
-which we call a <strong>"smooth"</strong> transition. If the new location is not connected or further away,
-there will be a sharp jump between the two, which we call a <strong>"sharp"</strong> transition.<br><br>
+By default, sharp transitions cross-fade like in the unmodded game, and smooth transitions are blurred
+slightly to obscure any artefacts or loading pixelation. You can choose several levels of fade and blur
+below, or enable cross-fades for both kinds of transition.<br><br>
 
-By default, we blur these transitions slightly to obscure any artefacts and sharp changeovers.
-You may choose to fade it out fully too, obscuring the change completely.<br><br>
-
-<strong>Now in beta: the cross-fade option!</strong> This changes a couple rendering things, and allows
-beautiful fades between panos instead of jumps. I recommend enabling it for sharp transitions. You have to reload the
-page for the change to take effect. Let me know on Discord if you spot any issues or decreased performance!
+The cross-fade setting may impact performance slightly, and occasionally produce some artefacts during smooth
+transitions. Play around with the settings or poke @jakub on Discord if you have questions!
 `)
 const fadeOptions: [string, string][] = [
     ["No fade", ""],
@@ -35,7 +37,7 @@ fade_section.add_dropdown("Fade during sharp transitions", "fadeSharpTransitions
     })
 }, "aBitFiltered")
 fade_section.add_wide_comment(`When we are going along a straight road, the game will often jump multiple
-panoramas at a time, which creates a sharp transition. We make this into a smooth transition by executing
+panoramas at a time, which creates a sharp transition. We can make this into a smooth transition by executing
 multiple jumps between the two panoramas, which creates smoother, but longer animation.`)
 fade_section.add_checkbox("Animate multiple smooth transitions for longer jumps", "animateFurtherStraights", (value) => {
     messenger.send("settingChanged", {

@@ -15,13 +15,16 @@ HTMLCanvasElement.prototype.getContext = function(type, args) {
         const ctx = originalGetContext.call(this, type, args);
 
         // Override clearColor to make the canvas always transparent
-        // const originalClearColor = ctx.clearColor.bind(ctx);
-        ctx.clearColor = function() {};
+        const originalClearColor = ctx.clearColor.bind(ctx);
+        ctx.clearColor = function() {
+            originalClearColor(0, 0, 0, 0);
+        };
 
         // Override clear to avoid the canvas blinking to nothing
         const originalClear = ctx.clear.bind(ctx);
+        // Only do this override if we're preserving the buffer, otherwise weird artefacting occurs with the leftover buffer data
         if (!betterFades) ctx.clear = function (mask) {
-            if (overrideCanvasClear) return;
+            if (overrideCanvasClear) return; // Allow interactively disabling this override
             originalClear(mask);
         }
         return ctx;

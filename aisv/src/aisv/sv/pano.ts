@@ -1,6 +1,6 @@
 import { type AISVMessageEvent } from "../messaging";
 import { changePanoAsyncAbortController } from "./aborts";
-import { animatePov, withFadeTransition } from "./animation";
+import { animatePov, copyCanvas, withFadeTransition } from "./animation";
 import { instance, messenger, service, setOverrideCanvasClear } from "./api";
 import { settings } from "./sv_settings";
 import { asyncTimeout, closestLinkToHeading, fovToZoom, shortestAngleDist } from "./util";
@@ -182,6 +182,8 @@ async function changePano(args, instantJump) {
                 console.debug("[AISV-sv] Further straight found, executing jumps", path);
                 await withFadeTransition(async () => {
                     for (const [index, pano] of path.entries()) {
+                        // Store newest state on background canvas to reduce artefacts
+                        if (index) copyCanvas()
                         await changePanoAsyncAbortController.signal.protect(
                             () => setPanoAndWait(pano)
                         );
@@ -191,7 +193,6 @@ async function changePano(args, instantJump) {
                 }, settings.fadeSmoothTransitions);
                 return;
             } else {
-                // @ts-expect-error For some reason getPanoramaById is not included in the types
                 service_pano = await service.getPanoramaById(closestLink.pano);
                 links = service_pano.data.links;
             }

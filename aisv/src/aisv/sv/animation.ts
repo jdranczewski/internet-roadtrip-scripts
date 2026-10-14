@@ -19,17 +19,21 @@ messenger.addEventListener("settingChanged", (event: AISVMessageEvent) => {
 })
 
 // Better fades with another canvas
-let copyCanvas = () => {};
+export let copyCanvas = () => {};
+let second_canvas: undefined | HTMLCanvasElement = undefined;
 if ((settings.fadeSharpTransitions == "cross") || (settings.fadeSmoothTransitions == "cross")) {
-    mapDiv.classList.add("better");
-    const second_canvas = document.createElement("canvas");
+    mapDiv?.classList.add("better");
+    second_canvas = document.createElement("canvas");
     const ctx = second_canvas.getContext("2d");
     second_canvas.id = "second-canvas";
-    document.body.append(second_canvas);
+    mapDiv?.appendChild(second_canvas);
     copyCanvas = () => {
         const first_canvas = document.getElementsByClassName("mapsImagerySceneScene__canvas widget-scene-canvas")[0] as HTMLCanvasElement;
+        if (second_canvas == undefined) return;
         second_canvas.width = first_canvas.width;
+        second_canvas.style.width = first_canvas.style.width;
         second_canvas.height = first_canvas.height;
+        second_canvas.style.height = first_canvas.style.height;
         ctx.drawImage(
             first_canvas,
             0, 0
@@ -49,11 +53,16 @@ export async function withFadeTransition(
         return callback();
     }
 
-    if (filterClass != null && filterClass !== "") {
-        console.debug("[AISV-sv] Fade in", filterClass);
-        currentlyFadeTransitioning = true;
-        if (filterClass === "cross") copyCanvas();
-        mapDiv.classList.toggle(filterClass, true);
+    if (filterClass != null) {
+        // Always copy the canvas if that's enabled, to serve either as a backdrop or a foreground (note the differing
+        // zIndex values)
+        copyCanvas();
+        if (second_canvas !== undefined) second_canvas.style.zIndex = filterClass == "cross" ? "2" : "-1";
+        if (filterClass !== "") {
+            console.debug("[AISV-sv] Fade in", filterClass);
+            currentlyFadeTransitioning = true;
+            mapDiv.classList.toggle(filterClass, true);
+        }
     }
 
     const result = await callback();
@@ -62,6 +71,14 @@ export async function withFadeTransition(
         console.debug("[AISV-sv] Fade out", filterClass);
         mapDiv.classList.toggle(filterClass, false);
         currentlyFadeTransitioning = false;
+        // Give the second canvas time to fade out, and then bring it back in the background
+        if (filterClass == "cross" && second_canvas !== undefined) {
+            second_canvas.style.opacity = "0";
+            setTimeout(() => {
+                second_canvas.style.zIndex = "-1";
+                second_canvas.style.opacity = "1";
+            }, 550);
+        }
     }
 
     return result;

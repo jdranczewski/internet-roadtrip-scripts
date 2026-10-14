@@ -22,10 +22,6 @@ body {
         filter: blur(15px) grayscale(1) opacity(0.);
         pointer-events: none;
     }
-    &.better.filtered {
-        filter: opacity(0.);
-        pointer-events: none;
-    }
     &.aBitFiltered {
         filter: blur(5px) grayscale(.1) opacity(.9);
         pointer-events: none;
@@ -34,7 +30,7 @@ body {
         filter: blur(8px) grayscale(.1) opacity(.7);
         pointer-events: none;
     }
-    &.cross ~ #second-canvas {
+    &.cross #second-canvas {
         opacity: 1;
         transition: opacity 0s;
     }
@@ -42,7 +38,7 @@ body {
         cursor: move !important;
     }
 }
-#mapDiv, .gm-style > div, .widget-scene, .mapsConsumerUiSceneCoreScene__canvas {
+#mapDiv, .gm-style > div, .widget-scene, #mapDiv canvas {
     background: none !important;
 }
 /* The Roadtrip website already displays attribution */
@@ -54,9 +50,9 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 2;
-    opacity: 0;
     transition: opacity 0.5s;
     pointer-events: none;
+    /* Debug options: */
     /* filter: hue-rotate(90deg); */
+    /* transform: translate(20px, 20px); */
 }
