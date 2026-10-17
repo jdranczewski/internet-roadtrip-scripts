@@ -8,9 +8,9 @@ let overrideCanvasClear: boolean = true;
 export function setOverrideCanvasClear(value: boolean) {
     overrideCanvasClear = value;
 }
+const betterFades = (settings.fadeSharpTransitions == "cross") || (settings.fadeSmoothTransitions == "cross");
 HTMLCanvasElement.prototype.getContext = function(type, args) {
     if (type === 'webgl' || type === 'experimental-webgl') {
-        const betterFades = (settings.fadeSharpTransitions == "cross") || (settings.fadeSmoothTransitions == "cross");
         args = Object.assign({}, args, { preserveDrawingBuffer: betterFades });
         const ctx = originalGetContext.call(this, type, args);
 
@@ -32,6 +32,16 @@ HTMLCanvasElement.prototype.getContext = function(type, args) {
         return originalGetContext.call(this, type, args);
     }
 };
+
+export function checkFades() {
+    // Ask for the iframe to be reloaded if the cross-fade requirements changed
+    // (the cross-fade requires changes to the rendering engine that can only be done on load)
+    const betterFadesDesired = (settings.fadeSharpTransitions == "cross") || (settings.fadeSmoothTransitions == "cross");
+    if (betterFadesDesired !== betterFades) {
+        console.log("[AISV-sv] Cross-fade settings mismatch, asking to reload frame...")
+        messenger.send("disconnect");
+    }
+}
 
 // Waiting based on Netux's implementation in the Pathfinder
 declare global {

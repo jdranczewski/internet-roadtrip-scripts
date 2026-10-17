@@ -5,6 +5,23 @@ import { instance, messenger, service, setOverrideCanvasClear } from "./api";
 import { settings } from "./sv_settings";
 import { asyncTimeout, closestLinkToHeading, fovToZoom, shortestAngleDist } from "./util";
 
+// Void indicator GUI
+const void_indicator = document.createElement("div");
+void_indicator.id="aisv-void-indicator";
+const void_indicator_image = document.createElement("img");
+void_indicator_image.src = "https://jdranczewski.dev/irt/images/voided.svg";
+void_indicator.appendChild(void_indicator_image);
+document.body.appendChild(void_indicator);
+// Check whether the first pano loaded is a void
+setTimeout(async () => {
+    try {
+        await service.getPanoramaById(instance.getPano());
+    } catch {
+        console.log("[AISV-sv] Void! Frame will reload once escape detected.")
+        void_indicator.classList.toggle("aisv-void-active", true);
+    }
+}, 0);
+
 // State
 let internalHeading = instance.getPov().heading;
 const originalSearchParams = (new URL(window.location.href)).searchParams;
@@ -132,12 +149,11 @@ async function changePano(args, instantJump) {
 
     let service_pano;
     try {
-        // @ts-expect-error For some reason getPanoramaById is not included in the types
         service_pano = await service.getPanoramaById(prev_pano);
     } catch {
-        // prev_pano may be invalid post-void
-        // @ts-expect-error For some reason getPanoramaById is not included in the types
-        service_pano = await service.getPanoramaById(instance.getPano());
+        console.log("[AISV-sv] Void escape attempt detected, asking to reload frame...")
+        messenger.send("disconnect");
+        return;
     }
     let links = service_pano.data.links;
 
@@ -213,6 +229,17 @@ async function changePano(args, instantJump) {
             await asyncTimeout(100);
         }, settings.fadeSharpTransitions)
     );
+
+    // Final check - are we in a void?
+    // Schedule this for later, it's not time-sensitive.
+    setTimeout(async () => {
+        try {
+            await service.getPanoramaById(args.pano);
+        } catch {
+            console.log("[AISV-sv] Void! Frame will reload once escape detected.")
+            void_indicator.classList.toggle("aisv-void-active", true);
+        }
+    }, 0);
 }
 
 async function setPanoAndWait(pano) {

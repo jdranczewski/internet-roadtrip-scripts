@@ -1,7 +1,7 @@
 import './settings';
 
 import { type AISVMessageEvent } from '../messaging';
-import { vcontainer, voptions } from './awaits';
+import { vcontainer, voptions, dmap } from './awaits';
 import { messenger } from './iframe';
 import './populate_settings';
 
@@ -39,7 +39,7 @@ function patchHeading() {
             // Multiplication by 1.25 offsets the vanilla game's multiplication by 0.8.
             // This way, the arrows actually point towards the road they correspond to.
             const angle = Reflect.apply(target, thisArg, args) * 1.25;
-            if (!settings.rotateArrowsWithHeading) {
+            if (!settings.rotateArrowsWithHeading || dmap.classList.contains("fullscreen")) {
                 return angle;
             }
             return angle - (currentPanoramaHeading - vcontainer.data.currentHeading) % 360;

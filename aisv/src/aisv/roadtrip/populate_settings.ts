@@ -14,15 +14,15 @@ By default, sharp transitions cross-fade like in the unmodded game, and smooth t
 slightly to obscure any artefacts or loading pixelation. You can choose several levels of fade and blur
 below, or enable cross-fades for both kinds of transition.<br><br>
 
-The cross-fade setting may impact performance slightly, and occasionally produce some artefacts during smooth
-transitions. Play around with the settings or poke @jakub on Discord if you have questions!
+The cross-fade setting may impact performance slightly, but should overall look much better!
+Play around with the settings or poke @jakub on Discord if you have questions!
 `)
 const fadeOptions: [string, string][] = [
     ["No fade", ""],
     ["Slightly", "aBitFiltered"],
     ["Medium", "aBitMoreFiltered"],
     ["Fully", "filtered"],
-    ["Cross-fade (requires reload)", "cross"],
+    ["Cross-fade", "cross"],
 ]
 fade_section.add_dropdown("Fade during smooth transitions", "fadeSmoothTransitions", fadeOptions, (value) => {
     messenger.send("settingChanged", {
@@ -38,7 +38,7 @@ fade_section.add_dropdown("Fade during sharp transitions", "fadeSharpTransitions
 }, "aBitFiltered")
 fade_section.add_wide_comment(`When we are going along a straight road, the game will often jump multiple
 panoramas at a time, which creates a sharp transition. We can make this into a smooth transition by executing
-multiple jumps between the two panoramas, which creates smoother, but longer animation.`)
+multiple jumps between the two panoramas, which creates smoother, but longer animations.`)
 fade_section.add_checkbox("Animate multiple smooth transitions for longer jumps", "animateFurtherStraights", (value) => {
     messenger.send("settingChanged", {
         identifier: "animateFurtherStraights",

@@ -42,20 +42,23 @@ pano1.src = "about:blank";
     });
 });
 let patchedSuccesfully = false;
+let prevURL;
 function setPanoFromURL(urlString: string) {
     const url = new URL(urlString);
+    url.hash = "aisv-frame";
+    // Correct for smaller iframe size
+    url.searchParams.set("pitch", (parseFloat(url.searchParams.get("pitch")) - 2).toString());
+    prevURL = url.toString();
     if (!patchedSuccesfully) {
-        url.hash = "aisv-frame";
-        // Correct for smaller iframe size
-        url.searchParams.set("pitch", (parseFloat(url.searchParams.get("pitch")) - 2).toString());
-        iframe.src = url.toString();
+        console.log("[AISV-rt] Setting up AISV iframe...");
+        iframe.src = prevURL;
         return;
     };
     if (url.origin !== 'https://www.google.com') return;
     messenger.send("setPano", {
         pano: url.searchParams.get("pano"),
         heading: parseFloat(url.searchParams.get("heading")),
-        pitch: parseFloat(url.searchParams.get("pitch")) - 2,
+        pitch: parseFloat(url.searchParams.get("pitch")),
         fov: parseFloat(url.searchParams.get("fov")),
         currentHeading: vcontainer.data.currentHeading,
         optionsN: vcontainer.data.currentOptions.length,
@@ -67,7 +70,13 @@ messenger.addEventListener("marco", () => {
     messenger.send("polo");
     patchedSuccesfully = true;
     unsafeWindow._AISV.patched = true;
-})
+});
+
+messenger.addEventListener("disconnect", () => {
+    patchedSuccesfully = false;
+    unsafeWindow._AISV.patched = false;
+    setPanoFromURL(prevURL);
+});
 
 // Expose an API
 interface AISVAPI {

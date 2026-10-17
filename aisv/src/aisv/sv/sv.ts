@@ -1,4 +1,4 @@
-import { instance, service, messenger } from "./api";
+import { instance, service, messenger, checkFades } from "./api";
 import { AISVMessageEvent } from "../messaging";
 import globalCss from './style.css';
 import { handleSetPano, resetPov, toggleManualPause } from "./pano";
@@ -27,6 +27,7 @@ function handleInitialResponse() {
     messenger.addEventListener("togglePaused", toggleManualPause);
     messenger.addEventListener("settingChanged", (event: AISVMessageEvent) => {
         settings[event.args.identifier] = event.args.value;
+        checkFades();
     })
 
     // Keyboard shortcuts

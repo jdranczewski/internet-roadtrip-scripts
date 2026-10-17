@@ -7,6 +7,7 @@
 // @icon        https://jdranczewski.dev/irt/images/aisv.png
 // @version     process.env.VERSION
 // @author      process.env.AUTHOR
+// @license     MIT
 // @require     https://cdn.jsdelivr.net/npm/internet-roadtrip-framework@0.4.1-beta
 // @require     https://cdn.jsdelivr.net/npm/@violentmonkey/dom@2/dist/solid.min.js
 // @grant       GM.addStyle
