@@ -13,14 +13,20 @@ void_indicator_image.src = "https://jdranczewski.dev/irt/images/voided.svg";
 void_indicator.appendChild(void_indicator_image);
 document.body.appendChild(void_indicator);
 // Check whether the first pano loaded is a void
-setTimeout(async () => {
-    try {
-        await service.getPanoramaById(instance.getPano());
-    } catch {
-        console.log("[AISV-sv] Void! Frame will reload once escape detected.")
-        void_indicator.classList.toggle("aisv-void-active", true);
-    }
-}, 0);
+function test_void() {
+    // Schedule this for later, it's not time-sensitive.
+    setTimeout(async () => {
+        try {
+            await service.getPanoramaById(instance.getPano());
+        } catch (e) {
+            if (e.message.includes("ZERO_RESULTS")) {
+                console.log("[AISV-sv] Void! Frame will reload once escape detected.", instance.getPano());
+                void_indicator.classList.toggle("aisv-void-active", true);
+            }
+        }
+    }, 0);
+}
+test_void();
 
 // State
 let internalHeading = instance.getPov().heading;
@@ -156,6 +162,8 @@ async function changePano(args, instantJump) {
         return;
     }
     let links = service_pano.data.links;
+    // We seem to not be in a void, so that's good?
+    void_indicator.classList.toggle("aisv-void-active", false);
 
     // If the pano is linked, great, just go there
     if (links.some(({ pano }) => pano === args.pano)) {
@@ -231,15 +239,7 @@ async function changePano(args, instantJump) {
     );
 
     // Final check - are we in a void?
-    // Schedule this for later, it's not time-sensitive.
-    setTimeout(async () => {
-        try {
-            await service.getPanoramaById(args.pano);
-        } catch {
-            console.log("[AISV-sv] Void! Frame will reload once escape detected.")
-            void_indicator.classList.toggle("aisv-void-active", true);
-        }
-    }, 0);
+    test_void();
 }
 
 async function setPanoAndWait(pano) {
