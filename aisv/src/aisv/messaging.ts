@@ -6,7 +6,7 @@ export class Messenger extends EventTarget {
     target: Window;
     targetOrigin: string;
 
-    constructor(target: Window, targetOrigin:string) {
+    constructor(target: Window, targetOrigin: string) {
         super();
         this.target = target;
         this.targetOrigin = targetOrigin;

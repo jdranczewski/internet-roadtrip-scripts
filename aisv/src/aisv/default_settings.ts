@@ -8,5 +8,6 @@ export const default_settings = {
     resetViewKey: " ",
     scale: "100",
     fill: false,
-    rotateArrowsWithHeading: true
+    rotateArrowsWithHeading: true,
+    viewer_mode: false
 }

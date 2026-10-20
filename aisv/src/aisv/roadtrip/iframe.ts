@@ -17,8 +17,6 @@ iframe.width = "100%";
 iframe.height = "100%";
 iframe.allowFullscreen = true;
 iframe.classList.add("pano");
-iframe.style.border = "0px";
-iframe.style.zIndex = "-2";
 iframe.style.pointerEvents = "auto";
 iframe.dataset["v-5f07f20e"] = "";
 pano1.parentNode.insertBefore(iframe, iframe.nextSibling);

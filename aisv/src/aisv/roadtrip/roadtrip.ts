@@ -10,6 +10,7 @@ import globalCss from './style.css';
 GM.addStyle(globalCss);
 import './ui';
 import { settings } from './settings';
+import './viewer_mode';
 
 // Keyboard shortcuts
 document.addEventListener("keydown", (event) => {

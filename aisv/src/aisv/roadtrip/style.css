@@ -57,9 +57,40 @@
     height: 100vh;
     top: 0;
     position: absolute;
+    border: 0px;
+    z-index: -2;
 }
 
 body {
     height: auto !important;
     overflow: hidden;
+}
+
+/* Viewer mode */
+.container.aisv-viewer-mode:not(:has(#aisv-button-pause.aisv-frosted)) {
+    #aisv-iframe {
+        z-index: 100;
+    }
+
+    .map-container.fullscreen {
+        z-index: 102 !important;
+
+        .maplibregl-ctrl-bottom-right {
+            margin-bottom: initial !important;
+
+            .maplibregl-ctrl-scale {
+                margin-right: 36px !important;
+            }
+        }
+    }
+
+    .google-attribution {
+        z-index: 101;
+    }
+
+    @media (min-width: 900px) {
+        .google-attribution {
+            right: 5px;
+        }
+    }
 }
